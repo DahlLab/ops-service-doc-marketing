@@ -17,17 +17,25 @@ The project was built as a capstone project during a Java bootcamp. The user int
 | **IPD generator** | Create an IPD draft from a ticket. Performed steps and the quality-assurance status are derived from the ticket's tasks and checklists. Download the customer PDF. |
 | **GLPI link** | Navigation and dashboard link straight to the GLPI web interface. |
 
-| Tickets | Task planner |
-| --- | --- |
-| ![Tickets](docs/screenshots/en-tickets.png) | ![Task planner](docs/screenshots/en-tasks.png) |
-
-| Checklists | IPD document |
-| --- | --- |
-| ![Checklists](docs/screenshots/en-checklists.png) | ![IPD document](docs/screenshots/en-ipd-document.png) |
+## Screenshots
 
 | Sign-in | German UI |
 | --- | --- |
 | ![Sign-in](docs/screenshots/en-welcome.png) | ![German dashboard](docs/screenshots/de-dashboard.png) |
+
+| English UI | Tickets |
+| --- | --- |
+| ![English dashboard](docs/screenshots/en-dashboard.png) | ![Tickets](docs/screenshots/en-tickets.png) |
+
+| Task planner | Checklists |
+| --- | --- |
+| ![Task planner](docs/screenshots/en-tasks.png) | ![Checklists](docs/screenshots/en-checklists.png) |
+
+| IPD document |
+| --- |
+| ![IPD document](docs/screenshots/en-ipd-document.png) |
+
+The screenshots show invented demo data only.
 
 The screenshots show invented demo data only.
 
