@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class IpdDocumentService {
-    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
+    private static final String RESOURCE_NOT_FOUND = " not found";
 
     private final IpdDocumentRepository ipdDocumentRepository;
     private final TicketRepository ticketRepository;
@@ -57,13 +57,13 @@ public class IpdDocumentService {
 
     public IpdDocumentDto getIpdDocumentById(String id) {
         IpdDocument result = ipdDocumentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("IPD document with ID " + id + RESOURCE_NOT_FOUND));
         return IpdDocumentMapper.toDto(result);
     }
 
     public IpdDocumentDto createIpdDocumentFromTicket(String ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new NoSuchElementException("Ticket mit ID " + ticketId + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("Ticket with ID " + ticketId + RESOURCE_NOT_FOUND));
 
         IpdDocument newDocument = new IpdDocument(
                 null,
@@ -98,7 +98,7 @@ public class IpdDocumentService {
 
     public IpdDocumentDto updateIpdDocument(String id, IpdDocumentDto ipdDocumentDto) {
         IpdDocument existingDocument = ipdDocumentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("IPD document with ID " + id + RESOURCE_NOT_FOUND));
 
         IpdDocument updatedDocument = new IpdDocument(
                 id,
@@ -133,7 +133,7 @@ public class IpdDocumentService {
 
     public void deleteIpdDocument(String id) {
         if (!ipdDocumentRepository.existsById(id)) {
-            throw new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND);
+            throw new NoSuchElementException("IPD document with ID " + id + RESOURCE_NOT_FOUND);
         }
         ipdDocumentRepository.deleteById(id);
     }
@@ -149,7 +149,7 @@ public class IpdDocumentService {
                 .map(ChecklistMapper::toDto)
                 .toList();
         if (checklists.isEmpty()) {
-            throw new NoSuchElementException("Zu diesem IPD-Dokument gibt es keine Checkliste");
+            throw new NoSuchElementException("There is no checklist for this IPD document");
         }
         return ChecklistPdfGenerator.createPdf(ipdDocument, checklists);
     }

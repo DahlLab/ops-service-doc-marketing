@@ -44,9 +44,9 @@ class ChecklistControllerTest {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "title": "Server-Wartung",
+                    "title": "Server maintenance",
                     "items": [
-                        { "description": "USV geprüft", "done": false }
+                        { "description": "UPS checked", "done": false }
                     ]
                 }
                 """;
@@ -57,7 +57,7 @@ class ChecklistControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Server-Wartung"))
+                .andExpect(jsonPath("$.title").value("Server maintenance"))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.items[0].id").exists());
     }
@@ -69,7 +69,7 @@ class ChecklistControllerTest {
                     "ticketId": "ticket-1",
                     "title": "",
                     "items": [
-                        { "description": "USV geprüft", "done": false }
+                        { "description": "UPS checked", "done": false }
                     ]
                 }
                 """;
@@ -87,7 +87,7 @@ class ChecklistControllerTest {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "title": "Server-Wartung",
+                    "title": "Server maintenance",
                     "items": []
                 }
                 """;
@@ -102,33 +102,33 @@ class ChecklistControllerTest {
 
     @Test
     void getChecklistById_returnsChecklist_whenIdExists() throws Exception {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
         Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
-                "Server-Wartung", List.of(item), LocalDateTime.now(), null));
+                "Server maintenance", List.of(item), LocalDateTime.now(), null));
 
         mockMvc.perform(get("/api/checklists/" + savedChecklist.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Server-Wartung"));
+                .andExpect(jsonPath("$.title").value("Server maintenance"));
     }
 
     @Test
     void getChecklistById_returns404_whenIdDoesNotExist() throws Exception {
-        mockMvc.perform(get("/api/checklists/unbekannt").with(oauth2Login()))
+        mockMvc.perform(get("/api/checklists/unknown").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     void putChecklist_updatesItemsAndSetsCompletedAt() throws Exception {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
         Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
-                "Server-Wartung", List.of(item), LocalDateTime.now(), null));
+                "Server maintenance", List.of(item), LocalDateTime.now(), null));
 
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "title": "Server-Wartung",
+                    "title": "Server maintenance",
                     "items": [
-                        { "id": "item-1", "description": "USV geprüft", "done": true }
+                        { "id": "item-1", "description": "UPS checked", "done": true }
                     ]
                 }
                 """;
@@ -145,9 +145,9 @@ class ChecklistControllerTest {
 
     @Test
     void deleteChecklist_removesChecklist_andReturns204() throws Exception {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
         Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
-                "Server-Wartung", List.of(item), LocalDateTime.now(), null));
+                "Server maintenance", List.of(item), LocalDateTime.now(), null));
 
         mockMvc.perform(delete("/api/checklists/" + savedChecklist.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());

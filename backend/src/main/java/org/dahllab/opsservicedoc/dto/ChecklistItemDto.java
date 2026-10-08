@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record ChecklistItemDto(
         String id,
-        @NotBlank(message = "Beschreibung darf nicht leer sein")
+        @NotBlank(message = "Description must not be empty")
         String description,
         boolean done
 ) {

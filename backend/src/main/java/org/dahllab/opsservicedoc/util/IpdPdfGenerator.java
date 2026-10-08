@@ -50,24 +50,24 @@ public class IpdPdfGenerator {
             pdfDocument.add(buildMetadataTable(ipdDocument, labelFont, valueFont));
             pdfDocument.add(newBlankLine());
 
-            addSection(pdfDocument, "Ausgangslage", ipdDocument.initialSituation(), sectionFont, textFont);
-            addSection(pdfDocument, "Anforderungen", ipdDocument.requirements(), sectionFont, textFont);
-            addSection(pdfDocument, "Infrastruktur-Übersicht", ipdDocument.infrastructureOverview(), sectionFont, textFont);
-            addSection(pdfDocument, "Server und VMs", ipdDocument.serversAndVms(), sectionFont, textFont);
-            addSection(pdfDocument, "Netzwerk", ipdDocument.network(), sectionFont, textFont);
-            addSection(pdfDocument, "Rollen und Verantwortlichkeiten", ipdDocument.rolesAndResponsibilities(), sectionFont, textFont);
-            addSection(pdfDocument, "Backup-Konzept", ipdDocument.backupPlan(), sectionFont, textFont);
-            addSection(pdfDocument, "Security-Überlegungen", ipdDocument.securityConsiderations(), sectionFont, textFont);
-            addSection(pdfDocument, "Durchgeführte Schritte", ipdDocument.performedSteps(), sectionFont, textFont);
-            addSection(pdfDocument, "Entscheidungen", ipdDocument.decisions(), sectionFont, textFont);
-            addSection(pdfDocument, "Risiken und Annahmen", ipdDocument.risksAndAssumptions(), sectionFont, textFont);
-            addSection(pdfDocument, "Rollback-Plan", ipdDocument.rollbackPlan(), sectionFont, textFont);
-            addSection(pdfDocument, "Qualitätssicherung durchgeführt",
-                    ipdDocument.qualityAssuranceCompleted() ? "Ja" : "Nein", sectionFont, textFont);
+            addSection(pdfDocument, "Initial situation", ipdDocument.initialSituation(), sectionFont, textFont);
+            addSection(pdfDocument, "Requirements", ipdDocument.requirements(), sectionFont, textFont);
+            addSection(pdfDocument, "Infrastructure overview", ipdDocument.infrastructureOverview(), sectionFont, textFont);
+            addSection(pdfDocument, "Servers and VMs", ipdDocument.serversAndVms(), sectionFont, textFont);
+            addSection(pdfDocument, "Network", ipdDocument.network(), sectionFont, textFont);
+            addSection(pdfDocument, "Roles and responsibilities", ipdDocument.rolesAndResponsibilities(), sectionFont, textFont);
+            addSection(pdfDocument, "Backup plan", ipdDocument.backupPlan(), sectionFont, textFont);
+            addSection(pdfDocument, "Security considerations", ipdDocument.securityConsiderations(), sectionFont, textFont);
+            addSection(pdfDocument, "Performed steps", ipdDocument.performedSteps(), sectionFont, textFont);
+            addSection(pdfDocument, "Decisions", ipdDocument.decisions(), sectionFont, textFont);
+            addSection(pdfDocument, "Risks and assumptions", ipdDocument.risksAndAssumptions(), sectionFont, textFont);
+            addSection(pdfDocument, "Rollback plan", ipdDocument.rollbackPlan(), sectionFont, textFont);
+            addSection(pdfDocument, "Quality assurance completed",
+                    ipdDocument.qualityAssuranceCompleted() ? "Yes" : "No", sectionFont, textFont);
 
             pdfDocument.close();
         } catch (DocumentException exception) {
-            throw new IllegalStateException("PDF konnte nicht erzeugt werden", exception);
+            throw new IllegalStateException("PDF could not be generated", exception);
         }
 
         return output.toByteArray();
@@ -82,8 +82,8 @@ public class IpdPdfGenerator {
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setPadding(16);
 
-        Paragraph title = new Paragraph(ipdDocument.title() != null ? ipdDocument.title() : "IPD-Dokument", titleFont);
-        Paragraph subtitle = new Paragraph("IPD-Dokument – OpsServiceDoc", subtitleFont);
+        Paragraph title = new Paragraph(ipdDocument.title() != null ? ipdDocument.title() : "IPD document", titleFont);
+        Paragraph subtitle = new Paragraph("IPD document – OpsServiceDoc", subtitleFont);
         subtitle.setSpacingBefore(4);
 
         cell.addElement(title);
@@ -100,12 +100,12 @@ public class IpdPdfGenerator {
 
         table.setWidths(new float[]{1f, 2f});
 
-        addMetadataRow(table, "Kunde", ipdDocument.customer(), labelFont, valueFont);
-        addMetadataRow(table, "Ansprechpartner", ipdDocument.customerContact(), labelFont, valueFont);
-        addMetadataRow(table, "Techniker", ipdDocument.technician(), labelFont, valueFont);
-        addMetadataRow(table, "Szenario",
+        addMetadataRow(table, "Customer", ipdDocument.customer(), labelFont, valueFont);
+        addMetadataRow(table, "Contact person", ipdDocument.customerContact(), labelFont, valueFont);
+        addMetadataRow(table, "Technician", ipdDocument.technician(), labelFont, valueFont);
+        addMetadataRow(table, "Scenario",
                 ipdDocument.scenarioType() != null ? ipdDocument.scenarioType().toString() : null, labelFont, valueFont);
-        addMetadataRow(table, "Zeitraum", ipdDocument.period(), labelFont, valueFont);
+        addMetadataRow(table, "Period", ipdDocument.period(), labelFont, valueFont);
         addMetadataRow(table, "Status",
                 ipdDocument.status() != null ? ipdDocument.status().toString() : null, labelFont, valueFont);
 
@@ -150,7 +150,7 @@ public class IpdPdfGenerator {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             Font footerFont = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL, Color.GRAY);
-            Phrase footer = new Phrase("OpsServiceDoc – Seite " + writer.getPageNumber(), footerFont);
+            Phrase footer = new Phrase("OpsServiceDoc – Page " + writer.getPageNumber(), footerFont);
 
             float centerX = (document.left() + document.right()) / 2;
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_CENTER, footer, centerX,

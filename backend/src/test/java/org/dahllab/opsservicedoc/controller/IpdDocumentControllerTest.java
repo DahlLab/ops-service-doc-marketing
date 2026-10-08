@@ -62,36 +62,36 @@ class IpdDocumentControllerTest {
     @Test
     void postIpdDocumentFromTicket_createsDraft_andReturns201() throws Exception {
         Ticket savedTicket = ticketRepository.save(new Ticket(
-                null, null, "Server-Wartung", "Beschreibung", TicketStatus.IN_PROGRESS,
-                "Mia Muster", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()));
+                null, null, "Server maintenance", "Description", TicketStatus.IN_PROGRESS,
+                "Jane Doe", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()));
 
         mockMvc.perform(post("/api/ipd/from-ticket/" + savedTicket.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Server-Wartung"))
-                .andExpect(jsonPath("$.technician").value("Mia Muster"))
+                .andExpect(jsonPath("$.title").value("Server maintenance"))
+                .andExpect(jsonPath("$.technician").value("Jane Doe"))
                 .andExpect(jsonPath("$.status").value("DRAFT"));
     }
 
     @Test
     void postIpdDocumentFromTicket_returns404_whenTicketDoesNotExist() throws Exception {
-        mockMvc.perform(post("/api/ipd/from-ticket/unbekannt").with(oauth2Login()).with(csrf()))
+        mockMvc.perform(post("/api/ipd/from-ticket/unknown").with(oauth2Login()).with(csrf()))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     void getIpdDocumentById_returns404_whenIdDoesNotExist() throws Exception {
-        mockMvc.perform(get("/api/ipd/unbekannt").with(oauth2Login()))
+        mockMvc.perform(get("/api/ipd/unknown").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     void putIpdDocument_updatesFieldsAndStatus() throws Exception {
         Ticket savedTicket = ticketRepository.save(new Ticket(
-                null, null, "Server-Wartung", "Beschreibung", TicketStatus.IN_PROGRESS,
-                "Mia Muster", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()));
+                null, null, "Server maintenance", "Description", TicketStatus.IN_PROGRESS,
+                "Jane Doe", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()));
         IpdDocument savedDocument = ipdDocumentRepository.save(new IpdDocument(
-                null, savedTicket.getId(), IpdDocumentStatus.DRAFT, "Server-Wartung",
-                "Mia Muster", ScenarioType.SERVER_MAINTENANCE, null, null, null, null, null, null, null,
+                null, savedTicket.getId(), IpdDocumentStatus.DRAFT, "Server maintenance",
+                "Jane Doe", ScenarioType.SERVER_MAINTENANCE, null, null, null, null, null, null, null,
                 null, null, null, null, "", null, null, null, false,
                 LocalDateTime.now(), LocalDateTime.now()));
 
@@ -99,11 +99,11 @@ class IpdDocumentControllerTest {
                 {
                     "ticketId": "%s",
                     "status": "COMPLETED",
-                    "title": "Server-Wartung",
-                    "customer": "Musterfirma GmbH",
-                    "customerContact": "Herr Beispiel",
+                    "title": "Server maintenance",
+                    "customer": "Example Corp",
+                    "customerContact": "Mr Example",
                     "period": "14.09.2026 - 16.09.2026",
-                    "initialSituation": "USV ausgefallen",
+                    "initialSituation": "UPS failed",
                     "qualityAssuranceCompleted": false
                 }
                 """.formatted(savedTicket.getId());
@@ -115,13 +115,13 @@ class IpdDocumentControllerTest {
                         .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
-                .andExpect(jsonPath("$.customer").value("Musterfirma GmbH"));
+                .andExpect(jsonPath("$.customer").value("Example Corp"));
     }
 
     @Test
     void deleteIpdDocument_removesDocument_andReturns204() throws Exception {
         IpdDocument savedDocument = ipdDocumentRepository.save(new IpdDocument(
-                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server-Wartung", "Mia Muster",
+                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server maintenance", "Jane Doe",
                 ScenarioType.SERVER_MAINTENANCE, null, null, null, null, null, null, null, null, null,
                 null, null, "", null, null, null, false, LocalDateTime.now(), LocalDateTime.now()));
 
@@ -132,8 +132,8 @@ class IpdDocumentControllerTest {
     @Test
     void getPdf_returnsPdfFile() throws Exception {
         IpdDocument savedDocument = ipdDocumentRepository.save(new IpdDocument(
-                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server-Wartung", "Mia Muster",
-                ScenarioType.SERVER_MAINTENANCE, "Musterfirma GmbH", null, null, "USV ausgefallen", null,
+                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server maintenance", "Jane Doe",
+                ScenarioType.SERVER_MAINTENANCE, "Example Corp", null, null, "UPS failed", null,
                 null, null, null, null, null, null, "", null, null, null, false,
                 LocalDateTime.now(), LocalDateTime.now()));
 
@@ -145,25 +145,25 @@ class IpdDocumentControllerTest {
     @Test
     void getChecklistPdf_returnsPdfFile_whenChecklistExists() throws Exception {
         IpdDocument ipdDocument = ipdDocumentRepository.save(new IpdDocument(
-                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server-Wartung", "Mia Muster",
-                ScenarioType.SERVER_MAINTENANCE, "Musterfirma GmbH", null, null, null, null,
+                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server maintenance", "Jane Doe",
+                ScenarioType.SERVER_MAINTENANCE, "Example Corp", null, null, null, null,
                 null, null, null, null, null, null, "", null, null, null, false,
                 LocalDateTime.now(), LocalDateTime.now()));
-        checklistRepository.save(new Checklist(null, "ticket-1", "Wartung",
-                List.of(new ChecklistItem("i-1", "USV geprüft", false)), LocalDateTime.now(), null));
+        checklistRepository.save(new Checklist(null, "ticket-1", "Maintenance",
+                List.of(new ChecklistItem("i-1", "UPS checked", false)), LocalDateTime.now(), null));
 
         mockMvc.perform(get("/api/ipd/" + ipdDocument.getId() + "/checklist-pdf").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf"))
                 .andExpect(header().string("Content-Disposition",
-                        "attachment; filename=\"checkliste-" + ipdDocument.getId() + ".pdf\""));
+                        "attachment; filename=\"checklist-" + ipdDocument.getId() + ".pdf\""));
     }
 
     @Test
     void getChecklistPdf_returns404_whenNoChecklistExists() throws Exception {
         IpdDocument ipdDocument = ipdDocumentRepository.save(new IpdDocument(
-                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server-Wartung", "Mia Muster",
-                ScenarioType.SERVER_MAINTENANCE, "Musterfirma GmbH", null, null, null, null,
+                null, "ticket-1", IpdDocumentStatus.DRAFT, "Server maintenance", "Jane Doe",
+                ScenarioType.SERVER_MAINTENANCE, "Example Corp", null, null, null, null,
                 null, null, null, null, null, null, "", null, null, null, false,
                 LocalDateTime.now(), LocalDateTime.now()));
 

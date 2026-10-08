@@ -13,7 +13,7 @@ public class GlpiTicketMapper {
     private static final DateTimeFormatter GLPI_DATE_FORMAT=
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private static final String TECHNICIAN_NOT_ASSIGNED = "Nicht zugewiesen";
+    private static final String TECHNICIAN_NOT_ASSIGNED = "Unassigned";
 
     private GlpiTicketMapper() {
     }

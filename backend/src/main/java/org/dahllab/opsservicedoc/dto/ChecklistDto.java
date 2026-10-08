@@ -10,10 +10,10 @@ import java.util.List;
 public record ChecklistDto(
         String id,
         String ticketId,
-        @NotBlank(message = "Titel darf nicht leer sein")
+        @NotBlank(message = "Title must not be empty")
         String title,
 
-        @NotEmpty(message = "Eine Checkliste braucht mindestens ein Item")
+        @NotEmpty(message = "A checklist needs at least one item")
         @Valid
         List<ChecklistItemDto> items,
         LocalDateTime createdAt,

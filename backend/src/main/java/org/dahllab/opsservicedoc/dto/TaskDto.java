@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record TaskDto(
     String id,
     String ticketId,
-    @NotBlank(message = "Thema darf nicht leer sein")
+    @NotBlank(message = "Topic must not be empty")
     String topic,
     String nextSteps,
     LocalDateTime recordedAt,

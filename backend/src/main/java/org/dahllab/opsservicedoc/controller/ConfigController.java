@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Konfiguration", description = "Konfigurationswerte für das Frontend")
+@Tag(name = "Configuration", description = "Configuration values for the frontend")
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
@@ -19,8 +19,8 @@ public class ConfigController {
         this.glpiConfig = glpiConfig;
     }
 
-    @Operation(summary = "Adresse der GLPI-Weboberfläche abrufen")
-    @ApiResponse(responseCode = "200", description = "URL (leer, falls nicht konfiguriert)")
+    @Operation(summary = "Get the address of the GLPI web interface")
+    @ApiResponse(responseCode = "200", description = "URL (empty if not configured)")
     @GetMapping("/glpi-url")
     public GlpiUrlDto getGlpiUrl() {
         return new GlpiUrlDto(glpiConfig.resolveWebUrl());

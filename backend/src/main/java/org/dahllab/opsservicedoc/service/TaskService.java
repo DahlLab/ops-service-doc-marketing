@@ -37,7 +37,7 @@ public class TaskService {
     public TaskDto getTaskById(String id) {
         return taskRepository.findById(id)
                 .map(TaskMapper::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Task mit ID " + id + " nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Task with ID " + id + " not found"));
     }
 
     public TaskDto createTask(TaskDto newTask) {
@@ -58,7 +58,7 @@ public class TaskService {
 
     public TaskDto updateTask(String id, TaskDto updatedTask) {
         Task existingTask = taskRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task mit ID " + id + " nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Task with ID " + id + " not found"));
 
         LocalDateTime doneAt;
         if (updatedTask.status() == TaskStatus.DONE) {
@@ -86,7 +86,7 @@ public class TaskService {
 
     public void deleteTask(String id) {
         if (!taskRepository.existsById(id)) {
-            throw new NoSuchElementException("Task mit ID " + id + " nicht gefunden");
+            throw new NoSuchElementException("Task with ID " + id + " not found");
         }
         taskRepository.deleteById(id);
     }

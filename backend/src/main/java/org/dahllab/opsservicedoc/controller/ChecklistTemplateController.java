@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Checklisten-Vorlagen", description = "Wiederverwendbare Vorlagen für Checklisten verwalten")
+@Tag(name = "Checklist templates", description = "Manage reusable templates for checklists")
 @RestController
 @RequestMapping("/api/checklist-templates")
 public class ChecklistTemplateController {
@@ -25,55 +25,55 @@ public class ChecklistTemplateController {
     }
 
     @Operation(
-            summary = "Alle Checklisten-Vorlagen abrufen",
-            description = "Liefert alle Vorlagen, z.B. damit das Frontend eine Auswahlliste anzeigen kann."
+            summary = "Get all checklist templates",
+            description = "Returns all templates, e.g. so the frontend can display a selection list."
     )
-    @ApiResponse(responseCode = "200", description = "Liste der Vorlagen (kann leer sein)")
+    @ApiResponse(responseCode = "200", description = "List of templates (may be empty)")
     @GetMapping
     public List<ChecklistTemplateDto> getAllTemplates() {
         return checklistTemplateService.getAllTemplates();
     }
 
-    @Operation(summary = "Eine Checklisten-Vorlage anhand ihrer ID abrufen")
-    @ApiResponse(responseCode = "200", description = "Vorlage gefunden",
+    @Operation(summary = "Get a checklist template by its ID")
+    @ApiResponse(responseCode = "200", description = "Template found",
             content = @Content(schema = @Schema(implementation = ChecklistTemplateDto.class)))
-    @ApiResponse(responseCode = "404", description = "Keine Vorlage mit dieser ID vorhanden", content = @Content)
+    @ApiResponse(responseCode = "404", description = "No template with this ID exists", content = @Content)
     @GetMapping("/{id}")
-    public ChecklistTemplateDto getTemplateById(@Parameter(description = "ID der Vorlage") @PathVariable String id) {
+    public ChecklistTemplateDto getTemplateById(@Parameter(description = "ID of the template") @PathVariable String id) {
         return checklistTemplateService.getTemplateById(id);
     }
 
-    @Operation(summary = "Eine neue Checklisten-Vorlage anlegen")
-    @ApiResponse(responseCode = "201", description = "Vorlage wurde erstellt",
+    @Operation(summary = "Create a new checklist template")
+    @ApiResponse(responseCode = "201", description = "Template was created",
             content = @Content(schema = @Schema(implementation = ChecklistTemplateDto.class)))
-    @ApiResponse(responseCode = "400", description = "Request-Body ist ungültig", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Request body is invalid", content = @Content)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ChecklistTemplateDto createTemplate(@Valid @RequestBody ChecklistTemplateDto templateDto) {
         return checklistTemplateService.createTemplate(templateDto);
     }
 
-    @Operation(summary = "Eine Checklisten-Vorlage aktualisieren")
-    @ApiResponse(responseCode = "200", description = "Vorlage wurde aktualisiert",
+    @Operation(summary = "Update a checklist template")
+    @ApiResponse(responseCode = "200", description = "Template was updated",
             content = @Content(schema = @Schema(implementation = ChecklistTemplateDto.class)))
-    @ApiResponse(responseCode = "404", description = "Keine Vorlage mit dieser ID vorhanden", content = @Content)
+    @ApiResponse(responseCode = "404", description = "No template with this ID exists", content = @Content)
     @PutMapping("/{id}")
     public ChecklistTemplateDto updateTemplate(
-            @Parameter(description = "ID der zu aktualisierenden Vorlage") @PathVariable String id,
+            @Parameter(description = "ID of the template to update") @PathVariable String id,
             @Valid @RequestBody ChecklistTemplateDto templateDto) {
         return checklistTemplateService.updateTemplate(id, templateDto);
     }
 
     @Operation(
-            summary = "Eine Checklisten-Vorlage löschen",
-            description = "Bestehende Checklisten, die schon aus dieser Vorlage erzeugt wurden, bleiben " +
-                    "davon unberührt, da die Items dort eingebettet und nicht mehr mit der Vorlage verknüpft sind."
+            summary = "Delete a checklist template",
+            description = "Existing checklists that were already created from this template remain " +
+                    "unaffected, since their items are embedded and no longer linked to the template."
     )
-    @ApiResponse(responseCode = "204", description = "Vorlage wurde gelöscht", content = @Content)
-    @ApiResponse(responseCode = "404", description = "Keine Vorlage mit dieser ID vorhanden", content = @Content)
+    @ApiResponse(responseCode = "204", description = "Template was deleted", content = @Content)
+    @ApiResponse(responseCode = "404", description = "No template with this ID exists", content = @Content)
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTemplate(@Parameter(description = "ID der zu löschenden Vorlage") @PathVariable String id) {
+    public void deleteTemplate(@Parameter(description = "ID of the template to delete") @PathVariable String id) {
         checklistTemplateService.deleteTemplate(id);
     }
 }

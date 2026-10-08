@@ -20,8 +20,8 @@ class GlpiTicketMapperTest {
     void toTicket_copiesAllFields_whenGlpiTicketIsComplete() {
         Map<String, Object> glpiTicket = new HashMap<>();
         glpiTicket.put("id", "1001");
-        glpiTicket.put("name", "Server Enterprise-01 Wartung");
-        glpiTicket.put("content", "Geplantes Patching ausserhalb der Betriebszeiten.");
+        glpiTicket.put("name", "Server Enterprise-01 Maintenance");
+        glpiTicket.put("content", "Planned patching outside business hours.");
         glpiTicket.put("status", 2);
         glpiTicket.put("date", "2026-09-22 09:15:00");
 
@@ -29,8 +29,8 @@ class GlpiTicketMapperTest {
 
         assertNull(result.getId());
         assertEquals("1001", result.getGlpiTicketId());
-        assertEquals("Server Enterprise-01 Wartung", result.getTitle());
-        assertEquals("Geplantes Patching ausserhalb der Betriebszeiten.", result.getDescription());
+        assertEquals("Server Enterprise-01 Maintenance", result.getTitle());
+        assertEquals("Planned patching outside business hours.", result.getDescription());
         assertEquals(TicketStatus.IN_PROGRESS, result.getStatus());
         assertEquals(ScenarioType.SERVER_MAINTENANCE, result.getScenarioType());
         assertEquals(LocalDateTime.of(2026, 9, 22, 9,15, 0), result.getCreatedAt());
@@ -41,7 +41,7 @@ class GlpiTicketMapperTest {
     void toTicket_usesNewAsFallback_whenStatusIsUnknown() {
         Map<String, Object> glpiTicket = new HashMap<>();
         glpiTicket.put("id", "1002");
-        glpiTicket.put("name", "Unbekanntes Ticket");
+        glpiTicket.put("name", "Unknown ticket");
         glpiTicket.put("status", 99);
 
         Ticket result = GlpiTicketMapper.toTicket(glpiTicket);
@@ -54,7 +54,7 @@ class GlpiTicketMapperTest {
     void toTicket_usesNewAsFallback_whenStatusFieldIsMissing() {
         Map<String, Object> glpiTicket = new HashMap<>();
         glpiTicket.put("id", "1003");
-        glpiTicket.put("name", "Ticket ohne Status");
+        glpiTicket.put("name", "Ticket without status");
 
         Ticket result = GlpiTicketMapper.toTicket(glpiTicket);
 
@@ -66,8 +66,8 @@ class GlpiTicketMapperTest {
     void toTicket_usesCurrentDateAsFallback_whenDateIsUnreadable() {
         Map<String, Object> glpiTicket = new HashMap<>();
         glpiTicket.put("id", "1004");
-        glpiTicket.put("name", "Ticket mit kaputtem Datum");
-        glpiTicket.put("date", "kein-gueltiges-datum");
+        glpiTicket.put("name", "Ticket with broken date");
+        glpiTicket.put("date", "not-a-valid-date");
 
         LocalDateTime beforeCall = LocalDateTime.now();
 

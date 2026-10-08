@@ -33,21 +33,21 @@ class ChecklistServiceTest {
 
     @Test
     void getAllChecklists_returnsAllChecklists() {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
+        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server maintenance",
                 List.of(item), LocalDateTime.now(), null);
         when(checklistRepository.findAll()).thenReturn(List.of(checklist));
 
         List<ChecklistDto> result = checklistService.getAllChecklists();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).title()).isEqualTo("Server-Wartung");
+        assertThat(result.get(0).title()).isEqualTo("Server maintenance");
     }
 
     @Test
     void getChecklistsByTicketId_returnsFilteredList() {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
+        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server maintenance",
                 List.of(item), LocalDateTime.now(), null);
         when(checklistRepository.findByTicketId("ticket-1")).thenReturn(List.of(checklist));
 
@@ -59,28 +59,28 @@ class ChecklistServiceTest {
 
     @Test
     void getChecklistById_returnsChecklist_whenIdExists() {
-        ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+        ChecklistItem item = new ChecklistItem("item-1", "UPS checked", false);
+        Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server maintenance",
                 List.of(item), LocalDateTime.now(), null);
         when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(checklist));
 
         ChecklistDto result = checklistService.getChecklistById("checklist-1");
 
-        assertThat(result.title()).isEqualTo("Server-Wartung");
+        assertThat(result.title()).isEqualTo("Server maintenance");
     }
 
     @Test
     void getChecklistById_throwsException_whenIdDoesNotExist() {
-        when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
+        when(checklistRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> checklistService.getChecklistById("unbekannt"))
+        assertThatThrownBy(() -> checklistService.getChecklistById("unknown"))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
     void createChecklist_assignsItemIds_whenNoneExist() {
-        ChecklistItemDto itemDto = new ChecklistItemDto(null, "USV geprüft", false);
-        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
+        ChecklistItemDto itemDto = new ChecklistItemDto(null, "UPS checked", false);
+        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server maintenance",
                 List.of(itemDto), null, null);
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -92,8 +92,8 @@ class ChecklistServiceTest {
 
     @Test
     void createChecklist_setsCompletedAt_whenAllItemsDone() {
-        ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "USV geprüft", true);
-        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
+        ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "UPS checked", true);
+        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server maintenance",
                 List.of(itemDto), null, null);
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -104,14 +104,14 @@ class ChecklistServiceTest {
 
     @Test
     void updateChecklist_setsCompletedAt_whenAllItemsDone() {
-        ChecklistItem existingItem = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+        ChecklistItem existingItem = new ChecklistItem("item-1", "UPS checked", false);
+        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server maintenance",
                 List.of(existingItem), LocalDateTime.now(), null);
         when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(existingChecklist));
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ChecklistItemDto updatedItem = new ChecklistItemDto("item-1", "USV geprüft", true);
-        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
+        ChecklistItemDto updatedItem = new ChecklistItemDto("item-1", "UPS checked", true);
+        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server maintenance",
                 List.of(updatedItem), null, null);
 
         ChecklistDto result = checklistService.updateChecklist("checklist-1", checklistDto);
@@ -121,14 +121,14 @@ class ChecklistServiceTest {
 
     @Test
     void updateChecklist_resetsCompletedAt_whenItemIsReopened() {
-        ChecklistItem doneItem = new ChecklistItem("item-1", "USV geprüft", true);
-        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+        ChecklistItem doneItem = new ChecklistItem("item-1", "UPS checked", true);
+        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server maintenance",
                 List.of(doneItem), LocalDateTime.now(), LocalDateTime.now());
         when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(existingChecklist));
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ChecklistItemDto reopenedItem = new ChecklistItemDto("item-1", "USV geprüft", false);
-        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
+        ChecklistItemDto reopenedItem = new ChecklistItemDto("item-1", "UPS checked", false);
+        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server maintenance",
                 List.of(reopenedItem), null, null);
 
         ChecklistDto result = checklistService.updateChecklist("checklist-1", checklistDto);
@@ -138,12 +138,12 @@ class ChecklistServiceTest {
 
     @Test
     void updateChecklist_throwsException_whenIdDoesNotExist() {
-        when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
-        ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "USV geprüft", false);
-        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
+        when(checklistRepository.findById("unknown")).thenReturn(Optional.empty());
+        ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "UPS checked", false);
+        ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server maintenance",
                 List.of(itemDto), null, null);
 
-        assertThatThrownBy(() -> checklistService.updateChecklist("unbekannt", checklistDto))
+        assertThatThrownBy(() -> checklistService.updateChecklist("unknown", checklistDto))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -158,9 +158,9 @@ class ChecklistServiceTest {
 
     @Test
     void deleteChecklist_throwsException_whenIdDoesNotExist() {
-        when(checklistRepository.existsById("unbekannt")).thenReturn(false);
+        when(checklistRepository.existsById("unknown")).thenReturn(false);
 
-        assertThatThrownBy(() -> checklistService.deleteChecklist("unbekannt"))
+        assertThatThrownBy(() -> checklistService.deleteChecklist("unknown"))
                 .isInstanceOf(NoSuchElementException.class);
 
         verify(checklistRepository, never()).deleteById(any());

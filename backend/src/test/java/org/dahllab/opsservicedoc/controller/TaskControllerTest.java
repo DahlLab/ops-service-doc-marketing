@@ -50,8 +50,8 @@ class TaskControllerTest {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "topic": "Backup prüfen",
-                    "nextSteps": "Logs checken",
+                    "topic": "Check backup",
+                    "nextSteps": "Check logs",
                     "dueDate": "2026-10-01",
                     "status": "OPEN"
                 }
@@ -63,7 +63,7 @@ class TaskControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.topic").value("Backup prüfen"))
+                .andExpect(jsonPath("$.topic").value("Check backup"))
                 .andExpect(jsonPath("$.recordedAt").exists());
     }
 
@@ -87,30 +87,30 @@ class TaskControllerTest {
 
     @Test
     void getTaskById_returnsTask_whenIdExists() throws Exception {
-        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Check backup",
+                "Check logs", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
 
         mockMvc.perform(get("/api/tasks/" + savedTask.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.topic").value("Backup prüfen"));
+                .andExpect(jsonPath("$.topic").value("Check backup"));
     }
 
     @Test
     void getTaskById_returns404_whenIdDoesNotExist() throws Exception {
-        mockMvc.perform(get("/api/tasks/unbekannt").with(oauth2Login()))
+        mockMvc.perform(get("/api/tasks/unknown").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     void putTask_updatesTask_andSetsDoneAt() throws Exception {
-        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.IN_PROGRESS));
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Check backup",
+                "Check logs", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.IN_PROGRESS));
 
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "topic": "Backup prüfen",
-                    "nextSteps": "fertig",
+                    "topic": "Check backup",
+                    "nextSteps": "finished",
                     "dueDate": "2026-10-01",
                     "status": "DONE"
                 }
@@ -128,8 +128,8 @@ class TaskControllerTest {
 
     @Test
     void deleteTask_removesTask_andReturns204() throws Exception {
-        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Check backup",
+                "Check logs", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
 
         mockMvc.perform(delete("/api/tasks/" + savedTask.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());

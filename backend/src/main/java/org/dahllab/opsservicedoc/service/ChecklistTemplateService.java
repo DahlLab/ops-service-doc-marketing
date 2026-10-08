@@ -11,8 +11,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ChecklistTemplateService {
-    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
-    private static final String TEMPLATE_WITH_ID = "Checklisten-Vorlage mit ID ";
+    private static final String RESOURCE_NOT_FOUND = " not found";
+    private static final String TEMPLATE_WITH_ID = "Checklist template with ID ";
 
     private final ChecklistTemplateRepository checklistTemplateRepository;
 
@@ -60,7 +60,7 @@ public class ChecklistTemplateService {
 
         if (template.isBuiltIn()) {
             throw new IllegalStateException(
-                    "Die Standard-Vorlage \"" + template.getName() + "\" kann nicht gelöscht werden");
+                    "The default template \"" + template.getName() + "\" cannot be deleted");
         }
 
         checklistTemplateRepository.deleteById(id);

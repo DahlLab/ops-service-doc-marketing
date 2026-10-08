@@ -39,7 +39,7 @@ class TicketControllerTest {
     @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets is called THEN the tickets are returned as JSON")
     void getAllTickets_returnsTickets_whenLoggedIn() throws Exception {
         TicketDto ticketDto = new TicketDto(
-                "1", "Server-Wartung", "Beschreibung",
+                "1", "Server maintenance", "Description",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()
         );
         when(ticketService.getAllTickets()).thenReturn(List.of(ticketDto));
@@ -50,7 +50,7 @@ class TicketControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Server-Wartung"));
+                .andExpect(jsonPath("$[0].title").value("Server maintenance"));
     }
 
     @Test
@@ -64,7 +64,7 @@ class TicketControllerTest {
     @Test
     @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets/{id} is called THEN the ticket is returned")
     void getTicketById_returnsTicket_whenLoggedIn() throws Exception {
-        TicketDto ticketDto = new TicketDto("1", "Server-Wartung", "Beschreibung",
+        TicketDto ticketDto = new TicketDto("1", "Server maintenance", "Description",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
         when(ticketService.getTicketById("1")).thenReturn(ticketDto);
 
@@ -74,15 +74,15 @@ class TicketControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Server-Wartung"));
+                .andExpect(jsonPath("$.title").value("Server maintenance"));
     }
 
     @Test
     @DisplayName("GIVEN a logged-in user WHEN POST /api/tickets is called with valid data THEN the ticket is created")
     void createTicket_createsTicket_whenDataIsValid() throws Exception {
-        TicketDto newTicket = new TicketDto(null, "Neues Ticket", "Beschreibung",
+        TicketDto newTicket = new TicketDto(null, "New ticket", "Description",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
-        TicketDto savedTicket = new TicketDto("1", "Neues Ticket", "Beschreibung",
+        TicketDto savedTicket = new TicketDto("1", "New ticket", "Description",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
 
         when(ticketService.createTicket(org.mockito.ArgumentMatchers.any(TicketDto.class)))
@@ -104,7 +104,7 @@ class TicketControllerTest {
     @Test
     @DisplayName("GIVEN a logged-in user WHEN PUT /api/tickets/{id} is called THEN the ticket is updated")
     void updateTicket_updatesTicket_whenLoggedIn() throws Exception {
-        TicketDto updatedTicket = new TicketDto("1", "Geänderter Titel", "Beschreibung",
+        TicketDto updatedTicket = new TicketDto("1", "Changed title", "Description",
                 TicketStatus.SOLVED, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
 
         when(ticketService.updateTicket(org.mockito.ArgumentMatchers.eq("1"), org.mockito.ArgumentMatchers.any(TicketDto.class)))
@@ -120,6 +120,6 @@ class TicketControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Geänderter Titel"));
+                .andExpect(jsonPath("$.title").value("Changed title"));
     }
 }

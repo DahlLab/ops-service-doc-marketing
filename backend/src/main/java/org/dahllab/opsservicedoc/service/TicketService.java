@@ -40,7 +40,7 @@ public class TicketService {
     public TicketDto getTicketById(String id) {
         return ticketRepository.findById(id)
                 .map(TicketMapper::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Ticket mit ID " + id + " nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Ticket with ID " + id + " not found"));
     }
 
     public TicketDto createTicket(TicketDto newTicket) {
@@ -61,7 +61,7 @@ public class TicketService {
 
     public TicketDto updateTicket(String id, TicketDto updatedTicket) {
         if (!ticketRepository.existsById(id)) {
-            throw new NoSuchElementException("Ticket mit ID " + id + " nicht gefunden");
+            throw new NoSuchElementException("Ticket with ID " + id + " not found");
         }
 
         Ticket ticket = new Ticket(
@@ -104,11 +104,11 @@ public class TicketService {
 
     private List<Ticket> createMockTickets() {
         return List.of(
-                new Ticket(null, "GLPI-1001", "Server Enterprise-01 Wartung",
-                        "Geplantes Patching des vSphere-Clusters außerhalb der Betriebszeiten.",
+                new Ticket(null, "GLPI-1001", "Server Enterprise-01 Maintenance",
+                        "Planned patching of the vSphere cluster outside business hours.",
                         TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now(ZoneId.systemDefault())),
                 new Ticket(null, "GLPI-1002", "Backup-Check Enterprise-02",
-                        "Wöchentliche Kontrolle der Backup-Jobs.",
+                        "Weekly check of the backup jobs.",
                         TicketStatus.IN_PROGRESS, "N. Uhura", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now(ZoneId.systemDefault()))
         );
     }

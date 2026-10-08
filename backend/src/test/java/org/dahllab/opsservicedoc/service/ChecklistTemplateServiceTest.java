@@ -30,79 +30,79 @@ class ChecklistTemplateServiceTest {
 
     @Test
     void getAllTemplates_returnsAllTemplates() {
-        ChecklistTemplate template = new ChecklistTemplate("template-1", "Server-Wartung Standard",
-                List.of("USV geprüft"), false);
+        ChecklistTemplate template = new ChecklistTemplate("template-1", "Server Maintenance Standard",
+                List.of("UPS checked"), false);
         when(checklistTemplateRepository.findAll()).thenReturn(List.of(template));
 
         List<ChecklistTemplateDto> result = checklistTemplateService.getAllTemplates();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("Server-Wartung Standard");
+        assertThat(result.get(0).name()).isEqualTo("Server Maintenance Standard");
     }
 
     @Test
     void getTemplateById_returnsTemplate_whenIdExists() {
-        ChecklistTemplate template = new ChecklistTemplate("template-1", "Server-Wartung Standard",
-                List.of("USV geprüft"), false);
+        ChecklistTemplate template = new ChecklistTemplate("template-1", "Server Maintenance Standard",
+                List.of("UPS checked"), false);
         when(checklistTemplateRepository.findById("template-1")).thenReturn(Optional.of(template));
 
         ChecklistTemplateDto result = checklistTemplateService.getTemplateById("template-1");
 
-        assertThat(result.name()).isEqualTo("Server-Wartung Standard");
+        assertThat(result.name()).isEqualTo("Server Maintenance Standard");
     }
 
     @Test
     void getTemplateById_throwsException_whenIdDoesNotExist() {
-        when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
+        when(checklistTemplateRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> checklistTemplateService.getTemplateById("unbekannt"))
+        assertThatThrownBy(() -> checklistTemplateService.getTemplateById("unknown"))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
     void createTemplate_createsNewTemplate() {
-        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server-Wartung Standard",
-                List.of("USV geprüft"), false);
+        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server Maintenance Standard",
+                List.of("UPS checked"), false);
         when(checklistTemplateRepository.save(any(ChecklistTemplate.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         ChecklistTemplateDto result = checklistTemplateService.createTemplate(templateDto);
 
-        assertThat(result.name()).isEqualTo("Server-Wartung Standard");
-        assertThat(result.itemDescriptions()).containsExactly("USV geprüft");
+        assertThat(result.name()).isEqualTo("Server Maintenance Standard");
+        assertThat(result.itemDescriptions()).containsExactly("UPS checked");
     }
 
     @Test
     void updateTemplate_updatesExistingTemplate() {
-        ChecklistTemplate existingTemplate = new ChecklistTemplate("template-1", "Server-Wartung Standard",
-                List.of("USV geprüft"), false);
+        ChecklistTemplate existingTemplate = new ChecklistTemplate("template-1", "Server Maintenance Standard",
+                List.of("UPS checked"), false);
         when(checklistTemplateRepository.findById("template-1")).thenReturn(Optional.of(existingTemplate));
         when(checklistTemplateRepository.save(any(ChecklistTemplate.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server-Wartung Erweitert",
-                List.of("USV geprüft", "Backup getestet"), false);
+        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server Maintenance Extended",
+                List.of("UPS checked", "Backup tested"), false);
 
         ChecklistTemplateDto result = checklistTemplateService.updateTemplate("template-1", templateDto);
 
-        assertThat(result.name()).isEqualTo("Server-Wartung Erweitert");
+        assertThat(result.name()).isEqualTo("Server Maintenance Extended");
         assertThat(result.itemDescriptions()).hasSize(2);
     }
 
     @Test
     void updateTemplate_throwsException_whenIdDoesNotExist() {
-        when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
-        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server-Wartung Standard",
-                List.of("USV geprüft"), false);
+        when(checklistTemplateRepository.findById("unknown")).thenReturn(Optional.empty());
+        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server Maintenance Standard",
+                List.of("UPS checked"), false);
 
-        assertThatThrownBy(() -> checklistTemplateService.updateTemplate("unbekannt", templateDto))
+        assertThatThrownBy(() -> checklistTemplateService.updateTemplate("unknown", templateDto))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
     void deleteTemplate_deletesTemplate_whenIdExists() {
-        ChecklistTemplate template = new ChecklistTemplate("template-1", "Eigene Vorlage",
-                List.of("USV geprüft"), false);
+        ChecklistTemplate template = new ChecklistTemplate("template-1", "Custom template",
+                List.of("UPS checked"), false);
         when(checklistTemplateRepository.findById("template-1")).thenReturn(Optional.of(template));
 
         checklistTemplateService.deleteTemplate("template-1");
@@ -112,9 +112,9 @@ class ChecklistTemplateServiceTest {
 
     @Test
     void deleteTemplate_throwsException_whenIdDoesNotExist() {
-        when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
+        when(checklistTemplateRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> checklistTemplateService.deleteTemplate("unbekannt"))
+        assertThatThrownBy(() -> checklistTemplateService.deleteTemplate("unknown"))
                 .isInstanceOf(NoSuchElementException.class);
 
         verify(checklistTemplateRepository, never()).deleteById(any());
@@ -123,7 +123,7 @@ class ChecklistTemplateServiceTest {
     @Test
     void deleteTemplate_throwsException_forBuiltInTemplate() {
         ChecklistTemplate builtInTemplate = new ChecklistTemplate("template-1", "Server",
-                List.of("USV geprüft"), true);
+                List.of("UPS checked"), true);
         when(checklistTemplateRepository.findById("template-1")).thenReturn(Optional.of(builtInTemplate));
 
         assertThatThrownBy(() -> checklistTemplateService.deleteTemplate("template-1"))
@@ -135,8 +135,8 @@ class ChecklistTemplateServiceTest {
 
     @Test
     void createTemplate_ignoresBuiltInFlagFromClient() {
-        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Eigene Vorlage",
-                List.of("USV geprüft"), true);
+        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Custom template",
+                List.of("UPS checked"), true);
         when(checklistTemplateRepository.save(any(ChecklistTemplate.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -148,12 +148,12 @@ class ChecklistTemplateServiceTest {
     @Test
     void updateTemplate_keepsBuiltInStatusOfExistingTemplate() {
         ChecklistTemplate builtInTemplate = new ChecklistTemplate("template-1", "Server",
-                List.of("USV geprüft"), true);
+                List.of("UPS checked"), true);
         when(checklistTemplateRepository.findById("template-1")).thenReturn(Optional.of(builtInTemplate));
         when(checklistTemplateRepository.save(any(ChecklistTemplate.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server angepasst",
-                List.of("USV geprüft"), false);
+        ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server customized",
+                List.of("UPS checked"), false);
 
         ChecklistTemplateDto result = checklistTemplateService.updateTemplate("template-1", templateDto);
 

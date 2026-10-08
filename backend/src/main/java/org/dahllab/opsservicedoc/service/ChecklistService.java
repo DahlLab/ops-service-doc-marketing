@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 public class ChecklistService {
-    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
+    private static final String RESOURCE_NOT_FOUND = " not found";
 
     private final ChecklistRepository checklistRepository;
     private final ChecklistTemplateRepository checklistTemplateRepository;
@@ -43,7 +43,7 @@ public class ChecklistService {
 
     public ChecklistDto getChecklistById(String id) {
         Checklist result = checklistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("Checklist with ID " + id + RESOURCE_NOT_FOUND));
         return ChecklistMapper.toDto(result);
     }
 
@@ -67,7 +67,7 @@ public class ChecklistService {
 
     public ChecklistDto createChecklistFromTemplate(String ticketId, String templateId) {
         ChecklistTemplate template = checklistTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Checklisten-Vorlage mit ID " + templateId + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("Checklist template with ID " + templateId + RESOURCE_NOT_FOUND));
 
         List<ChecklistItem> items = template.getItemDescriptions().stream()
                 .map(description -> new ChecklistItem(UUID.randomUUID().toString(), description, false))
@@ -88,7 +88,7 @@ public class ChecklistService {
 
     public ChecklistDto updateChecklist(String id, ChecklistDto checklistDto) {
         Checklist existingChecklist = checklistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("Checklist with ID " + id + RESOURCE_NOT_FOUND));
 
         List<ChecklistItem> items = createItemsWithId(checklistDto.items());
 
@@ -109,7 +109,7 @@ public class ChecklistService {
 
     public void deleteChecklist(String id) {
         if (!checklistRepository.existsById(id)) {
-            throw new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND);
+            throw new NoSuchElementException("Checklist with ID " + id + RESOURCE_NOT_FOUND);
         }
         checklistRepository.deleteById(id);
     }

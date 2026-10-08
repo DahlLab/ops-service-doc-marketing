@@ -7,10 +7,10 @@ import java.util.List;
 
 public record ChecklistTemplateDto(
         String id,
-        @NotBlank(message = "Name darf nicht leer sein")
+        @NotBlank(message = "Name must not be empty")
         String name,
-        @NotEmpty(message = "Eine Vorlage braucht mindestens einen Punkt")
-        List<@NotBlank(message = "Ein Punkt darf nicht leer sein") String> itemDescriptions,
+        @NotEmpty(message = "A template needs at least one item")
+        List<@NotBlank(message = "An item must not be empty") String> itemDescriptions,
 
         Boolean builtIn
 ) {

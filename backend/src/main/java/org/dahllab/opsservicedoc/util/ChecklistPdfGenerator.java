@@ -60,7 +60,7 @@ public class ChecklistPdfGenerator {
 
             pdfDocument.close();
         } catch (DocumentException exception) {
-            throw new IllegalStateException("Checklisten-PDF konnte nicht erzeugt werden", exception);
+            throw new IllegalStateException("Checklist PDF could not be generated", exception);
         }
 
         return output.toByteArray();
@@ -75,10 +75,10 @@ public class ChecklistPdfGenerator {
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setPadding(14);
 
-        cell.addElement(new Paragraph("Checkliste – Technikerexemplar", titleFont));
-        String reference = ipdDocument.title() != null ? ipdDocument.title() : "IPD-Dokument";
-        String customer = ipdDocument.customer() != null && !ipdDocument.customer().isBlank() ? " · Kunde: " + ipdDocument.customer() : "";
-        Paragraph subtitle = new Paragraph(reference + customer + " · intern, nicht für den Kunden", subtitleFont);
+        cell.addElement(new Paragraph("Checklist – Technician Copy", titleFont));
+        String reference = ipdDocument.title() != null ? ipdDocument.title() : "IPD document";
+        String customer = ipdDocument.customer() != null && !ipdDocument.customer().isBlank() ? " · Customer: " + ipdDocument.customer() : "";
+        Paragraph subtitle = new Paragraph(reference + customer + " · internal, not for the customer", subtitleFont);
         subtitle.setSpacingBefore(4);
         cell.addElement(subtitle);
 
@@ -145,7 +145,7 @@ public class ChecklistPdfGenerator {
                 field.setChecked(checked);
                 writer.addAnnotation(field.getCheckField());
             } catch (IOException | DocumentException exception) {
-                throw new IllegalStateException("Checkbox konnte nicht erzeugt werden", exception);
+                throw new IllegalStateException("Checkbox could not be generated", exception);
             }
         }
     }
@@ -154,7 +154,7 @@ public class ChecklistPdfGenerator {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             Font footerFont = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL, Color.GRAY);
-            Phrase footer = new Phrase("OpsServiceDoc – Checkliste (intern) – Seite " + writer.getPageNumber(), footerFont);
+            Phrase footer = new Phrase("OpsServiceDoc – Checklist (internal) – Page " + writer.getPageNumber(), footerFont);
             float centerX = (document.left() + document.right()) / 2;
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_CENTER, footer, centerX,
                     document.bottom() - 20, 0);

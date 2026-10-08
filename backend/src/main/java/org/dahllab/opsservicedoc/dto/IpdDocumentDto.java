@@ -10,7 +10,7 @@ public record IpdDocumentDto(
         String id,
         String ticketId,
         IpdDocumentStatus status,
-        @NotBlank(message = "Titel darf nicht leer sein")
+        @NotBlank(message = "Title must not be empty")
         String title,
         String technician,
         ScenarioType scenarioType,

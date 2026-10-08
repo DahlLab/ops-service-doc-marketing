@@ -42,8 +42,8 @@ class ChecklistTemplateControllerTest {
     void postTemplate_createsNewTemplate_andReturns201() throws Exception {
         String requestBody = """
                 {
-                    "name": "Server-Wartung Standard",
-                    "itemDescriptions": ["USV geprüft", "Backup getestet"]
+                    "name": "Server Maintenance Standard",
+                    "itemDescriptions": ["UPS checked", "Backup tested"]
                 }
                 """;
 
@@ -53,7 +53,7 @@ class ChecklistTemplateControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Server-Wartung Standard"))
+                .andExpect(jsonPath("$.name").value("Server Maintenance Standard"))
                 .andExpect(jsonPath("$.itemDescriptions.length()").value(2));
     }
 
@@ -62,7 +62,7 @@ class ChecklistTemplateControllerTest {
         String requestBody = """
                 {
                     "name": "",
-                    "itemDescriptions": ["USV geprüft"]
+                    "itemDescriptions": ["UPS checked"]
                 }
                 """;
 
@@ -77,28 +77,28 @@ class ChecklistTemplateControllerTest {
     @Test
     void getTemplateById_returnsTemplate_whenIdExists() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
-                new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
+                new ChecklistTemplate(null, "Server Maintenance Standard", List.of("UPS checked"), false));
 
         mockMvc.perform(get("/api/checklist-templates/" + savedTemplate.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Server-Wartung Standard"));
+                .andExpect(jsonPath("$.name").value("Server Maintenance Standard"));
     }
 
     @Test
     void getTemplateById_returns404_whenIdDoesNotExist() throws Exception {
-        mockMvc.perform(get("/api/checklist-templates/unbekannt").with(oauth2Login()))
+        mockMvc.perform(get("/api/checklist-templates/unknown").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     void putTemplate_updatesTemplate() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
-                new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
+                new ChecklistTemplate(null, "Server Maintenance Standard", List.of("UPS checked"), false));
 
         String requestBody = """
                 {
-                    "name": "Server-Wartung Erweitert",
-                    "itemDescriptions": ["USV geprüft", "Backup getestet"]
+                    "name": "Server Maintenance Extended",
+                    "itemDescriptions": ["UPS checked", "Backup tested"]
                 }
                 """;
 
@@ -108,13 +108,13 @@ class ChecklistTemplateControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Server-Wartung Erweitert"));
+                .andExpect(jsonPath("$.name").value("Server Maintenance Extended"));
     }
 
     @Test
     void deleteTemplate_removesTemplate_andReturns204() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
-                new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
+                new ChecklistTemplate(null, "Server Maintenance Standard", List.of("UPS checked"), false));
 
         mockMvc.perform(delete("/api/checklist-templates/" + savedTemplate.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -123,7 +123,7 @@ class ChecklistTemplateControllerTest {
     @Test
     void deleteTemplate_returns409_forBuiltInTemplate() throws Exception {
         ChecklistTemplate builtInTemplate = checklistTemplateRepository.save(
-                new ChecklistTemplate(null, "Server", List.of("[Vorbereitung] Backup prüfen"), true));
+                new ChecklistTemplate(null, "Server", List.of("[Preparation] Check backup"), true));
 
         mockMvc.perform(delete("/api/checklist-templates/" + builtInTemplate.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isConflict());
