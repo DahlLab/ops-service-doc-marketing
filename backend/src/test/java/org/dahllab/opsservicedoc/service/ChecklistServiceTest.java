@@ -23,20 +23,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// Unit-Tests für ChecklistService mit gemocktem Repository, im selben
-// Stil wie TaskServiceTest: ich teste hier nur die Service-Logik
-// isoliert, ohne echte MongoDB-Anbindung.
 @ExtendWith(MockitoExtension.class)
 class ChecklistServiceTest {
-
     @Mock
     private ChecklistRepository checklistRepository;
 
     @InjectMocks
     private ChecklistService checklistService;
 
-    // Prüft, dass getAllChecklists() alle gefundenen Checklisten als
-    // DTOs zurückgibt.
     @Test
     void getAllChecklists_returnsAllChecklists() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
@@ -50,8 +44,6 @@ class ChecklistServiceTest {
         assertThat(result.get(0).title()).isEqualTo("Server-Wartung");
     }
 
-    // Prüft, dass getChecklistsByTicketId() die passende
-    // Repository-Methode nutzt und deren Ergebnis mappt.
     @Test
     void getChecklistsByTicketId_returnsFilteredList() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
@@ -65,7 +57,6 @@ class ChecklistServiceTest {
         assertThat(result.get(0).ticketId()).isEqualTo("ticket-1");
     }
 
-    // Prüft den Erfolgsfall von getChecklistById().
     @Test
     void getChecklistById_returnsChecklist_whenIdExists() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
@@ -78,8 +69,6 @@ class ChecklistServiceTest {
         assertThat(result.title()).isEqualTo("Server-Wartung");
     }
 
-    // Prüft, dass eine unbekannte ID bei getChecklistById() zu einer
-    // NoSuchElementException führt.
     @Test
     void getChecklistById_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -88,9 +77,6 @@ class ChecklistServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft, dass createChecklist() jedem Item ohne ID eine neue UUID
-    // vergibt (das Frontend schickt beim Anlegen typischerweise noch
-    // keine Item-IDs mit) und erstelltAm setzt.
     @Test
     void createChecklist_assignsItemIds_whenNoneExist() {
         ChecklistItemDto itemDto = new ChecklistItemDto(null, "USV geprüft", false);
@@ -104,8 +90,6 @@ class ChecklistServiceTest {
         assertThat(result.createdAt()).isNotNull();
     }
 
-    // Prüft, dass abgeschlossenAm automatisch gesetzt wird, wenn schon
-    // beim Anlegen alle Items erledigt sind.
     @Test
     void createChecklist_setsCompletedAt_whenAllItemsDone() {
         ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "USV geprüft", true);
@@ -118,8 +102,6 @@ class ChecklistServiceTest {
         assertThat(result.completedAt()).isNotNull();
     }
 
-    // Prüft, dass updateChecklist() abgeschlossenAm setzt, sobald durch
-    // das Update alle Items erledigt sind.
     @Test
     void updateChecklist_setsCompletedAt_whenAllItemsDone() {
         ChecklistItem existingItem = new ChecklistItem("item-1", "USV geprüft", false);
@@ -137,9 +119,6 @@ class ChecklistServiceTest {
         assertThat(result.completedAt()).isNotNull();
     }
 
-    // Prüft die Rücksetz-Logik: wird ein bereits abgeschlossenes Item
-    // wieder auf "nicht erledigt" gesetzt, muss abgeschlossenAm wieder
-    // null werden (analog zu Task).
     @Test
     void updateChecklist_resetsCompletedAt_whenItemIsReopened() {
         ChecklistItem doneItem = new ChecklistItem("item-1", "USV geprüft", true);
@@ -157,8 +136,6 @@ class ChecklistServiceTest {
         assertThat(result.completedAt()).isNull();
     }
 
-    // Prüft, dass ein Update auf eine unbekannte ID eine
-    // NoSuchElementException wirft.
     @Test
     void updateChecklist_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -170,7 +147,6 @@ class ChecklistServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft den Erfolgsfall von deleteChecklist().
     @Test
     void deleteChecklist_deletesChecklist_whenIdExists() {
         when(checklistRepository.existsById("checklist-1")).thenReturn(true);
@@ -180,9 +156,6 @@ class ChecklistServiceTest {
         verify(checklistRepository).deleteById("checklist-1");
     }
 
-    // Prüft, dass ein Löschversuch auf eine unbekannte ID eine
-    // NoSuchElementException wirft, statt dass die Repository-Methode
-    // still nichts tut.
     @Test
     void deleteChecklist_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.existsById("unbekannt")).thenReturn(false);

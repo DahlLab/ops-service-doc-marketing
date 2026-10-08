@@ -17,23 +17,15 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// @SpringBootTest + @AutoConfigureMockMvc: startet den kompletten
-// Anwendungskontext und stellt MockMvc bereit, damit ich echte
-// HTTP-Anfragen gegen den Controller simulieren kann, inklusive
-// Security (oauth2Login()) und echter MongoDB-Anbindung - gleiches
-// Muster wie ChecklistControllerTest.
 @SpringBootTest
 @AutoConfigureMockMvc
 class ChecklistTemplateControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ChecklistTemplateRepository checklistTemplateRepository;
 
-    // Ich leere die ChecklistTemplate-Collection vor jedem Test, damit
-    // die Tests unabhängig voneinander laufen.
     @BeforeEach
     void setUp() {
         checklistTemplateRepository.deleteAll();
@@ -46,8 +38,6 @@ class ChecklistTemplateControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
-    // Prüft das Anlegen einer Vorlage über POST: erwarte 201 sowie die
-    // mitgeschickten Werte in der Antwort.
     @Test
     void postTemplate_createsNewTemplate_andReturns201() throws Exception {
         String requestBody = """
@@ -67,8 +57,6 @@ class ChecklistTemplateControllerTest {
                 .andExpect(jsonPath("$.itemDescriptions.length()").value(2));
     }
 
-    // Prüft die Validierung: ein leerer Name muss mit 400 abgelehnt
-    // werden.
     @Test
     void postTemplate_returns400_whenNameIsEmpty() throws Exception {
         String requestBody = """
@@ -86,9 +74,6 @@ class ChecklistTemplateControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // Prüft den Erfolgsfall von GET /api/checklist-templates/{id}: ich
-    // lege die Vorlage vorher direkt über das Repository an, um den
-    // Controller unabhängig vom POST-Endpunkt zu testen.
     @Test
     void getTemplateById_returnsTemplate_whenIdExists() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
@@ -99,16 +84,12 @@ class ChecklistTemplateControllerTest {
                 .andExpect(jsonPath("$.name").value("Server-Wartung Standard"));
     }
 
-    // Prüft den Fehlerfall: eine unbekannte ID muss zu einem
-    // 4xx-Fehler führen.
     @Test
     void getTemplateById_returns404_whenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/checklist-templates/unbekannt").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
-    // Prüft PUT /api/checklist-templates/{id}: die Vorlage muss mit
-    // den neuen Werten aktualisiert werden.
     @Test
     void putTemplate_updatesTemplate() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
@@ -130,8 +111,6 @@ class ChecklistTemplateControllerTest {
                 .andExpect(jsonPath("$.name").value("Server-Wartung Erweitert"));
     }
 
-    // Prüft DELETE /api/checklist-templates/{id}: erfolgreiches
-    // Löschen muss 204 No Content liefern.
     @Test
     void deleteTemplate_removesTemplate_andReturns204() throws Exception {
         ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
@@ -141,11 +120,6 @@ class ChecklistTemplateControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    // Prüft den Löschschutz: eine Standard-Vorlage (standard=true, wie sie
-    // der ChecklistTemplateSeeder anlegt) darf nicht gelöscht werden - der
-    // GlobalExceptionHandler muss die IllegalStateException aus dem Service
-    // als 409 Conflict ausliefern, und die Vorlage muss danach noch
-    // existieren.
     @Test
     void deleteTemplate_returns409_forBuiltInTemplate() throws Exception {
         ChecklistTemplate builtInTemplate = checklistTemplateRepository.save(
@@ -157,9 +131,6 @@ class ChecklistTemplateControllerTest {
         assertThat(checklistTemplateRepository.existsById(builtInTemplate.getId())).isTrue();
     }
 
-    // Prüft, dass der Endpunkt ohne Login geschützt ist - die SecurityConfig
-    // sichert alle Pfade unter /api/ ab. Ohne diesen Test würde es nicht
-    // auffallen, wenn ein neuer Controller versehentlich offen bliebe.
     @Test
     void getAllTemplates_returns401_whenNotLoggedIn() throws Exception {
         mockMvc.perform(get("/api/checklist-templates"))

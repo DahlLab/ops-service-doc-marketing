@@ -1,16 +1,16 @@
 services:
   mongodb:
-    image: mongo:7                    # offizielles MongoDB-Image, Version 7
+    image: mongo:7
     container_name: ops-service-doc-mongo
-    restart: unless-stopped           # startet automatisch neu, außer du stoppst ihn bewusst
+    restart: unless-stopped
     ports:
-      - "27017:27017"                 # Standard-MongoDB-Port, lokal erreichbar
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin   # NUR für lokale Entwicklung! Niemals echte Passwörter hier
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: ops_service_doc
     volumes:
-      - mongo_data:/data/db           # Daten bleiben erhalten, auch wenn der Container neu gestartet wird
+      - mongo_data:/data/db
 
   glpi:
     image: "glpi/glpi:latest"

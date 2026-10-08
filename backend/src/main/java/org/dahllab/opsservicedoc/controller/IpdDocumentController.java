@@ -17,26 +17,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// REST-Schnittstelle für IPD-Dokumente. Pfadpräfix "/api/ipd" (nicht
-// "/api/ipd-documents"), weil ich diesen Pfad schon vorab in der
-// SecurityConfig als geschützten Bereich eingetragen hatte.
-//
-// @Tag: fasst alle Endpoints dieses Controllers in der Swagger-UI unter
-// einer gemeinsamen Überschrift zusammen, statt sie nur nach
-// Klassennamen zu sortieren.
 @Tag(name = "IPD-Dokumente", description = "Erstellen, Pflegen und Exportieren von IPD-Dokumenten (Infrastructure Planning & Design)")
 @RestController
 @RequestMapping("/api/ipd")
 public class IpdDocumentController {
-
     private final IpdDocumentService ipdDocumentService;
 
     public IpdDocumentController(IpdDocumentService ipdDocumentService) {
         this.ipdDocumentService = ipdDocumentService;
     }
 
-    // GET /api/ipd - liefert alle IPD-Dokumente, optional gefiltert
-    // nach ticketId (gleiches Muster wie bei Task/Checklist).
     @Operation(
             summary = "Alle IPD-Dokumente abrufen",
             description = "Liefert alle IPD-Dokumente. Wird der optionale Parameter ticketId mitgegeben, " +
@@ -53,7 +43,6 @@ public class IpdDocumentController {
         return ipdDocumentService.getAllIpdDocuments();
     }
 
-    // GET /api/ipd/{id} - liefert genau ein IPD-Dokument.
     @Operation(summary = "Ein IPD-Dokument anhand seiner ID abrufen")
     @ApiResponse(responseCode = "200", description = "IPD-Dokument gefunden",
             content = @Content(schema = @Schema(implementation = IpdDocumentDto.class)))
@@ -64,10 +53,6 @@ public class IpdDocumentController {
         return ipdDocumentService.getIpdDocumentById(id);
     }
 
-    // POST /api/ipd/from-ticket/{ticketId} - erzeugt einen neuen
-    // IPD-Entwurf automatisch aus einem bestehenden Ticket. Alle
-    // restlichen Abschnitte muss ich danach per PUT noch von Hand
-    // ergänzen.
     @Operation(
             summary = "Neuen IPD-Entwurf aus einem Ticket erzeugen",
             description = "Legt automatisch einen neuen IPD-Entwurf (Status DRAFT) an und übernimmt " +
@@ -86,10 +71,6 @@ public class IpdDocumentController {
         return ipdDocumentService.createIpdDocumentFromTicket(ticketId);
     }
 
-    // PUT /api/ipd/{id} - aktualisiert die manuell gepflegten
-    // Abschnitte eines bestehenden IPD-Dokuments, z.B. um es von
-    // ENTWURF auf ABGESCHLOSSEN zu setzen, bevor es an den Kunden
-    // rausgeht.
     @Operation(
             summary = "Ein IPD-Dokument aktualisieren",
             description = "Aktualisiert die manuell gepflegten Abschnitte eines bestehenden IPD-Dokuments " +
@@ -108,7 +89,6 @@ public class IpdDocumentController {
         return ipdDocumentService.updateIpdDocument(id, ipdDocumentDto);
     }
 
-    // DELETE /api/ipd/{id} - löscht ein IPD-Dokument.
     @Operation(summary = "Ein IPD-Dokument löschen")
     @ApiResponse(responseCode = "204", description = "IPD-Dokument wurde gelöscht", content = @Content)
     @ApiResponse(responseCode = "404", description = "Kein IPD-Dokument mit dieser ID vorhanden", content = @Content)
@@ -119,10 +99,6 @@ public class IpdDocumentController {
         ipdDocumentService.deleteIpdDocument(id);
     }
 
-    // GET /api/ipd/{id}/pdf - erzeugt das fertige PDF und liefert es
-    // als Datei-Download. Content-Disposition "attachment" sorgt
-    // dafür, dass der Browser die Datei speichert, statt sie im Tab zu
-    // öffnen.
     @Operation(
             summary = "IPD-Dokument als PDF exportieren",
             description = "Erzeugt aus dem gespeicherten IPD-Dokument ein fertig formatiertes PDF " +
@@ -144,8 +120,6 @@ public class IpdDocumentController {
                 .body(pdf);
     }
 
-    // GET /api/ipd/{id}/checklist-pdf - interne Checkliste für den
-    // Techniker als separater Download (Kunden-PDF bleibt unverändert).
     @Operation(
             summary = "Checkliste als PDF herunterladen",
             description = "Erzeugt aus den Checklisten zum Ticket des IPD-Dokuments ein internes PDF mit " +

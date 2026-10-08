@@ -14,12 +14,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class ConfigControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
-    // In der Test-Konfiguration ist glpi.api-url=http://localhost/api.php/v1
-    // gesetzt, daraus wird die Web-Adresse http://localhost abgeleitet.
     @Test
     void getGlpiUrl_returnsDerivedWebUrl() throws Exception {
         mockMvc.perform(get("/api/config/glpi-url").with(oauth2Login()))

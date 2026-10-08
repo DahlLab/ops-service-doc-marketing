@@ -1,5 +1,3 @@
-/* index.css - nur noch ein minimaler Reset.
-   Farben und Schriften stehen in theme.css, Komponenten-Stile in App.css. */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; }
 #root { min-height: 100svh; }

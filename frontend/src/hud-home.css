@@ -1,18 +1,14 @@
-/* hud-home.css - Stile für die Startseite (Willkommen + Dashboard) und ProgressRing */
-
-/* ---------- Willkommen (nicht eingeloggt) ---------- */
 .welcome { max-width: 560px; margin: 6vh auto 0; }
 .welcome__content { display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; padding: 10px 0 18px; }
 .welcome__content p { color: var(--hud-text-muted); max-width: 42ch; }
 .welcome__login { display: inline-flex; align-items: center; border-radius: 0; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.85rem; }
 
-/* ---------- Dashboard ---------- */
 .dash__title { font-size: 1.3rem; margin: 0; }
 .dash__subtitle { color: var(--hud-text-muted); margin: 4px 0 20px; font-size: 0.85rem; letter-spacing: 0.08em; }
 .dash__grid { display: grid; gap: var(--hud-gap); grid-template-columns: 1fr; }
 @media (min-width: 768px) { .dash__grid { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 1200px) { .dash__grid { grid-template-columns: repeat(3, 1fr); } }
-/* Das breite Panel (Schnellaktionen) zieht sich über alle Spalten */
+
 .dash__wide { grid-column: 1 / -1; }
 
 .dash__ticketcount { display: flex; align-items: center; gap: 22px; }
@@ -43,7 +39,6 @@
 .dash__action svg { color: var(--hud-cyan); }
 .dash__action:hover { border-color: var(--hud-cyan); background: var(--hud-cyan-dim); color: var(--hud-text-strong); }
 
-/* ---------- ProgressRing ---------- */
 .progress-ring { --ring-color: var(--hud-cyan); position: relative; width: 110px; text-align: center; }
 .progress-ring[data-tone='gold'] { --ring-color: var(--hud-gold); }
 .progress-ring[data-tone='red'] { --ring-color: var(--hud-red); }
@@ -52,15 +47,11 @@
 .progress-ring__fg { fill: none; stroke: var(--ring-color); stroke-width: 5; stroke-linecap: butt; }
 .progress-ring__center { position: absolute; inset: 0 0 auto 0; height: 92px; display: grid; place-items: center; }
 .progress-ring__value { font-size: 1.05rem; color: var(--hud-text-strong); }
-/* Die Beschriftung darf umbrechen statt mit "..." abgeschnitten zu werden */
+
 .progress-ring__label { display: block; margin-top: 6px; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hud-text-muted); white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 
-/* Das IPD-Panel nimmt auf großen Bildschirmen zwei Spalten ein, damit keine Lücke bleibt */
 @media (min-width: 1200px) { .dash__twocolumn { grid-column: span 2; } }
 
-/* ---- Alles ohne Scrollen sichtbar (grosse Bildschirme) ----
-   Ab 1200px steht Schnellaktionen in der dritten Spalte neben dem IPD-Panel,
-   die Aktionen werden dort untereinander gestapelt. So passt alles auf einen Blick. */
 @media (min-width: 1200px) {
   .dash__wide { grid-column: auto; }
   .dash__wide .dash__actions { grid-template-columns: 1fr; gap: 8px; }

@@ -19,15 +19,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/checklists")
 public class ChecklistController {
-
     private final ChecklistService checklistService;
 
     public ChecklistController(ChecklistService checklistService) {
         this.checklistService = checklistService;
     }
 
-    // GET /api/checklists - liefert alle Checklisten, optional gefiltert
-    // nach ticketId (gleiches Muster wie bei TaskController).
     @Operation(
             summary = "Alle Checklisten abrufen",
             description = "Liefert alle Checklisten. Wird der optionale Parameter ticketId mitgegeben, " +
@@ -44,8 +41,6 @@ public class ChecklistController {
         return checklistService.getAllChecklists();
     }
 
-    // GET /api/checklists/{id} - liefert genau eine Checkliste anhand
-    // ihrer ID.
     @Operation(summary = "Eine Checkliste anhand ihrer ID abrufen")
     @ApiResponse(responseCode = "200", description = "Checkliste gefunden",
             content = @Content(schema = @Schema(implementation = ChecklistDto.class)))
@@ -55,7 +50,6 @@ public class ChecklistController {
         return checklistService.getChecklistById(id);
     }
 
-    // POST /api/checklists - legt eine neue Checkliste an.
     @Operation(summary = "Eine neue Checkliste manuell anlegen")
     @ApiResponse(responseCode = "201", description = "Checkliste wurde erstellt",
             content = @Content(schema = @Schema(implementation = ChecklistDto.class)))
@@ -66,9 +60,6 @@ public class ChecklistController {
         return checklistService.createChecklist(checklistDto);
     }
 
-    // POST /api/checklists/from-template - legt eine neue Checkliste
-    // anhand einer vorhandenen ChecklistTemplate an, statt die Items
-    // manuell im Request mitzuschicken.
     @Operation(
             summary = "Eine Checkliste aus einer Vorlage erzeugen",
             description = "Übernimmt die Items einer bestehenden ChecklistTemplate in eine neue Checkliste " +
@@ -83,8 +74,6 @@ public class ChecklistController {
         return checklistService.createChecklistFromTemplate(request.ticketId(), request.templateId());
     }
 
-    // PUT /api/checklists/{id} - aktualisiert Titel und Items, z.B. um
-    // einzelne Punkte abzuhaken.
     @Operation(summary = "Eine Checkliste aktualisieren", description = "Aktualisiert Titel und Items, z.B. um einzelne Punkte abzuhaken.")
     @ApiResponse(responseCode = "200", description = "Checkliste wurde aktualisiert",
             content = @Content(schema = @Schema(implementation = ChecklistDto.class)))
@@ -96,7 +85,6 @@ public class ChecklistController {
         return checklistService.updateChecklist(id, checklistDto);
     }
 
-    // DELETE /api/checklists/{id} - löscht eine Checkliste.
     @Operation(summary = "Eine Checkliste löschen")
     @ApiResponse(responseCode = "204", description = "Checkliste wurde gelöscht", content = @Content)
     @ApiResponse(responseCode = "404", description = "Keine Checkliste mit dieser ID vorhanden", content = @Content)

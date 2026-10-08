@@ -9,42 +9,11 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// Dieser CommandLineRunner läuft einmal automatisch beim Start der
-// Anwendung (Spring Boot ruft run() auf, nachdem der ApplicationContext
-// fertig aufgebaut ist) und legt meine zehn Standard-Checklisten-Vorlagen
-// in MongoDB an, falls dort noch keine Vorlagen existieren. So muss ich
-// die Vorlagen (Server, Netzwerk, Security, usw.) nicht jedes Mal von
-// Hand im Frontend eintippen, sondern sie stehen im "Aus Vorlage"-
-// Dropdown auf der Checklisten-Seite sofort zur Auswahl bereit.
-//
-// Die Inhalte stammen aus meiner eigenen Excel-Datei (OpsDoc_Checklisten.xlsx)
-// mit den zehn Arbeitsblättern Server, Hardware, Netzwerk, Security,
-// Client, Software_Deployment, VMware, Proxmox, Hyper-V und
-// Backup_Restore - das ist die aktuell gepflegte Version (vier Blätter
-// davon sind dort als "Überarbeitet" markiert, der Rest als "Original").
-//
-// Wichtiger Hinweis zum Datenmodell: ChecklistTemplate speichert pro
-// Punkt nur einen einzigen String (itemBeschreibungen: List<String>) -
-// es gibt kein separates Feld für "Phase" (z.B. "Vorbereitung",
-// "Installation", "Security") oder für "Pflicht/Optional" aus meiner
-// Excel-Tabelle. Damit diese Information trotzdem nicht verloren geht,
-// codiere ich sie direkt mit in den Text hinein:
-//   - Die Phase steht in eckigen Klammern vorangestellt, z.B.
-//     "[Konfiguration] Domänenbeitritt ... durchführen"
-//   - Ist ein Punkt in der Excel-Tabelle als "Optional" markiert (statt
-//     "Ja" = Pflicht), hänge ich " (optional)" ans Ende an.
-// Das baue ich unten mit der kleinen Hilfsmethode punkt(...) zusammen,
-// damit ich beim eigentlichen Anlegen der Vorlagen nur noch Phase, Text
-// und ggf. "optional" angeben muss, statt jedes Mal den fertigen String
-// von Hand zu verketten.
 @Component
 @RequiredArgsConstructor
 public class ChecklistTemplateSeeder implements CommandLineRunner {
-
     private final ChecklistTemplateRepository checklistTemplateRepository;
 
-    // Die Phasen-Namen kommen sehr oft vor (in fast jeder Vorlage). Als Konstanten
-    // schreibe ich jeden Text nur einmal und vermeide Tippfehler und Kopien.
     private static final String PHASE_SECURITY = "Security";
     private static final String PHASE_ACCEPTANCE = "Abnahme";
     private static final String PHASE_PLANNING = "Planung";
@@ -71,8 +40,7 @@ public class ChecklistTemplateSeeder implements CommandLineRunner {
     private static final String PHASE_MANAGEMENT = "Management";
     private static final String PHASE_TEST = "Test";
     private static final String PHASE_INTEGRATION = "Integration";
-    // "Hardware" ist Phase UND Name einer Vorlage, die VM-Vorlagen teilen sich ausserdem
-    // ein paar identische Punkt-Texte - auch diese stehen deshalb nur einmal als Konstante hier.
+
     private static final String PHASE_HARDWARE = "Hardware";
     private static final String TEXT_IP_GATEWAY_DNS = "IP, Gateway und DNS im Gast konfiguriert";
     private static final String TEXT_GUEST_OS_UPDATED = "Gast-OS aktualisiert";
@@ -82,13 +50,6 @@ public class ChecklistTemplateSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Guard gegen doppeltes Einfügen: Ohne diese Prüfung würde bei
-        // jedem Neustart der Anwendung ein weiterer Satz der zehn
-        // Vorlagen angelegt werden. Da ich hier nur beim allerersten
-        // Start (leere Collection) etwas tun will, reicht eine einfache
-        // count()-Prüfung - für eigene, zusätzlich von Hand angelegte
-        // Vorlagen greift das nicht mehr ein, sobald schon mindestens
-        // eine Vorlage existiert.
         if (checklistTemplateRepository.count() > 0) {
             return;
         }
@@ -342,28 +303,14 @@ public class ChecklistTemplateSeeder implements CommandLineRunner {
         checklistTemplateRepository.saveAll(templates);
     }
 
-    // Baut eine einzelne Vorlage aus Namen + einer beliebigen Anzahl an
-    // bereits fertig formatierten Punkt-Strings (siehe punkt(...) unten).
-    // Die id lasse ich bewusst null - die vergibt MongoDB automatisch
-    // beim Speichern, genauso wie es ChecklistTemplateService.createTemplate
-    // beim manuellen Anlegen über die Oberfläche auch macht.
-    // Das letzte Argument (true) markiert alle zehn hier erzeugten
-    // Vorlagen als "standard" - dadurch verweigert
-    // ChecklistTemplateService.deleteTemplate das Löschen, siehe
-    // Kommentar dort und am standard-Feld in ChecklistTemplate selbst.
     private ChecklistTemplate template(String name, String... entries) {
         return new ChecklistTemplate(null, name, List.of(entries), true);
     }
 
-    // Pflicht-Punkt: Phase wird in eckigen Klammern vorangestellt.
     private String entry(String phase, String text) {
         return entry(phase, text, false);
     }
 
-    // Überladung für optionale Punkte (in meiner Excel-Tabelle als
-    // "Optional" statt "Ja" markiert) - hängt zusätzlich " (optional)"
-    // an, damit das beim Abhaken der Checkliste im Frontend sofort
-    // erkennbar bleibt.
     private String entry(String phase, String text, boolean optional) {
         String basis = "[" + phase + "] " + text;
         return optional ? basis + " (optional)" : basis;

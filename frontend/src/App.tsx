@@ -9,10 +9,6 @@ import {IpdGeneratorPage} from './pages/IpdGeneratorPage';
 import {IpdDocumentPage} from './pages/IpdDocumentPage';
 import './App.css';
 
-// Routing-Struktur der App. Jede Seite liegt unter dem gemeinsamen
-// Layout (Navigation), die noch fehlenden Unterseiten (Checklisten,
-// IPD-Generator) baue ich in den nächsten Schritten und ersetze dann
-// hier jeweils den Platzhalter durch die echte Komponente.
 function App() {
     return (
         <Routes>

@@ -7,14 +7,8 @@ import org.dahllab.opsservicedoc.model.ChecklistItem;
 
 import java.util.List;
 
-// Wandelt Checklist (Mongo-Dokument) in ChecklistDto (API-Ebene) um.
-// Ich mappe hier nur in eine Richtung, genau wie bei TaskMapper - die
-// umgekehrte Richtung baut der Service selbst zusammen, weil dort noch
-// Zusatzlogik reinspielt (z.B. IDs für neue Items vergeben).
 public class ChecklistMapper {
-
     private ChecklistMapper() {
-        // Utility-Klasse, keine Instanzen nötig.
     }
 
     public static ChecklistDto toDto(Checklist checklist) {

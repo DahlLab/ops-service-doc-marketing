@@ -23,46 +23,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 class TicketControllerTest {
-
-    // Bereits von Spring Boot fertig konfigurierte Jackson-Instanz -
-    // ich baue keine eigene, um Inkonsistenzen mit der echten App-Konfiguration
-    // zu vermeiden (DRY: eine zentrale ObjectMapper-Konfiguration für die ganze App).
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private MockMvc mockMvc;
 
-    // @MockitoBean: ersetzt den echten TicketService im Spring-Kontext durch
-    // eine Mockito-Mock. So teste ich NUR den Controller (HTTP-Handling,
-    // Security-Regeln), ohne dass due echte Service-Logik/datenbank mitläuft
-    // (Single Responsibility: dieser Test prüft die Schnittstelle, nicht die Logik).
     @MockitoBean
     private TicketService ticketService;
 
     @Test
     @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets is called THEN the tickets are returned as JSON")
     void getAllTickets_returnsTickets_whenLoggedIn() throws Exception {
-
-        // GIVEN: Ich bereite vor, was der (gemockte) Service zurückgeben soll,
-        // wenn seine Methode aufgerufen wird, unabhängig von der echten Logik.
         TicketDto ticketDto = new TicketDto(
                 "1", "Server-Wartung", "Beschreibung",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()
         );
         when(ticketService.getAllTickets()).thenReturn(List.of(ticketDto));
 
-        // WHEN: Simulierter, eingeloggter GET-Request auf /api/tickets.
         var result = mockMvc.perform(
                 get("/api/tickets").with(oauth2Login())
         );
 
-        // THEN: Status 200 UND der Titel des ersten Tickets im JSON-Array muss stimmen
-        // (jsonPAth prüft gezielt einen Wert innerhalb der JSON-Antwort).
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Server-Wartung"));
@@ -71,31 +56,22 @@ class TicketControllerTest {
     @Test
     @DisplayName("GIVEN no logged-in user WHEN GET /api/tickets is called THEN 401 Unauthorized is returned")
     void getAllTickets_returns401_whenNotLoggedIn() throws Exception {
-
-        // WHEN: Request OHNE simulierten Login.
         var result = mockMvc.perform(get("/api/tickets"));
 
-        // THEN: Die SecurityConfig schützt /api/tickets/**,  ohne Login muss 401 kommen.
         result.andExpect(status().isUnauthorized());
     }
-
-
 
     @Test
     @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets/{id} is called THEN the ticket is returned")
     void getTicketById_returnsTicket_whenLoggedIn() throws Exception {
-
-        // GIVEN:
         TicketDto ticketDto = new TicketDto("1", "Server-Wartung", "Beschreibung",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
         when(ticketService.getTicketById("1")).thenReturn(ticketDto);
 
-        // WHEN:
         var result = mockMvc.perform(
                 get("/api/tickets/1").with(oauth2Login())
         );
 
-        // THEN:
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Server-Wartung"));
@@ -104,8 +80,6 @@ class TicketControllerTest {
     @Test
     @DisplayName("GIVEN a logged-in user WHEN POST /api/tickets is called with valid data THEN the ticket is created")
     void createTicket_createsTicket_whenDataIsValid() throws Exception {
-
-        // GIVEN:
         TicketDto newTicket = new TicketDto(null, "Neues Ticket", "Beschreibung",
                 TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
         TicketDto savedTicket = new TicketDto("1", "Neues Ticket", "Beschreibung",
@@ -114,10 +88,6 @@ class TicketControllerTest {
         when(ticketService.createTicket(org.mockito.ArgumentMatchers.any(TicketDto.class)))
                 .thenReturn(savedTicket);
 
-        // WHEN:
-        // objectMapper ist die von Spring Boot bereits fertig konfigurierte
-        // Bean (siehe @Autowired-Feld oben in der Klasse) - wandelt unser
-        // TicketDto-Objekt in einen JSON-String für den Request-Body um.
         var result = mockMvc.perform(
                 org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/tickets")
                         .with(oauth2Login())
@@ -126,8 +96,6 @@ class TicketControllerTest {
                         .content(objectMapper.writeValueAsString(newTicket))
         );
 
-        // THEN:
-        // 201 Created, wie im Controller mit @ResponseStatus(HttpStatus.CREATED) festgelegt.
         result
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("1"));
@@ -136,15 +104,12 @@ class TicketControllerTest {
     @Test
     @DisplayName("GIVEN a logged-in user WHEN PUT /api/tickets/{id} is called THEN the ticket is updated")
     void updateTicket_updatesTicket_whenLoggedIn() throws Exception {
-
-        // GIVEN:
         TicketDto updatedTicket = new TicketDto("1", "Geänderter Titel", "Beschreibung",
                 TicketStatus.SOLVED, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
 
         when(ticketService.updateTicket(org.mockito.ArgumentMatchers.eq("1"), org.mockito.ArgumentMatchers.any(TicketDto.class)))
                 .thenReturn(updatedTicket);
 
-        // WHEN:
         var result = mockMvc.perform(
                 org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/tickets/1")
                         .with(oauth2Login())
@@ -153,7 +118,6 @@ class TicketControllerTest {
                         .content(objectMapper.writeValueAsString(updatedTicket))
         );
 
-        // THEN:
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Geänderter Titel"));

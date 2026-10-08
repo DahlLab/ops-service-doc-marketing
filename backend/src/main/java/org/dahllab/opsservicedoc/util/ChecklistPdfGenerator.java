@@ -26,22 +26,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-// Erzeugt die interne Technikerversion der Checkliste als eigenes PDF.
-// Gedacht zum Ausdrucken ODER zum Ausfüllen am Tablet: jede Checkbox
-// ist ein echtes PDF-Formularfeld (AcroForm), das sich in einem
-// PDF-Reader anklicken lässt, und gleichzeitig mit einem sichtbaren
-// Rahmen gezeichnet, damit sie auch auf Papier abhakbar ist.
-//
-// Dieses Dokument ist bewusst vom Kunden-PDF (IpdPdfGenerator) getrennt:
-// der Kunde bekommt die Checkliste nie zu sehen, nur der Techniker.
 public class ChecklistPdfGenerator {
-
     private static final Color NAVY = new Color(10, 25, 49);
     private static final Color CYAN = new Color(0, 188, 212);
     private static final float CHECKBOX_SIZE = 12f;
 
     private ChecklistPdfGenerator() {
-        // Utility-Klasse, keine Instanzen nötig.
     }
 
     public static byte[] createPdf(IpdDocumentDto ipdDocument, List<ChecklistDto> checklists) {
@@ -96,9 +86,6 @@ public class ChecklistPdfGenerator {
         return header;
     }
 
-    // Zweispaltige Tabelle: links die Checkbox, rechts der Text. Die
-    // Checkbox-Zelle bekommt ein CellEvent, das an der Zellposition das
-    // Formularfeld platziert.
     private static PdfPTable buildItemTable(PdfWriter writer, ChecklistDto checklist, Font entryFont)
             throws DocumentException {
         PdfPTable table = new PdfPTable(2);
@@ -126,9 +113,6 @@ public class ChecklistPdfGenerator {
         return table;
     }
 
-    // Zeichnet den Rahmen (für den Papierausdruck) und legt darüber das
-    // anklickbare Formularfeld. Bereits erledigte Punkte sind vorab
-    // angehakt.
     private static class CheckboxEvent implements PdfPCellEvent {
         private final PdfWriter writer;
         private final String fieldName;

@@ -3,8 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Spring Boot Parent: liefert Standard-Versionen für alle Sub-Dependencies,
-         damit wir nicht jede Version einzeln pflegen müssen -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -12,86 +10,66 @@
         <relativePath/>
     </parent>
 
-    <!-- Eigene Projekt-Koordinaten -->
     <groupId>org.dahllab</groupId>
     <artifactId>ops-service-doc</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ops-service-doc</name>
-    <description>Abschlussprojekt: Support-Workflow / IPD-Dokumentgenerator</description>
+    <description>Support workflow and IPD document generator</description>
 
     <properties>
         <java.version>25</java.version>
-        <!-- SonarCloud-Organization: hier deine echte Org-ID eintragen, sobald wir das einrichten -->
-        <sonar.organization>artemis2063dev-1</sonar.organization>
     </properties>
 
     <dependencies>
-        <!-- Web: REST-Controller, eingebetteter Server (webmvc statt web, wie im Bootcamp-Stack üblich) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
-        <!-- springdoc-openapi: erzeugt automatisch eine OpenAPI-Spezifikation aus
-     meinen @RestController-Klassen und stellt eine interaktive
-     Swagger-UI unter /swagger-ui.html bereit. Ich ergänze pro Controller
-     @Tag/@Operation-Annotationen für eine saubere Doku. -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>3.1.1</version>
         </dependency>
 
-        <!-- Lombok: weniger Boilerplate-Code (Getter/Setter/Konstruktoren per Annotation) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Test-Support für Web/MVC-Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Security + OAuth2 Client kombiniert (ersetzt zwei einzelne Starter durch einen) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
         </dependency>
 
-        <!-- Zusätzliche Test-Utilities speziell für Security (z.B. @WithMockUser) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- MongoDB-Anbindung über Spring Data -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
-        <!-- Bootcamp-eigener Baustein für eine Standard-Fallback-/Fehlerseite -->
         <dependency>
             <groupId>de.neuefische.java</groupId>
             <artifactId>spring-boot-starter-fallback-page</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <!-- Bean Validation (Jakarta Validation): ermöglicht @Valid, @NotBlank, @NotNull etc. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- OpenPDF: Open-Source-Bibliothek zur PDF-Erzeugung (Fork von iText,
-     LGPL/MPL-lizenziert). Nutze ich für den PDF-Export der
-     IPD-Dokumente. Falls diese Version nicht mehr auflösbar ist, auf
-     Maven Central nach "com.github.librepdf:openpdf" die aktuellste
-     Version nachschauen. -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
@@ -100,10 +78,8 @@
     </dependencies>
 
     <build>
-        <!-- Einheitlicher Name für die gebaute .jar-Datei: app.jar statt ops-service-doc-0.0.1-SNAPSHOT.jar -->
         <finalName>app</finalName>
         <plugins>
-            <!-- Jacoco: misst Testabdeckung (Code Coverage), Ergebnis wird später an SonarCloud gemeldet -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -124,13 +100,11 @@
                 </executions>
             </plugin>
 
-            <!-- Spring Boot Maven Plugin: macht aus dem Projekt eine ausführbare .jar-Datei -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Compiler-Plugin: sorgt dafür, dass Lombok-Annotationen beim Kompilieren korrekt verarbeitet werden -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

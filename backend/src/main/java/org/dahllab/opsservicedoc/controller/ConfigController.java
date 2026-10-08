@@ -9,14 +9,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// Stellt dem Frontend Konfigurationswerte bereit, die nicht fest im
-// Frontend stehen sollen (hier: Adresse der GLPI-Weboberfläche für den
-// Navigations-/Startseiten-Link). Tokens werden hier NIE ausgegeben.
 @Tag(name = "Konfiguration", description = "Konfigurationswerte für das Frontend")
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
-
     private final GlpiConfig glpiConfig;
 
     public ConfigController(GlpiConfig glpiConfig) {

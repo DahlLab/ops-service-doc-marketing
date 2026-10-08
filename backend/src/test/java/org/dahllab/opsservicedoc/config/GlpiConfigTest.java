@@ -10,39 +10,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// @SpringBootTest lädt hier bewusst NICHT die ganze Anwendung, sondern nur
-// das Nötigste, siehe @EnableConfigurationProperties unten, das gezielt
-// nur GlpiConfig registriert, statt den kompletten Anwendungskotext zu starten
-// (KISS: minimaler Testkontext für eine reine Konfigurationsklasse).
 @SpringBootTest(classes = GlpiConfig.class)
 @EnableConfigurationProperties(GlpiConfig.class)
-//
-//
-//
+
 @TestPropertySource(properties = {
         "glpi.api-url=http://test-glpi/api.php/v1",
         "glpi.app-token=test-app-token",
         "glpi.user-token=test-user-token"
 })
 class GlpiConfigTest {
-
     @Autowired
     private GlpiConfig glpiConfig;
 
     @Test
     @DisplayName("GIVEN glpi.* properties are set WHEN the application starts THEN they are bound correctly in GlpiConfig")
     void glpiProperties_areBoundCorrectly() {
-
-        // GIVEN: die Properties sind über @TestPropertySource oben bereits gesetzt.
-
-        // WHEN: Spring Boot hat GlpiConfi beim Start automatisch befüllt
-        // (das passiert implizit durch @EnableConfigurationProperties).
-
-        // THEN: die Werte in der Bean müssen exakt den gesetzten Poperties entsprechen.
         assertEquals("http://test-glpi/api.php/v1",  glpiConfig.getApiUrl());
         assertEquals("test-app-token", glpiConfig.getAppToken());
         assertEquals("test-user-token", glpiConfig.getUserToken());
-
     }
 
     @Test
@@ -69,7 +54,7 @@ class GlpiConfigTest {
         assertEquals("http://h/glpi", config.resolveWebUrl());
         config.setApiUrl("http://h/plain");
         assertEquals("http://h/plain", config.resolveWebUrl());
-        // Nicht aufgelöster Platzhalter (Umgebungsvariable fehlt) -> kein Link.
+
         config.setApiUrl("${GLPI_API_URL}");
         assertEquals("", config.resolveWebUrl());
         config.setWebUrl("${GLPI_WEB_URL}");

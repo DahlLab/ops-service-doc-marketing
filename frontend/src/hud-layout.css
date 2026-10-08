@@ -1,17 +1,11 @@
-/* ==========================================================================
-   hud-layout.css - Stile für Sidebar, Kopfleiste, Statusleiste, Kachelmenü,
-   Logo, Uhr und Benutzermenü. Farben/Maße kommen aus theme.css.
-   ========================================================================== */
-
-/* ---------- Grundgerüst ---------- */
 .hud-shell {
   min-height: 100svh;
   display: flex;
 }
-.hud-sidebar { display: none; }               /* mobil keine Sidebar */
+.hud-sidebar { display: none; }
 .hud-main {
   flex: 1;
-  min-width: 0;                               /* verhindert Überlaufen von Tabellen */
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -23,7 +17,6 @@
   margin: 0 auto;
 }
 
-/* ---------- Logo ---------- */
 .osd-logo { display: flex; align-items: center; gap: 12px; color: inherit; }
 .osd-logo__hex { width: 46px; height: 46px; flex-shrink: 0; }
 .osd-logo__text { display: flex; flex-direction: column; line-height: 1.1; }
@@ -42,7 +35,6 @@
   margin-top: 4px;
 }
 
-/* ---------- Kopfleiste ---------- */
 .hud-topbar {
   display: flex;
   align-items: center;
@@ -64,13 +56,12 @@
 }
 .hud-topbar__burger:hover { border-color: var(--hud-cyan); color: var(--hud-cyan); }
 .hud-topbar__logo .osd-logo__hex { width: 36px; height: 36px; }
-/* mobil nur das Sechseck + Name klein, Unterzeile sparen */
+
 .hud-topbar__logo .osd-logo__sub { display: none; }
 .hud-topbar__logo .osd-logo__name { font-size: 0.8rem; }
 
-/* ---------- Uhr ---------- */
 .hud-clock {
-  display: none;                              /* mobil zu eng, erst ab Tablet */
+  display: none;
   gap: 18px;
   font-family: var(--hud-font-mono);
   font-size: 0.85rem;
@@ -79,7 +70,6 @@
 }
 .hud-clock__date { color: var(--hud-text-muted); }
 
-/* ---------- Benutzermenü ---------- */
 .user-menu__toggle {
   display: flex;
   align-items: center;
@@ -90,7 +80,7 @@
   padding: 0;
   text-align: left;
 }
-.user-menu__toggle::after { display: none; }  /* Bootstraps Dropdown-Pfeil weg */
+.user-menu__toggle::after { display: none; }
 .user-menu__avatar {
   width: 40px;
   height: 40px;
@@ -119,7 +109,6 @@
   color: var(--hud-text-muted);
 }
 
-/* ---------- Statusleiste ---------- */
 .hud-statusbar {
   display: flex;
   justify-content: space-between;
@@ -134,7 +123,6 @@
 }
 .hud-statusbar__center { display: none; }
 
-/* ---------- Mobiles Vollbild-Menü ---------- */
 .hud-overlay {
   position: fixed;
   inset: 0;
@@ -144,8 +132,7 @@
   flex-direction: column;
   padding: 16px;
   overflow-y: auto;
-  /* <dialog> bringt eigene Browser-Stile mit (Rahmen, Rand, schmale Breite, Textfarbe) -
-     die setze ich zurück, damit das Menü wie vorher das ganze Fenster füllt */
+
   border: 0;
   margin: 0;
   width: 100%;
@@ -162,7 +149,7 @@
 }
 .hud-overlay__tiles {
   display: grid;
-  grid-template-columns: 1fr 1fr;             /* zwei Spalten wie bei Konsolen-Menüs */
+  grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 .hud-tile {
@@ -184,17 +171,13 @@
 .hud-tile.is-active { border-color: var(--hud-gold); color: var(--hud-gold); background: var(--hud-gold-dim); }
 .hud-tile.is-active svg { color: var(--hud-gold); }
 
-/* ==========================================================================
-   Ab Desktop-Breite (Bootstrap "lg" = 992 px): Sidebar sichtbar,
-   Hamburger weg, Uhr und Statusmitte an.
-   ========================================================================== */
 @media (min-width: 992px) {
   .hud-shell--with-sidebar .hud-sidebar {
     display: flex;
     flex-direction: column;
     width: 260px;
     flex-shrink: 0;
-    position: sticky;                          /* bleibt beim Scrollen stehen */
+    position: sticky;
     top: 0;
     height: 100svh;
     background: var(--hud-bg-raised);
@@ -203,7 +186,7 @@
   }
   .hud-shell--with-sidebar .hud-topbar__burger,
   .hud-shell--with-sidebar .hud-topbar__logo { display: none; }
-  /* Das Benutzermenue sitzt auch am Desktop oben rechts neben der Uhr (nicht mehr in der Sidebar) */
+
   .hud-topbar__user { display: block; margin-left: 6px; padding-left: 16px; border-left: 1px solid var(--hud-line); }
   .hud-clock { display: flex; }
   .user-menu__text { display: flex; }
@@ -211,8 +194,7 @@
   .hud-content { padding: 24px; }
 
   .hud-sidebar__logo { margin: 4px 6px 22px; display: block; }
-  /* In der schmalen Sidebar Schrift und Abstand des Logos etwas verkleinern,
-     sonst läuft der Name über den Rand */
+
   .hud-sidebar__logo .osd-logo__name { font-size: 0.78rem; letter-spacing: 0.14em; }
   .hud-sidebar__logo .osd-logo__sub { letter-spacing: 0.12em; }
   .hud-nav { display: flex; flex-direction: column; flex: 1; }
@@ -230,7 +212,7 @@
   }
   .hud-nav__item svg { color: var(--hud-text-muted); font-size: 1rem; }
   .hud-nav__item:hover { background: var(--hud-cyan-dim); color: var(--hud-text-strong); }
-  /* aktiver Punkt: goldener Balken links + goldene Schrift (wie im Mockup) */
+
   .hud-nav__item.is-active {
     border-left-color: var(--hud-gold);
     background: var(--hud-gold-dim);
@@ -243,7 +225,6 @@
   }
 }
 
-/* Dropdown-Menü im dunklen Stil mit eckiger Form */
 .dropdown-menu {
   border-radius: 0;
   border: 1px solid var(--hud-line);

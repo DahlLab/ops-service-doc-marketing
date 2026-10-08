@@ -13,16 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Checklist {
-
     private String id;
     private String ticketId;
     private String title;
     private List<ChecklistItem> items;
     private LocalDateTime createdAt;
 
-    // Wird automatisch vom Service gesetzt, sobald alle Items erledigt
-    // sind (siehe ChecklistService.setzeAbschlussdatumWennAlleErledigt).
-    // Bleibt null, solange die Checkliste noch offene Punkte hat.
     private LocalDateTime completedAt;
-
 }

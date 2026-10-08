@@ -14,11 +14,8 @@ import java.util.NoSuchElementException;
 
 @Service
 public class TaskService {
-
     private final TaskRepository taskRepository;
 
-    // Konstruktor-Injection statt @Autowired auf dem Feld, wie beim
-    // TicketService - macht das Testen mit Mockito einfacher.
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
@@ -30,9 +27,6 @@ public class TaskService {
                 .toList();
     }
 
-    // Liefert alle Tasks zu einem bestimmten Ticket, praktisch für die
-    // Ticket-Detailansicht im Frontend, wo ich sehen will, welche Aufgaben
-    // zu genau diesem Ticket gehören.
     public List<TaskDto> getTasksByTicketId(String ticketId) {
         return taskRepository.findByTicketId(ticketId)
                 .stream()
@@ -46,9 +40,6 @@ public class TaskService {
                 .orElseThrow(() -> new NoSuchElementException("Task mit ID " + id + " nicht gefunden"));
     }
 
-    // Legt einen neuen Task an. erfasstAm setze ich zentral auf "jetzt",
-    // erledigtAm bleibt null, und falls kein Status mitgegeben wurde,
-    // starte ich standardmäßig mit OFFEN.
     public TaskDto createTask(TaskDto newTask) {
         Task task = new Task(
                 null,
@@ -65,15 +56,6 @@ public class TaskService {
         return TaskMapper.toDto(savedTask);
     }
 
-    // Aktualisiert einen bestehenden Task. erfasstAm bleibt unverändert
-    // (das ursprüngliche Erfassungsdatum darf sich nicht ändern).
-    //
-    // erledigtAm wird automatisch gepflegt: wechselt der Status auf
-    // ERLEDIGT und war der Task vorher noch nicht erledigt, setze ich
-    // erledigtAm auf "jetzt". Wechselt der Status wieder weg von ERLEDIGT
-    // (z.B. versehentlich zu früh abgehakt), setze ich erledigtAm zurück
-    // auf null - so bleibt der Zustand immer konsistent, ohne dass ich
-    // das Datum manuell im Frontend pflegen muss.
     public TaskDto updateTask(String id, TaskDto updatedTask) {
         Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Task mit ID " + id + " nicht gefunden"));

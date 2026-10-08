@@ -1,14 +1,5 @@
-/* ==========================================================================
-   hud-components.css - HUD-Optik für Bootstrap-Bausteine, die in den Seiten
-   verwendet werden (Tabellen, Modals, Tabs, Akkordeon, Badges, Alerts, ...).
-   Ich überschreibe hier gezielt Bootstrap, damit nicht jede Seite einzeln
-   umgebaut werden muss. Farben kommen aus theme.css.
-   ========================================================================== */
-
-/* ---------- Seitenüberschrift ---------- */
 h1 { font-size: 1.3rem; }
 
-/* ---------- Tabellen ---------- */
 .hud-table {
   --bs-table-bg: transparent;
   --bs-table-color: var(--hud-text);
@@ -28,7 +19,6 @@ h1 { font-size: 1.3rem; }
 }
 .hud-table td { vertical-align: middle; font-size: 0.88rem; }
 
-/* ---------- Badges: eckig, durchsichtig, farbiger Rand ---------- */
 .badge {
   border-radius: 0;
   font-weight: 500;
@@ -45,7 +35,6 @@ h1 { font-size: 1.3rem; }
 .badge.bg-secondary { background: rgba(127, 149, 171, 0.15) !important; color: var(--hud-text-muted); }
 .badge.bg-dark      { background: rgba(255, 255, 255, 0.06) !important; color: var(--hud-text); }
 
-/* ---------- Buttons: eckig, Großbuchstaben ---------- */
 .btn {
   border-radius: 0;
   text-transform: uppercase;
@@ -55,7 +44,6 @@ h1 { font-size: 1.3rem; }
 .btn-sm { font-size: 0.7rem; }
 .btn-link { text-transform: none; letter-spacing: 0.04em; font-size: 0.85rem; }
 
-/* ---------- Eingabefelder eckig ---------- */
 .form-control, .form-select, .form-check-input { border-radius: 0; }
 .form-label {
   font-size: 0.7rem;
@@ -64,10 +52,8 @@ h1 { font-size: 1.3rem; }
   color: var(--hud-text-muted);
 }
 
-/* ---------- Alerts ---------- */
 .alert { border-radius: 0; border-left-width: 3px; }
 
-/* ---------- Tabs ---------- */
 .nav-tabs { border-bottom: 1px solid var(--hud-line); }
 .nav-tabs .nav-link {
   border: 0;
@@ -85,7 +71,6 @@ h1 { font-size: 1.3rem; }
   border-bottom-color: var(--hud-gold);
 }
 
-/* ---------- Akkordeon (Vorlagen) ---------- */
 .accordion {
   --bs-accordion-bg: var(--hud-panel-bg);
   --bs-accordion-border-color: var(--hud-line);
@@ -99,7 +84,6 @@ h1 { font-size: 1.3rem; }
   --bs-accordion-btn-focus-box-shadow: 0 0 0 0.15rem var(--hud-cyan-dim);
 }
 
-/* ---------- Modals ---------- */
 .modal-content {
   background: var(--hud-bg-raised);
   border: 1px solid var(--hud-line-strong);
@@ -112,7 +96,6 @@ h1 { font-size: 1.3rem; }
   letter-spacing: 0.18em;
 }
 
-/* ---------- Fortschrittsbalken (Checklisten) ---------- */
 .hud-progress {
   --bs-progress-bg: rgba(70, 104, 138, 0.3);
   --bs-progress-bar-bg: var(--hud-cyan);
@@ -120,12 +103,8 @@ h1 { font-size: 1.3rem; }
   height: 6px;
 }
 
-/* ---------- Checkboxen: Text neben dem Kästchen ---------- */
 .form-check-label { font-size: 0.9rem; }
 
-/* ---- Ausgefuellte Buttons ----
-   Ich nutze weiterhin die Bootstrap-Varianten "outline-*" im Code, fuelle sie
-   hier aber per CSS-Variablen aus. So muss ich keine einzige Seite aendern. */
 .btn-outline-primary {
   --bs-btn-bg: var(--hud-cyan);
   --bs-btn-color: #04121a;
@@ -134,7 +113,7 @@ h1 { font-size: 1.3rem; }
   --bs-btn-hover-color: #04121a;
 }
 .btn-outline-secondary {
-  --bs-btn-bg: #1a2c42;                    /* dunkles Stahlblau */
+  --bs-btn-bg: #1a2c42;
   --bs-btn-color: var(--hud-text);
   --bs-btn-border-color: var(--hud-line-strong);
   --bs-btn-hover-bg: #29445f;
@@ -150,10 +129,6 @@ h1 { font-size: 1.3rem; }
   --bs-btn-hover-color: #1a0505;
 }
 
-/* ---- Klick-Puls um Buttons ----
-   Beim Klick setzt ein kleines Skript (main.tsx) kurz die Klasse "hud-pulse".
-   Der Ring waechst per box-shadow nach aussen und blendet dabei aus.
-   Der Ring ist bei allen Buttons Gold, passend zur Akzentfarbe fuer Aktives. */
 @keyframes hud-pulse {
   0%   { box-shadow: 0 0 0 0 var(--hud-gold); opacity: 1; }
   70%  { box-shadow: 0 0 0 12px transparent; }
@@ -162,7 +137,7 @@ h1 { font-size: 1.3rem; }
 .btn.hud-pulse {
   animation: hud-pulse 0.55s ease-out;
 }
-/* Wer Bewegung reduziert haben will (Systemeinstellung), bekommt keinen Puls */
+
 @media (prefers-reduced-motion: reduce) {
   .btn.hud-pulse { animation: none; }
 }

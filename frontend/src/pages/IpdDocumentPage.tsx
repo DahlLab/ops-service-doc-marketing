@@ -13,11 +13,6 @@ import {
     type IpdDocumentStatus,
 } from '../api/types';
 
-// Baut aus einem geladenen IpdDocumentDto genau die Felder, die ich im
-// Formular bearbeite - die automatisch verwalteten Felder (ticketId,
-// techniker, szenarioTyp, durchgefuehrteSchritte,
-// qualitaetssicherungAbgeschlossen, erstelltAm, aktualisiertAm) zeige ich
-// separat read-only an, siehe JSX unten.
 function formFromDocument(ipdDocument: IpdDocumentDto): IpdDocumentFormData {
     return {
         title: ipdDocument.title,
@@ -39,12 +34,6 @@ function formFromDocument(ipdDocument: IpdDocumentDto): IpdDocumentFormData {
     };
 }
 
-// Die "Ergebnis"-Seite aus meiner geplanten Reihenfolge: hier fülle ich
-// die vom Backend beim Erzeugen leer gelassenen Abschnitte eines
-// IPD-Dokuments aus, wechsle den Status auf ABGESCHLOSSEN und lade am
-// Ende das fertige PDF herunter. Erreichbar über /ipd/:id, z.B. direkt
-// nach dem Erzeugen in IpdGeneratorPage oder über "Öffnen" in dessen
-// Tabelle.
 export function IpdDocumentPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -56,17 +45,9 @@ export function IpdDocumentPage() {
     const [pdfRunning, setPdfRunning] = useState(false);
     const [checklistRunning, setChecklistRunning] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    // Separate Erfolgsmeldung statt nur eines Fehlerfelds, damit ich dem
-    // Nutzer nach dem Speichern kurz sichtbares Feedback geben kann,
-    // ohne auf eine neue Seite zu springen (anders als bei Erzeugen, wo
-    // ich direkt hierher navigiere, bleibe ich nach dem Speichern bewusst
-    // auf dieser Seite, weil man idR mehrere Abschnitte nacheinander
-    // ergänzt).
+
     const [success, setSuccess] = useState<string | null>(null);
 
-    // Dokument beim Öffnen (und bei geänderter id) laden: Anfrage direkt im Effect,
-    // State nur im Callback. `abgebrochen` verhindert, dass eine späte Antwort eines
-    // alten Dokuments das neue überschreibt.
     useEffect(() => {
         if (!id) return;
         let aborted = false;
@@ -90,8 +71,6 @@ export function IpdDocumentPage() {
         };
     }, [id]);
 
-    // Generischer Change-Handler für alle Textarea-Felder: erspart mir
-    // 14 fast identische onChange-Funktionen für jedes Formularfeld.
     function handleFieldChange(field: keyof IpdDocumentFormData, value: string) {
         if (!form) return;
         setForm({ ...form, [field]: value || null });
@@ -103,13 +82,6 @@ export function IpdDocumentPage() {
         setErrorMessage(null);
         setSuccess(null);
         try {
-            // Das Backend erwartet den VOLLSTÄNDIGEN IpdDocumentDto als
-            // Request-Body (auch wenn es einen Großteil der Felder
-            // ohnehin ignoriert/neu berechnet, siehe
-            // IpdDocumentService.updateIpdDocument) - deshalb baue ich
-            // hier aus dem zuletzt geladenen Dokument plus meinen
-            // Formular-Änderungen wieder ein komplettes Objekt
-            // zusammen, statt nur die editierbaren Felder zu schicken.
             const updatedDocument = await api.put<IpdDocumentDto>(`/api/ipd/${ipdDocument.id}`, {
                 ...ipdDocument,
                 ...form,
@@ -129,8 +101,6 @@ export function IpdDocumentPage() {
         }
     }
 
-    // Lädt das Kunden-PDF herunter (siehe utils/download.ts für das
-    // Blob/ObjectURL-Verfahren).
     async function handlePdfDownload() {
         if (!ipdDocument) return;
         setPdfRunning(true);
@@ -145,9 +115,6 @@ export function IpdDocumentPage() {
         }
     }
 
-    // Lädt die interne Checkliste (Technikerversion mit ausfüllbaren
-    // Checkboxen) herunter - getrennt vom Kunden-PDF. 404 heißt: zu diesem
-    // Ticket gibt es (noch) keine Checkliste.
     async function handleChecklistDownload() {
         if (!ipdDocument) return;
         setChecklistRunning(true);
@@ -225,10 +192,6 @@ export function IpdDocumentPage() {
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {success && <Alert variant="success">{success}</Alert>}
 
-            {/* Automatisch verwaltete Felder zeige ich read-only in einer
-            eigenen Card an - hier zu tippen hätte ohnehin keinen Effekt,
-            da das Backend sie bei jedem Speichern aus Ticket/Task/
-            Checklist neu berechnet (siehe IpdDocumentService). */}
             <HudPanel title="Übersicht" className="mb-4">
                 <div>
                     <Row>
@@ -261,10 +224,7 @@ export function IpdDocumentPage() {
                         <Row className="mt-2">
                             <Col>
                                 <strong>Durchgeführte Schritte (aus TaskPlanner übernommen):</strong>
-                                {/* white-space: pre-line, damit die Zeilenumbrüche aus
-                                dem vom Backend gebauten Fließtext (ein Task pro
-                                Zeile) auch wirklich als Zeilenumbrüche
-                                dargestellt werden. */}
+
                                 <div style={{ whiteSpace: 'pre-line' }}>{ipdDocument.performedSteps}</div>
                             </Col>
                         </Row>
@@ -272,11 +232,6 @@ export function IpdDocumentPage() {
                 </div>
             </HudPanel>
 
-            {/* Manuell zu pflegende Abschnitte - ich gruppiere sie in
-            Cards passend zur Gliederung eines echten IPD-Dokuments
-            (Kunde/Rahmendaten, Ausgangslage, technische Details,
-            Nachbereitung), statt 15 Textfelder untereinander ohne
-            Struktur zu zeigen. */}
             <Form>
                 <HudPanel title="Rahmendaten" className="mb-3">
                         <Row>

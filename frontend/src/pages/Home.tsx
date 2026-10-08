@@ -23,8 +23,6 @@ import { OsdLogo } from '../components/OsdLogo'
 import { ProgressRing } from '../components/ProgressRing'
 import '../hud-home.css'
 
-// Alle Daten, die das Dashboard braucht, in einem Objekt - so kann ich sie
-// mit einem einzigen setState setzen und habe keinen "halb geladenen" Zustand.
 interface DashboardData {
     tickets: TicketDto[]
     tasks: TaskDto[]
@@ -32,27 +30,19 @@ interface DashboardData {
     ipdDocuments: IpdDocumentDto[]
 }
 
-// Anteil der erledigten Items einer Checkliste in Prozent. Bei einer
-// leeren Checkliste gebe ich 0 zurück, damit ich nicht durch 0 teile.
 function checklistProgress(checklist: ChecklistDto): number {
     if (checklist.items.length === 0) return 0
     const done = checklist.items.filter((item) => item.done).length
     return (done / checklist.items.length) * 100
 }
 
-// Startseite: ohne Login ein Willkommens-Panel mit dem (einzigen) GitHub-
-// Login-Button, mit Login ein Dashboard aus echten Daten der Anwendung.
 export function Home() {
     const { username, loginUrl } = useAuth()
-    // Hooks müssen vor jedem frühen return stehen (Rules of Hooks).
+
     const glpiUrl = useGlpiUrl(Boolean(username))
     const [data, setData] = useState<DashboardData | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-    // Dashboard-Daten laden, sobald jemand eingeloggt ist. Die vier Abfragen
-    // laufen parallel (Promise.all), das ist schneller als nacheinander.
-    // `abgebrochen` verhindert, dass ich State setze, wenn die Seite
-    // inzwischen verlassen wurde.
     useEffect(() => {
         if (!username) return
         let aborted = false
@@ -74,7 +64,6 @@ export function Home() {
         }
     }, [username])
 
-    // ---------- Nicht eingeloggt: Willkommens-Panel ----------
     if (!username) {
         return (
             <div className="welcome">
@@ -86,8 +75,7 @@ export function Home() {
                             Tickets aus GLPI, Aufgabenplanung, Checklisten und fertige
                             Dokumentation als PDF.
                         </p>
-                        {/* Der einzige Login-Button der App. Er ist ein normaler Link,
-                            weil GitHub den Nutzer per Browser-Weiterleitung anmeldet. */}
+
                         <a href={loginUrl} className="btn btn-primary btn-lg welcome__login">
                             <FaGithub className="me-2" />
                             Mit GitHub anmelden
@@ -110,28 +98,21 @@ export function Home() {
         )
     }
 
-    // ---------- Kennzahlen berechnen ----------
     const { tickets, tasks, checklists, ipdDocuments } = data
 
-    // Ein Ticket gilt als "offen", solange es nicht gelöst oder geschlossen ist.
     const openTickets = tickets.filter((t) => t.status !== 'SOLVED' && t.status !== 'CLOSED')
     const countNew = tickets.filter((t) => t.status === 'NEW').length
     const countInProgress = tickets.filter((t) => t.status === 'IN_PROGRESS').length
     const countPending = tickets.filter((t) => t.status === 'PENDING').length
 
-    // Heutiges Datum als "YYYY-MM-DD" (Schwedisch liefert genau dieses Format).
-    // Da das Zieldatum im selben Format kommt, kann ich beide als Text vergleichen.
     const today = new Date().toLocaleDateString('sv-SE')
     const openTasks = tasks
         .filter((t) => t.status !== 'DONE')
-        // Tasks ohne Zieldatum ('') ans Ende, sonst nach Datum aufsteigend
         .sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
     const overdue = openTasks.filter((t) => t.dueDate !== null && t.dueDate < today)
 
-    // Nur Checklisten, die noch nicht abgeschlossen sind, zeige ich als Ringe (max. 3).
     const activeChecklists = checklists.filter((c) => c.completedAt === null).slice(0, 3)
 
-    // Die vier zuletzt bearbeiteten IPD-Dokumente.
     const latestDocuments = [...ipdDocuments]
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
         .slice(0, 4)
@@ -142,7 +123,7 @@ export function Home() {
             <p className="dash__subtitle">Willkommen zurück, {username}</p>
 
             <div className="dash__grid">
-                {/* ---------- Offene Tickets ---------- */}
+
                 <HudPanel title="Offene Tickets" footerLink={{ to: '/tickets', label: 'Alle ansehen' }}>
                     <div className="dash__ticketcount">
                         <div className="dash__bignumber">{openTickets.length}</div>
@@ -154,7 +135,6 @@ export function Home() {
                     </div>
                 </HudPanel>
 
-                {/* ---------- Checklisten-Fortschritt ---------- */}
                 <HudPanel title="Checklisten-Fortschritt" footerLink={{ to: '/checklists', label: 'Details' }}>
                     {activeChecklists.length === 0 ? (
                         <p className="dash__empty">Keine laufenden Checklisten.</p>
@@ -167,8 +147,6 @@ export function Home() {
                     )}
                 </HudPanel>
 
-                {/* ---------- Überfällige / fällige Tasks ----------
-                    Ton wird warnend (Gold) oder kritisch (Rot), wenn Tasks überfällig sind. */}
                 <HudPanel
                     title="Fällige Tasks"
                     tone={overdue.length > 0 ? 'danger' : 'default'}
@@ -198,7 +176,6 @@ export function Home() {
                     )}
                 </HudPanel>
 
-                {/* ---------- Letzte IPD-Dokumente ---------- */}
                 <HudPanel title="Letzte IPD-Dokumente" className="dash__twocolumn" footerLink={{ to: '/ipd', label: 'Alle Dokumente' }}>
                     {latestDocuments.length === 0 ? (
                         <p className="dash__empty">Noch keine Dokumente.</p>
@@ -219,7 +196,6 @@ export function Home() {
                     )}
                 </HudPanel>
 
-                {/* ---------- Schnellaktionen ---------- */}
                 <HudPanel title="Schnellaktionen" className="dash__wide">
                     <div className="dash__actions">
                         <Link to="/tickets" className="dash__action">
@@ -234,7 +210,7 @@ export function Home() {
                         <Link to="/ipd" className="dash__action">
                             <FaFileAlt /> IPD erstellen
                         </Link>
-                        {/* Externes GLPI: öffnet im neuen Tab */}
+
                         {glpiUrl && (
                             <a className="dash__action" href={glpiUrl} target="_blank" rel="noopener noreferrer">
                                 <FaExternalLinkAlt /> GLPI öffnen

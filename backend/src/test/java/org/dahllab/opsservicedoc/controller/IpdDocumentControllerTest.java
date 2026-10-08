@@ -26,13 +26,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// @SpringBootTest + @AutoConfigureMockMvc: startet den kompletten
-// Anwendungskontext und stellt MockMvc bereit, gleiches Muster wie
-// ChecklistControllerTest.
 @SpringBootTest
 @AutoConfigureMockMvc
 class IpdDocumentControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -48,9 +44,6 @@ class IpdDocumentControllerTest {
     @Autowired
     private ChecklistRepository checklistRepository;
 
-    // Ich leere vor jedem Test alle beteiligten Collections, damit die
-    // Tests unabhängig voneinander laufen - IpdDocument hängt
-    // schließlich von Ticket/Task/Checklist ab.
     @BeforeEach
     void setUp() {
         ipdDocumentRepository.deleteAll();
@@ -66,10 +59,6 @@ class IpdDocumentControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
-    // Prüft den Erfolgsfall von POST /api/ipd/from-ticket/{ticketId}:
-    // ich lege vorher ein echtes Ticket an und erwarte, dass dessen
-    // Titel und Techniker automatisch ins neue IPD-Dokument übernommen
-    // werden.
     @Test
     void postIpdDocumentFromTicket_createsDraft_andReturns201() throws Exception {
         Ticket savedTicket = ticketRepository.save(new Ticket(
@@ -83,23 +72,18 @@ class IpdDocumentControllerTest {
                 .andExpect(jsonPath("$.status").value("DRAFT"));
     }
 
-    // Prüft den Fehlerfall: eine unbekannte ticketId muss zu einem
-    // 4xx-Fehler führen.
     @Test
     void postIpdDocumentFromTicket_returns404_whenTicketDoesNotExist() throws Exception {
         mockMvc.perform(post("/api/ipd/from-ticket/unbekannt").with(oauth2Login()).with(csrf()))
                 .andExpect(status().is4xxClientError());
     }
 
-    // Prüft den Fehlerfall von GET /api/ipd/{id}.
     @Test
     void getIpdDocumentById_returns404_whenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/ipd/unbekannt").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
 
-    // Prüft PUT /api/ipd/{id}: die manuell gepflegten Felder müssen
-    // übernommen werden, inklusive Statuswechsel auf ABGESCHLOSSEN.
     @Test
     void putIpdDocument_updatesFieldsAndStatus() throws Exception {
         Ticket savedTicket = ticketRepository.save(new Ticket(
@@ -134,8 +118,6 @@ class IpdDocumentControllerTest {
                 .andExpect(jsonPath("$.customer").value("Musterfirma GmbH"));
     }
 
-    // Prüft DELETE /api/ipd/{id}: erfolgreiches Löschen muss 204 No
-    // Content liefern.
     @Test
     void deleteIpdDocument_removesDocument_andReturns204() throws Exception {
         IpdDocument savedDocument = ipdDocumentRepository.save(new IpdDocument(
@@ -147,8 +129,6 @@ class IpdDocumentControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    // Prüft GET /api/ipd/{id}/pdf: Response muss den PDF-Content-Type
-    // tragen.
     @Test
     void getPdf_returnsPdfFile() throws Exception {
         IpdDocument savedDocument = ipdDocumentRepository.save(new IpdDocument(

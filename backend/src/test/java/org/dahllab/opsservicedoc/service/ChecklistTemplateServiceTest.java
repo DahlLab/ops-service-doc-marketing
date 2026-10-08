@@ -20,19 +20,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// Unit-Tests für ChecklistTemplateService mit gemocktem Repository, im
-// selben Stil wie ChecklistServiceTest.
 @ExtendWith(MockitoExtension.class)
 class ChecklistTemplateServiceTest {
-
     @Mock
     private ChecklistTemplateRepository checklistTemplateRepository;
 
     @InjectMocks
     private ChecklistTemplateService checklistTemplateService;
 
-    // Prüft, dass getAllTemplates() alle gefundenen Vorlagen als DTOs
-    // zurückgibt.
     @Test
     void getAllTemplates_returnsAllTemplates() {
         ChecklistTemplate template = new ChecklistTemplate("template-1", "Server-Wartung Standard",
@@ -45,7 +40,6 @@ class ChecklistTemplateServiceTest {
         assertThat(result.get(0).name()).isEqualTo("Server-Wartung Standard");
     }
 
-    // Prüft den Erfolgsfall von getTemplateById().
     @Test
     void getTemplateById_returnsTemplate_whenIdExists() {
         ChecklistTemplate template = new ChecklistTemplate("template-1", "Server-Wartung Standard",
@@ -57,8 +51,6 @@ class ChecklistTemplateServiceTest {
         assertThat(result.name()).isEqualTo("Server-Wartung Standard");
     }
 
-    // Prüft, dass eine unbekannte ID bei getTemplateById() zu einer
-    // NoSuchElementException führt.
     @Test
     void getTemplateById_throwsException_whenIdDoesNotExist() {
         when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -67,7 +59,6 @@ class ChecklistTemplateServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft den Erfolgsfall von createTemplate().
     @Test
     void createTemplate_createsNewTemplate() {
         ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Server-Wartung Standard",
@@ -81,8 +72,6 @@ class ChecklistTemplateServiceTest {
         assertThat(result.itemDescriptions()).containsExactly("USV geprüft");
     }
 
-    // Prüft, dass updateTemplate() Name und Item-Beschreibungen einer
-    // bestehenden Vorlage aktualisiert.
     @Test
     void updateTemplate_updatesExistingTemplate() {
         ChecklistTemplate existingTemplate = new ChecklistTemplate("template-1", "Server-Wartung Standard",
@@ -100,8 +89,6 @@ class ChecklistTemplateServiceTest {
         assertThat(result.itemDescriptions()).hasSize(2);
     }
 
-    // Prüft, dass ein Update auf eine unbekannte ID eine
-    // NoSuchElementException wirft.
     @Test
     void updateTemplate_throwsException_whenIdDoesNotExist() {
         when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -112,7 +99,6 @@ class ChecklistTemplateServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft den Erfolgsfall von deleteTemplate().
     @Test
     void deleteTemplate_deletesTemplate_whenIdExists() {
         ChecklistTemplate template = new ChecklistTemplate("template-1", "Eigene Vorlage",
@@ -124,9 +110,6 @@ class ChecklistTemplateServiceTest {
         verify(checklistTemplateRepository).deleteById("template-1");
     }
 
-    // Prüft, dass ein Löschversuch auf eine unbekannte ID eine
-    // NoSuchElementException wirft, statt dass die Repository-Methode
-    // still nichts tut.
     @Test
     void deleteTemplate_throwsException_whenIdDoesNotExist() {
         when(checklistTemplateRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -137,8 +120,6 @@ class ChecklistTemplateServiceTest {
         verify(checklistTemplateRepository, never()).deleteById(any());
     }
 
-    // Prüft den Löschschutz: eine Standard-Vorlage darf nicht gelöscht
-    // werden, deleteById darf dabei gar nicht erst aufgerufen werden.
     @Test
     void deleteTemplate_throwsException_forBuiltInTemplate() {
         ChecklistTemplate builtInTemplate = new ChecklistTemplate("template-1", "Server",
@@ -152,9 +133,6 @@ class ChecklistTemplateServiceTest {
         verify(checklistTemplateRepository, never()).deleteById(any());
     }
 
-    // Prüft, dass createTemplate() ein vom Client mitgeschicktes
-    // standard=true ignoriert - sonst könnte sich jeder selbst eine
-    // unlöschbare Vorlage anlegen.
     @Test
     void createTemplate_ignoresBuiltInFlagFromClient() {
         ChecklistTemplateDto templateDto = new ChecklistTemplateDto(null, "Eigene Vorlage",
@@ -167,8 +145,6 @@ class ChecklistTemplateServiceTest {
         assertThat(result.builtIn()).isFalse();
     }
 
-    // Prüft, dass updateTemplate() den standard-Status der bestehenden
-    // Vorlage beibehält, egal was der Client im Request mitschickt.
     @Test
     void updateTemplate_keepsBuiltInStatusOfExistingTemplate() {
         ChecklistTemplate builtInTemplate = new ChecklistTemplate("template-1", "Server",

@@ -19,39 +19,21 @@ const EMPTY_FORM: TaskFormData = {
     status: 'OPEN',
 };
 
-// Seite für den Bereich "TaskPlanner" (entspricht meinem
-// TaskController im Backend). Anders als bei Tickets gibt es hier
-// einen echten DELETE-Endpoint, also biete ich Löschen mit an. Zudem
-// kann ich die Liste nach einem bestimmten Ticket filtern, genau wie
-// es der GET /api/tasks?ticketId=...-Endpoint unterstützt.
 export function TaskPlannerPage() {
     const [tasks, setTasks] = useState<TaskDto[]>([]);
-    // Ich lade zusätzlich ALLE Tickets mit, aus zwei Gründen:
-    // 1. In der Tabelle will ich den Ticket-TITEL anzeigen statt der
-    //    rohen ticketId (die wäre für den Nutzer nicht lesbar).
-    // 2. Im Formular brauche ich ein Auswahlfeld, aus dem der Nutzer ein
-    //    bestehendes Ticket auswählt, statt die ID von Hand einzutippen.
+
     const [tickets, setTickets] = useState<TicketDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Aktuell gewählter Filter: leerer String bedeutet "alle Tickets",
-    // sonst die ID des Tickets, nach dem gefiltert wird.
     const [ticketFilter, setTicketFilter] = useState('');
 
     const [modalOpen, setModalOpen] = useState(false);
-    // null = Neuanlage, sonst der Task, der gerade bearbeitet wird
-    // (siehe handleSpeichern für die POST/PUT-Entscheidung).
+
     const [editedTask, setEditedTask] = useState<TaskDto | null>(null);
     const [form, setForm] = useState<TaskFormData>(EMPTY_FORM);
 
-    // Lädt die Task-Liste, optional gefiltert nach ticketId. Als eigene
-    // Funktion mit Parameter (statt den State direkt zu lesen), weil ich
-    // sie sowohl beim ersten Laden (ticketId = '') als auch beim
-    // Filterwechsel und nach dem Speichern/Löschen mit dem jeweils
-    // AKTUELLEN Filterwert aufrufen will, ohne auf einen State-Update
-    // warten zu müssen, der asynchron ist.
     async function loadTasks(ticketId: string) {
         try {
             const path = ticketId ? `/api/tasks?ticketId=${ticketId}` : '/api/tasks';
@@ -66,11 +48,6 @@ export function TaskPlannerPage() {
         }
     }
 
-    // Beim ersten Rendern der Seite lade ich einmalig die Ticket-Liste
-    // (fürs Auswahlfeld/die Anzeige) UND die ungefilterte Task-Liste.
-    // Die Anfragen stehen direkt im Effect: State wird nur im Callback gesetzt,
-    // wenn die Daten ankommen (nicht synchron im Effect-Start), und `abgebrochen`
-    // schützt davor, State nach dem Verlassen der Seite zu setzen.
     useEffect(() => {
         let aborted = false;
         api.get<TicketDto[]>('/api/tickets').then(setTickets).catch(console.error);
@@ -93,36 +70,16 @@ export function TaskPlannerPage() {
         };
     }, []);
 
-    // Wird aufgerufen, wenn der Nutzer im Filter-Dropdown ein anderes
-    // Ticket (oder "Alle Tickets") auswählt. Ich setze den Filter-State
-    // UND lade sofort die passende Liste nach - bewusst OHNE einen
-    // separaten "Filtern"-Button, das Dropdown allein reicht für diese
-    // einfache Filterung aus.
     function handleFilterChange(ticketId: string) {
         setTicketFilter(ticketId);
         setLoading(true);
         void loadTasks(ticketId);
     }
 
-    // Sucht zu einer ticketId den passenden Ticket-Titel für die
-    // Tabellen-Anzeige. Der Fallback-Text greift nur in dem
-    // (theoretisch möglichen) Fall, dass ein Ticket zwischenzeitlich
-    // gelöscht wurde, der Task aber noch existiert.
     function ticketTitle(ticketId: string): string {
         return tickets.find((t) => t.id === ticketId)?.title ?? '(unbekanntes Ticket)';
     }
 
-    // Öffnet das Modal im "Neu anlegen"-Modus. Ist gerade ein
-    // Ticket-Filter aktiv, übernehme ich dessen Ticket direkt als
-    // Vorauswahl ins Formular - spart einen Klick, wenn ich mehrere
-    // Tasks nacheinander zum selben Ticket erfassen will. Ist kein
-    // Filter aktiv, nehme ich ersatzweise das erste Ticket der Liste,
-    // damit das Auswahlfeld nie leer/ungültig ist.
-    //
-    // "ticketIdVorauswahl" kann ich optional explizit übergeben - das
-    // nutze ich für den Button in der Leer-Zeile der Tabelle, der
-    // IMMER zum gerade gefilterten Ticket gehört, auch falls ich diese
-    // Funktion später mal von woanders ohne aktiven Filter aufrufe.
     function handleNewTask(ticketIdPreselection?: string) {
         setEditedTask(null);
         setForm({
@@ -132,9 +89,6 @@ export function TaskPlannerPage() {
         setModalOpen(true);
     }
 
-    // Öffnet das Modal im Bearbeiten-Modus, vorbefüllt mit den
-    // aktuellen Werten - erfasstAm/erledigtAm lasse ich bewusst aus
-    // (siehe TaskFormData in types.ts), die pflegt mein Backend selbst.
     function handleEdit(task: TaskDto) {
         setEditedTask(task);
         setForm({
@@ -157,9 +111,7 @@ export function TaskPlannerPage() {
                 await api.post<TaskDto>('/api/tasks', form);
             }
             setModalOpen(false);
-            // Mit dem AKTUELLEN Filter neu laden, damit ich nach dem
-            // Speichern wieder genau die Liste sehe, die zur aktuellen
-            // Filterauswahl passt.
+
             await loadTasks(ticketFilter);
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
@@ -173,11 +125,6 @@ export function TaskPlannerPage() {
         }
     }
 
-    // Löscht einen Task nach Bestätigung. window.confirm() statt eines
-    // eigenen Bestätigungs-Modals - für eine einzelne, schnell zu
-    // treffende Entscheidung wie "löschen ja/nein" reicht der
-    // eingebaute Browser-Dialog aus, ohne dass ich dafür extra
-    // Modal-State verwalten muss.
     async function handleDelete(task: TaskDto) {
         if (!window.confirm(`Task "${task.topic}" wirklich löschen?`)) {
             return;
@@ -191,10 +138,6 @@ export function TaskPlannerPage() {
         }
     }
 
-    // Ich prüfe zusätzlich "tasks.length === 0", damit beim bloßen
-    // Filterwechsel (loading wird kurz true) nicht nochmal der komplette
-    // große Spinner über der ganzen Seite erscheint, sondern nur beim
-    // allerersten Laden.
     if (loading && tasks.length === 0) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
@@ -207,10 +150,7 @@ export function TaskPlannerPage() {
         <div className="py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h1 className="mb-0">TaskPlanner</h1>
-                {/* Solange es gar kein Ticket gibt, kann ich keinen Task
-              anlegen (ein Task braucht zwingend eine ticketId) - der
-              Button ist dann deaktiviert statt einen Fehler zu
-              provozieren. */}
+
                 <Button variant="primary" onClick={() => handleNewTask()} disabled={tickets.length === 0}>
                     Neuer Task
                 </Button>
@@ -236,17 +176,6 @@ export function TaskPlannerPage() {
 
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
-            {/* Die Tabelle mit Kopfzeile zeige ich jetzt IMMER an, auch
-            wenn tasks leer ist - so bleibt die Spaltenübersicht
-            (Thema, Ticket, Nächste Schritte, ...) sichtbar, egal ob
-            gerade "Alle Tickets" oder ein einzelnes Ticket ohne Tasks
-            ausgewählt ist. Nur der Tabellenkörper unterscheidet sich:
-            entweder die echten Zeilen, oder eine einzelne Hinweiszeile
-            über alle Spalten hinweg (colSpan={8}) MIT einem Button, über
-            den ich direkt aus der leeren Ansicht heraus einen Task
-            anlegen kann - vorher gab es dafür nur den Button oben am
-            Seitenkopf, dessen Bezug zum gerade gefilterten Ticket nicht
-            offensichtlich war. */}
             <HudPanel title="Aufgaben">
 <Table hover responsive className="hud-table">
                 <thead>
@@ -270,13 +199,7 @@ export function TaskPlannerPage() {
                                     ? `Für "${ticketTitle(ticketFilter)}" sind noch keine Tasks erfasst.`
                                     : 'Keine Tasks vorhanden.'}
                             </div>
-                            {/* Ohne aktiven Filter übergebe ich keine ticketId -
-                            handleNeuerTask() greift dann automatisch auf das
-                            erste Ticket der Liste zurück (siehe dort). Mit
-                            aktivem Filter übergebe ich ihn explizit, damit der
-                            Button unzweifelhaft zu GENAU diesem Ticket gehört,
-                            auch wenn sich ticketFilter zwischen Klick und
-                            Ausführung ändern sollte. */}
+
                             <Button
                                 variant="outline-primary"
                                 size="sm"
@@ -300,7 +223,7 @@ export function TaskPlannerPage() {
                             <td>{formatDate(task.recordedAt)}</td>
                             <td>{formatDate(task.doneAt)}</td>
                             <td>
-                                {/* Flex sitzt im div, damit die td eine echte Tabellenzelle bleibt und die Linie durchgeht */}
+
                                 <div className="d-flex gap-2">
                                     <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(task)}>
                                         Bearbeiten
@@ -361,15 +284,9 @@ export function TaskPlannerPage() {
                             <Form.Label>Zieldatum</Form.Label>
                             <Form.Control
                                 type="date"
-                                // "?? ''" statt null: ein <input type="date"> kann
-                                // mit null als value nicht umgehen (React würde
-                                // eine Warnung werfen), ein leerer String zeigt das
-                                // Feld dagegen einfach leer an.
+
                                 value={form.dueDate ?? ''}
-                                // Tippt der Nutzer das Datum wieder komplett raus,
-                                // kommt hier ein leerer String an - den wandle ich
-                                // zurück in null, damit zieldatum entweder ein
-                                // gültiges Datum oder wirklich "nicht gesetzt" ist.
+
                                 onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
                             />
                         </Form.Group>

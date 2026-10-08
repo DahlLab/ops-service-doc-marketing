@@ -2,28 +2,19 @@ import { useState } from 'react'
 import { Dropdown } from 'react-bootstrap'
 import { FaGithub, FaSignOutAlt } from 'react-icons/fa'
 
-/**
- * UserMenu - Avatar + GitHub-Username mit Dropdown "Abmelden".
- *
- * Das Profilbild hole ich direkt von GitHub (https://github.com/<name>.png),
- * dafür brauche ich keinen Backend-Aufruf. Lädt das Bild nicht (z. B.
- * offline), zeige ich stattdessen das GitHub-Icon.
- */
 interface UserMenuProps {
     username: string
     onLogout: () => void
-    /** In welche Richtung das Menü aufklappt (in der Sidebar unten: nach oben) */
+
     drop?: 'up' | 'down'
 }
 
-// Readonly<...> markiert die Props als schreibgeschützt - ich darf sie in der Komponente nicht ändern
 export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMenuProps>) {
-    // Merkt sich, ob das Avatar-Bild nicht geladen werden konnte
     const [avatarError, setAvatarError] = useState(false)
 
     return (
         <Dropdown drop={drop} align="end" className="user-menu">
-            {/* Eigener Toggle als Button, damit ich Avatar + Name selbst gestalten kann */}
+
             <Dropdown.Toggle as="button" className="user-menu__toggle" aria-label="Benutzermenü">
                 {avatarError ? (
                     <span className="user-menu__avatar user-menu__avatar--fallback">

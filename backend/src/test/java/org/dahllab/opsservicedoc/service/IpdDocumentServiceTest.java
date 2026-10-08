@@ -30,12 +30,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// Unit-Tests für IpdDocumentService mit gemockten Repositories, im
-// selben Stil wie ChecklistServiceTest: ich teste hier nur die
-// Service-Logik isoliert, ohne echte MongoDB-Anbindung.
 @ExtendWith(MockitoExtension.class)
 class IpdDocumentServiceTest {
-
     @Mock
     private IpdDocumentRepository ipdDocumentRepository;
 
@@ -51,10 +47,6 @@ class IpdDocumentServiceTest {
     @InjectMocks
     private IpdDocumentService ipdDocumentService;
 
-    // Baut ein vollständiges, aber inhaltlich leeres IpdDocument für
-    // Tests, die nur ein paar bestimmte Felder brauchen - vermeidet,
-    // dass ich den 24-Argumente-Konstruktor in jedem Test komplett neu
-    // hinschreiben muss.
     private IpdDocument buildEmptyDocument(String id, String ticketId) {
         return new IpdDocument(
                 id, ticketId, IpdDocumentStatus.DRAFT, "Server-Wartung", "Mia Muster",
@@ -63,8 +55,6 @@ class IpdDocumentServiceTest {
                 LocalDateTime.now(), LocalDateTime.now());
     }
 
-    // Prüft, dass getAllIpdDocuments() alle gefundenen Dokumente als
-    // DTOs zurückgibt.
     @Test
     void getAllIpdDocuments_returnsAllDocuments() {
         when(ipdDocumentRepository.findAll()).thenReturn(List.of(buildEmptyDocument("doc-1", "ticket-1")));
@@ -75,7 +65,6 @@ class IpdDocumentServiceTest {
         assertThat(result.get(0).title()).isEqualTo("Server-Wartung");
     }
 
-    // Prüft den Erfolgsfall von getIpdDocumentById().
     @Test
     void getIpdDocumentById_returnsDocument_whenIdExists() {
         when(ipdDocumentRepository.findById("doc-1")).thenReturn(Optional.of(buildEmptyDocument("doc-1", "ticket-1")));
@@ -85,8 +74,6 @@ class IpdDocumentServiceTest {
         assertThat(result.title()).isEqualTo("Server-Wartung");
     }
 
-    // Prüft, dass eine unbekannte ID bei getIpdDocumentById() zu einer
-    // NoSuchElementException führt.
     @Test
     void getIpdDocumentById_throwsException_whenIdDoesNotExist() {
         when(ipdDocumentRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -95,8 +82,6 @@ class IpdDocumentServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft, dass createIpdDocumentFromTicket() Titel, Techniker und
-    // Szenario automatisch aus dem Ticket übernimmt.
     @Test
     void createIpdDocumentFromTicket_copiesDataFromTicket() {
         Ticket ticket = new Ticket("ticket-1", null, "Server-Wartung", "Beschreibung",
@@ -114,8 +99,6 @@ class IpdDocumentServiceTest {
         assertThat(result.status()).isEqualTo(IpdDocumentStatus.DRAFT);
     }
 
-    // Prüft, dass eine unbekannte ticketId eine NoSuchElementException
-    // wirft.
     @Test
     void createIpdDocumentFromTicket_throwsException_whenTicketDoesNotExist() {
         when(ticketRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -124,8 +107,6 @@ class IpdDocumentServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft, dass qualitaetssicherungAbgeschlossen auf true gesetzt
-    // wird, wenn alle Checklisten des Tickets abgeschlossen sind.
     @Test
     void createIpdDocumentFromTicket_setsQualityAssuranceCompleted_whenAllChecklistsCompleted() {
         Ticket ticket = new Ticket("ticket-1", null, "Server-Wartung", "Beschreibung",
@@ -143,9 +124,6 @@ class IpdDocumentServiceTest {
         assertThat(result.qualityAssuranceCompleted()).isTrue();
     }
 
-    // Prüft die Kehrseite: ohne vorhandene Checklisten darf
-    // qualitaetssicherungAbgeschlossen nicht automatisch auf true
-    // stehen, auch wenn es "nichts zu erledigen gab".
     @Test
     void createIpdDocumentFromTicket_setsQualityAssuranceNotCompleted_whenNoChecklistsExist() {
         Ticket ticket = new Ticket("ticket-1", null, "Server-Wartung", "Beschreibung",
@@ -160,9 +138,6 @@ class IpdDocumentServiceTest {
         assertThat(result.qualityAssuranceCompleted()).isFalse();
     }
 
-    // Prüft, dass updateIpdDocument() die manuell gepflegten Felder
-    // übernimmt, erstelltAm unverändert lässt und aktualisiertAm neu
-    // setzt.
     @Test
     void updateIpdDocument_updatesManualFieldsAndKeepsCreatedAt() {
         LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
@@ -191,8 +166,6 @@ class IpdDocumentServiceTest {
         assertThat(result.updatedAt()).isNotEqualTo(createdAt);
     }
 
-    // Prüft, dass ein Update auf eine unbekannte ID eine
-    // NoSuchElementException wirft.
     @Test
     void updateIpdDocument_throwsException_whenIdDoesNotExist() {
         when(ipdDocumentRepository.findById("unbekannt")).thenReturn(Optional.empty());
@@ -205,7 +178,6 @@ class IpdDocumentServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // Prüft den Erfolgsfall von deleteIpdDocument().
     @Test
     void deleteIpdDocument_deletesDocument_whenIdExists() {
         when(ipdDocumentRepository.existsById("doc-1")).thenReturn(true);
@@ -215,9 +187,6 @@ class IpdDocumentServiceTest {
         verify(ipdDocumentRepository).deleteById("doc-1");
     }
 
-    // Prüft, dass ein Löschversuch auf eine unbekannte ID eine
-    // NoSuchElementException wirft, statt dass die Repository-Methode
-    // still nichts tut.
     @Test
     void deleteIpdDocument_throwsException_whenIdDoesNotExist() {
         when(ipdDocumentRepository.existsById("unbekannt")).thenReturn(false);
@@ -228,9 +197,6 @@ class IpdDocumentServiceTest {
         verify(ipdDocumentRepository, never()).deleteById(any());
     }
 
-    // Prüft, dass generatePdf() tatsächlich Bytes liefert, die mit der
-    // PDF-Kennung "%PDF" beginnen - ich prüfe bewusst nicht den
-    // kompletten Inhalt, nur dass wirklich ein echtes PDF entsteht.
     @Test
     void generatePdf_createsNonEmptyPdf() {
         when(ipdDocumentRepository.findById("doc-1")).thenReturn(Optional.of(buildEmptyDocument("doc-1", "ticket-1")));
@@ -252,7 +218,7 @@ class IpdDocumentServiceTest {
         byte[] result = ipdDocumentService.generateChecklistPdf("doc-1");
 
         assertThat(new String(result, 0, 4)).isEqualTo("%PDF");
-        // Die Checkboxen sind echte Formularfelder (AcroForm).
+
         assertThat(new String(result, java.nio.charset.StandardCharsets.ISO_8859_1)).contains("/AcroForm");
     }
 
