@@ -1,194 +1,207 @@
 # OpsServiceDoc
 
-Support-Workflow und IPD-Dokumentgenerator für Wartungseinsätze – Abschlussprojekt im Java-Bootcamp bei neue fische.
+Support workflow and IPD document generator for IT maintenance jobs. The application follows a job from start to finish: tickets come from **GLPI**, the individual work steps are tracked in the **task planner**, internal quality assurance runs through **checklists**, and the result is a finished **IPD document** (Infrastructure Planning & Design) as a PDF for the customer.
 
-Die Anwendung begleitet einen Einsatz von Anfang bis Ende: Tickets kommen aus **GLPI**, die einzelnen Arbeitsschritte werden im **TaskPlanner** erfasst, die interne Qualitätssicherung läuft über **Checklisten**, und am Ende entsteht daraus ein fertiges **IPD-Dokument** (Infrastructure Planning & Design) als PDF für den Kunden.
+The project was built as a capstone project during a Java bootcamp. The user interface is available in **English and German** (language switcher in the top bar).
 
-## Inhalt
+![Dashboard](docs/screenshots/en-dashboard.png)
 
-- [Funktionen](#funktionen)
-- [Technik](#technik)
-- [Voraussetzungen](#voraussetzungen)
-- [Lokal starten](#lokal-starten)
-- [Konfiguration](#konfiguration)
-- [Tests und Qualität](#tests-und-qualität)
-- [API-Überblick](#api-überblick)
-- [Sicherheit](#sicherheit)
-- [Projektstruktur](#projektstruktur)
-- [Geplante Erweiterungen](#geplante-erweiterungen)
+## Features
 
-## Funktionen
-
-| Bereich | Was es kann |
+| Area | What it does |
 | --- | --- |
-| **Tickets** | Tickets aus GLPI synchronisieren, ansehen und bearbeiten (Status, Techniker, Szenario). |
-| **TaskPlanner** | Arbeitsschritte zu einem Ticket erfassen, Status setzen und abhaken. |
-| **Checklisten** | Checklisten manuell oder aus Vorlagen anlegen, Punkte abhaken, Vorlagen verwalten (Standardvorlagen sind vor dem Löschen geschützt). |
-| **IPD-Generator** | IPD-Dokument aus einem Ticket erzeugen. Erledigte Tasks und der Stand der Qualitätssicherung werden automatisch übernommen. Export als PDF im DahlLab-Design. |
-| **Checklisten-PDF** | Interne Technikerversion der Checkliste mit ausfüllbaren Checkboxen, zum Ausdrucken oder Bearbeiten am Tablet. Getrennt vom Kunden-PDF. |
-| **GLPI-Link** | Navigation und Startseite führen direkt in die GLPI-Weboberfläche (neuer Tab). |
+| **Dashboard** | Open tickets, checklist progress, due and overdue tasks, latest IPD documents, quick actions. |
+| **Tickets** | Synchronise tickets from GLPI, view and edit them (status, technician, scenario). |
+| **Task planner** | Record next steps per ticket with due dates and status. |
+| **Checklists** | Create checklists from reusable templates and tick off items. Download a printable PDF for the technician. |
+| **IPD generator** | Create an IPD draft from a ticket. Performed steps and the quality-assurance status are derived from the ticket's tasks and checklists. Download the customer PDF. |
+| **GLPI link** | Navigation and dashboard link straight to the GLPI web interface. |
 
-Das Kunden-PDF zeigt von der Checkliste bewusst nur das Ergebnis („Qualitätssicherung durchgeführt: Ja/Nein“). Die Details bekommt nur der Techniker über das separate Checklisten-PDF.
+| Tickets | Task planner |
+| --- | --- |
+| ![Tickets](docs/screenshots/en-tickets.png) | ![Task planner](docs/screenshots/en-tasks.png) |
 
-## Technik
+| Checklists | IPD document |
+| --- | --- |
+| ![Checklists](docs/screenshots/en-checklists.png) | ![IPD document](docs/screenshots/en-ipd-document.png) |
+
+| Sign-in | German UI |
+| --- | --- |
+| ![Sign-in](docs/screenshots/en-welcome.png) | ![German dashboard](docs/screenshots/de-dashboard.png) |
+
+The screenshots show invented demo data only.
+
+## Tech stack
 
 **Backend** (`backend/`)
 - Java 25, Spring Boot 4.1
-- Spring Web MVC, Spring Security (OAuth2-Login mit GitHub), Bean Validation
+- Spring Web MVC, Spring Security (GitHub OAuth2 login), Bean Validation
 - Spring Data MongoDB
-- OpenPDF für die PDF-Erzeugung
+- OpenPDF for PDF generation
 - springdoc-openapi (Swagger UI)
 - JUnit 5, Mockito, MockMvc, JaCoCo
 
 **Frontend** (`frontend/`)
 - React 19, TypeScript, Vite
 - React Router, React-Bootstrap
+- react-i18next (English and German)
 
-**Infrastruktur**
-- MongoDB 7, GLPI und die zugehörige MySQL-Datenbank laufen per Docker Compose
-- GitHub Actions mit SonarCloud-Analyse für Backend und Frontend
+**Infrastructure**
+- MongoDB 7, GLPI and its MySQL database via Docker Compose
+- GitHub Actions: build, test and lint for backend and frontend
 
-## Voraussetzungen
+## Prerequisites
 
 - JDK 25
-- Node.js (aktuelle LTS-Version) und npm
-- Docker mit Docker Compose
-- Eine GitHub OAuth App (siehe unten)
+- Node.js 20 or newer
+- Docker with Docker Compose
+- A GitHub account (for the OAuth app used to sign in)
 
-## Lokal starten
+## Run locally
 
-### 1. Umgebungsvariablen anlegen
+### 1. Create the environment file
 
-Im Projektstamm eine Datei `.env` anlegen (sie steht in der `.gitignore` und wird nie committet). Welche Variablen es gibt, steht unter [Konfiguration](#konfiguration).
+Copy `.env.example` to `.env` in the project root and fill in the values. The file is listed in `.gitignore` and is never committed. See [Configuration](#configuration) for all variables.
 
-### 2. Datenbanken und GLPI starten
+### 2. Start the databases and GLPI
 
 ```bash
 docker compose up -d
 ```
 
-Das startet MongoDB (Port 27017), GLPI (Port 80) und die GLPI-Datenbank.
+This starts MongoDB (port 27017), GLPI (port 80) and the GLPI database.
 
-GLPI muss beim ersten Start über den Web-Installer unter `http://localhost` eingerichtet werden. Danach in GLPI die REST-API aktivieren und einen App-Token sowie einen User-Token erzeugen. Beide kommen in die `.env`.
+GLPI must be set up through its web installer at `http://localhost` on first start. Afterwards, enable the REST API in GLPI and create an app token and a user token. Both go into `.env`.
 
-### 3. GitHub OAuth App anlegen
+### 3. Create a GitHub OAuth app
 
-Unter GitHub → Settings → Developer settings → OAuth Apps eine neue App erstellen:
+In GitHub, go to Settings, Developer settings, OAuth Apps and create a new app:
 
 - Homepage URL: `http://localhost:5173`
 - Authorization callback URL: `http://localhost:8080/login/oauth2/code/github`
 
-Client-ID und Client-Secret kommen in die `.env`.
+Put the client ID and client secret into `.env`.
 
-### 4. Backend starten
+### 4. Start the backend
 
-Die Variablen aus der `.env` müssen im Backend-Prozess als Umgebungsvariablen ankommen (in IntelliJ unter den Run-Einstellungen der Anwendung).
+The backend reads its configuration from environment variables, so load `.env` first (or set the variables in your IDE run configuration), then:
 
 ```bash
 cd backend
-./mvnw spring-boot:run        # Windows: mvnw.cmd spring-boot:run
+./mvnw spring-boot:run
 ```
 
-Das Backend läuft auf `http://localhost:8080`. Die API-Dokumentation liegt unter `http://localhost:8080/swagger-ui.html`.
+The backend runs on `http://localhost:8080`. The API documentation is available at `http://localhost:8080/swagger-ui.html`.
 
-### 5. Frontend starten
+To start with invented demo data (tickets, tasks, checklists and IPD documents) on an empty database, activate the `demo` profile:
+
+```bash
+SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
+```
+
+The seeder only runs when the ticket collection is empty.
+
+### 5. Start the frontend
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-Das Frontend läuft auf `http://localhost:5173` und leitet Aufrufe an `/api` per Vite-Proxy ans Backend weiter. Wichtig: Alle npm-Befehle gehören in den Ordner `frontend/`.
+The frontend runs on `http://localhost:5173` and proxies `/api` to the backend.
 
-## Konfiguration
+On Windows, `scripts/start.bat` starts everything in one go and `scripts/stop.bat` stops it again.
 
-Alle Zugangsdaten kommen aus Umgebungsvariablen. In den Quelltext gehören nie echte Tokens oder Passwörter.
+## Configuration
 
-| Variable | Pflicht | Bedeutung |
+| Variable | Required | Purpose |
 | --- | --- | --- |
-| `GITHUB_CLIENT_ID` | ja | Client-ID der GitHub OAuth App |
-| `GITHUB_CLIENT_SECRET` | ja | Client-Secret der GitHub OAuth App |
-| `GLPI_API_URL` | ja | REST-API von GLPI, z. B. `http://localhost/api.php/v1` |
-| `GLPI_APP_TOKEN` | ja | App-Token der GLPI-API |
-| `GLPI_USER_TOKEN` | ja | User-Token der GLPI-API |
-| `GLPI_WEB_URL` | nein | Adresse der GLPI-Weboberfläche für den Link im Frontend. Standard: `http://localhost` |
-| `MONGODB_URI` | nein | MongoDB-Verbindung. Standard ist die lokale Entwicklungsdatenbank |
-| `FRONTEND_URL` | nein | Adresse des Frontends für die Weiterleitung nach Login und Logout. Standard: `http://localhost:5173` |
-| `GLPI_DB_HOST`, `GLPI_DB_NAME`, `GLPI_DB_USER`, `GLPI_DB_PASSWORD`, `GLPI_DB_PORT` | für Docker Compose | Zugang der GLPI-Datenbank |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | yes | GitHub OAuth app used for sign-in |
+| `GLPI_API_URL` | yes | GLPI REST API, e.g. `http://localhost/api.php/v1` |
+| `GLPI_APP_TOKEN` | yes | GLPI API app token |
+| `GLPI_USER_TOKEN` | yes | GLPI API user token |
+| `GLPI_WEB_URL` | no | Address of the GLPI web interface for the link in the frontend. Default: `http://localhost` |
+| `FRONTEND_URL` | no | Where the browser is sent after login and logout. Default: `http://localhost:5173` |
+| `MONGODB_URI` | no | MongoDB connection string. Default: the local Docker Compose instance |
+| `GLPI_DB_HOST`, `GLPI_DB_NAME`, `GLPI_DB_USER`, `GLPI_DB_PASSWORD`, `GLPI_DB_PORT` | for Docker Compose | Access to the GLPI database |
 
-Der GLPI-Link im Frontend erscheint nur, wenn das Backend eine gültige `http(s)`-Adresse kennt.
+The `admin`/`admin` MongoDB credentials in `docker-compose.yml` are for local development only.
 
-## Tests und Qualität
+## Tests and quality
 
 ```bash
-# Backend (benötigt eine laufende MongoDB, siehe docker compose)
 cd backend
 ./mvnw test
 
-# Frontend
-cd frontend
-npm run build
+cd ../frontend
 npm run lint
+npm run build
 ```
 
-- Die Backend-Tests laufen gegen eine eigene Test-Datenbank (`ops_service_doc_test`), damit die Entwicklungsdaten nicht berührt werden.
-- Controller-Tests nutzen MockMvc mit simuliertem GitHub-Login, Service-Tests arbeiten mit Mockito.
-- JaCoCo erzeugt die Testabdeckung, SonarCloud wertet sie in der CI aus. Der Workflow läuft bei jedem Push auf `master` und bei jedem Pull Request.
+The backend tests need a running MongoDB (see `docker compose`). The GitHub Actions workflows in `.github/workflows/` run the same steps on every pull request.
 
-## API-Überblick
+## API overview
 
-Alle Endpoints liegen unter `/api` und verlangen einen Login. Die vollständige, interaktive Dokumentation steht in der Swagger UI.
+All endpoints live under `/api` and require a login. The complete, interactive documentation is in the Swagger UI.
 
-| Pfad | Zweck |
+| Path | Purpose |
 | --- | --- |
-| `GET /api/auth/me` | Angemeldeten GitHub-Nutzer abfragen |
-| `/api/tickets` | Tickets verwalten, `POST /api/tickets/sync-glpi` synchronisiert aus GLPI |
-| `/api/tasks` | Tasks zu Tickets |
-| `/api/checklists` | Checklisten, `POST /api/checklists/from-template` erzeugt sie aus einer Vorlage |
-| `/api/checklist-templates` | Checklisten-Vorlagen |
-| `/api/ipd` | IPD-Dokumente, `POST /api/ipd/from-ticket/{ticketId}` erzeugt einen Entwurf |
-| `GET /api/ipd/{id}/pdf` | Kunden-PDF |
-| `GET /api/ipd/{id}/checklist-pdf` | Checklisten-PDF für den Techniker |
-| `GET /api/config/glpi-url` | Adresse der GLPI-Weboberfläche |
+| `GET /api/auth/me` | Current GitHub user |
+| `/api/tickets` | Manage tickets; `POST /api/tickets/sync-glpi` synchronises from GLPI |
+| `/api/tasks` | Tasks per ticket |
+| `/api/checklists` | Checklists; `POST /api/checklists/from-template` creates one from a template |
+| `/api/checklist-templates` | Checklist templates |
+| `/api/ipd` | IPD documents; `POST /api/ipd/from-ticket/{ticketId}` creates a draft |
+| `GET /api/ipd/{id}/pdf` | Customer PDF |
+| `GET /api/ipd/{id}/checklist-pdf` | Checklist PDF for the technician |
+| `GET /api/config/glpi-url` | Address of the GLPI web interface |
 
-## Sicherheit
+## Security
 
-- **Login:** OAuth2 mit GitHub, danach Session-Cookie.
-- **Zugriffsschutz:** `/api/**` ist insgesamt geschützt. Neue Controller sind damit automatisch abgesichert. Ohne Login antwortet die API mit `401`.
-- **CSRF-Schutz:** Schreibende Aufrufe brauchen ein CSRF-Token. Das Backend legt es als Cookie `XSRF-TOKEN` ab, das Frontend schickt es im Header `X-XSRF-TOKEN` zurück (siehe `frontend/src/api/api.ts`). Das Logout-Formular sendet es als verstecktes Feld.
-- **Geheimnisse:** Tokens und Passwörter stehen ausschließlich in Umgebungsvariablen bzw. der nicht versionierten `.env`.
+- **Login:** OAuth2 with GitHub, followed by a session cookie.
+- **Access control:** `/api/**` is protected as a whole, so new controllers are secured automatically. Without a login the API answers with `401`.
+- **CSRF protection:** Write requests need a CSRF token. The backend sets it as the `XSRF-TOKEN` cookie and the frontend sends it back in the `X-XSRF-TOKEN` header (see `frontend/src/api/api.ts`).
+- **Secrets:** Tokens and passwords live only in environment variables or the untracked `.env` file.
 
-## Projektstruktur
+## Project structure
 
 ```
 ops-service-doc/
-├── backend/                 Spring-Boot-Anwendung
+├── backend/                 Spring Boot application
 │   └── src/main/java/org/dahllab/opsservicedoc/
-│       ├── config/          GLPI-Konfiguration, Seeder für Standardvorlagen
-│       ├── controller/      REST-Endpoints
-│       ├── dto/             Datenobjekte der API
-│       ├── exception/       Zentrale Fehlerbehandlung
-│       ├── model/           MongoDB-Dokumente
-│       ├── repository/      Spring-Data-Repositories
-│       ├── security/        Login und Security-Konfiguration
-│       ├── service/         Fachlogik, GLPI-Client
-│       └── util/            Mapper und PDF-Generatoren
-├── frontend/                React-Anwendung
+│       ├── config/          GLPI configuration, seeders (built-in templates, demo data)
+│       ├── controller/      REST endpoints
+│       ├── dto/             API data objects
+│       ├── exception/       Central error handling
+│       ├── model/           MongoDB documents
+│       ├── repository/      Spring Data repositories
+│       ├── security/        Login and security configuration
+│       ├── service/         Business logic, GLPI client
+│       └── util/            Mappers and PDF generators
+├── frontend/                React application
 │   └── src/
-│       ├── api/             Fetch-Hilfsfunktionen und Typen
-│       ├── auth/            Login-Zustand
-│       ├── components/      Wiederverwendbare Bausteine
-│       ├── hooks/           Eigene Hooks
-│       ├── pages/           Seiten (Tickets, TaskPlanner, Checklisten, IPD)
-│       └── utils/           Formatierung und Download-Helfer
-├── docker-compose.yml       MongoDB, GLPI, GLPI-Datenbank
-└── .github/workflows/       CI mit SonarCloud
+│       ├── api/             Fetch helpers and types
+│       ├── auth/            Login state
+│       ├── components/      Reusable building blocks
+│       ├── hooks/           Custom hooks
+│       ├── i18n/, locales/  Translations (en, de)
+│       ├── pages/           Pages (tickets, task planner, checklists, IPD)
+│       └── utils/           Formatting and download helpers
+├── docs/screenshots/        Images used in this README
+├── scripts/                 Windows start and stop scripts
+├── docker-compose.yml       MongoDB, GLPI, GLPI database
+└── .github/workflows/       CI
 ```
 
-## Geplante Erweiterungen
+## Notes
 
-- Doppelte Tickets beim wiederholten GLPI-Sync vermeiden
-- Frontend-Tests für Hilfsfunktionen und Seiten
-- Weitere Tests für Verzweigungen in den Services
-- Weitere Wartungsszenarien und Checklistenvorlagen
+- The user interface is translated; texts that come from GLPI or are typed in by users are shown as entered.
+- The generated PDFs are in English.
+
+## Planned improvements
+
+- Avoid duplicate tickets on repeated GLPI syncs
+- Frontend tests for helpers and pages
+- More tests for branches in the services
+- More maintenance scenarios and checklist templates
