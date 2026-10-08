@@ -37,8 +37,6 @@ The project was built as a capstone project during a Java bootcamp. The user int
 
 The screenshots show invented demo data only.
 
-The screenshots show invented demo data only.
-
 ## Tech stack
 
 **Backend** (`backend/`)
