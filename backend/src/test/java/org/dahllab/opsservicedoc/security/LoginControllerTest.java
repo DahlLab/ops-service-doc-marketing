@@ -30,7 +30,7 @@ class LoginControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("GIVEN ein eingeloggter GitHub-User WHEN /api/auth/me aufgerufen wird THEN wird der Username zurückgegeben")
+    @DisplayName("GIVEN a logged-in GitHub user WHEN /api/auth/me is called THEN the username is returned")
     void getMe_returnsUsername_whenUserIsAuthenticated() throws Exception {
 
         // GIVEN:
@@ -63,7 +63,7 @@ class LoginControllerTest {
     }
 
     @Test
-    @DisplayName("GIVEN kein eingeloggter User WHEN /api/auth/me aufgerufen wird THEN kommt 401 Unauthorized")
+    @DisplayName("GIVEN no logged-in user WHEN /api/auth/me is called THEN 401 Unauthorized is returned")
     void getMe_returns401_whenUserIsNotAuthenticated() throws Exception {
 
         // GIVEN:

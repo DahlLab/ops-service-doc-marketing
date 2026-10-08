@@ -21,7 +21,7 @@ class GlpiTicketMapperTest {
 
 
     @Test
-    @DisplayName("GIVEN ein vollständiges GLPI-Ticket WHEN toTicket aufgerufen wird THEN werden alle Felder korrekt übernommen")
+    @DisplayName("GIVEN a complete GLPI ticket WHEN toTicket is called THEN all fields are copied correctly")
     void toTicket_copiesAllFields_whenGlpiTicketIsComplete() {
 
         // GIVEN: Ich baue mit eine Map, die genauso aussieht wie ein einzelnes
@@ -49,7 +49,7 @@ class GlpiTicketMapperTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein GLPI-Ticket mit unbekanntem Status WHEN toTicket aufgerufen wird THEN wird NEW als Fallback verwendet")
+    @DisplayName("GIVEN a GLPI ticket with an unknown status WHEN toTicket is called THEN NEW is used as fallback")
     void toTicket_usesNewAsFallback_whenStatusIsUnknown() {
 
         // GIVEN: Ich simuliere einen Status-Code, den mein Mapper nicht kennt
@@ -69,7 +69,7 @@ class GlpiTicketMapperTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein GLPI-Ticket ohne Status-Feld WHEN toTicket aufgerufen wird THEN wird NEW als Fallback verwendet")
+    @DisplayName("GIVEN a GLPI ticket without a status field WHEN toTicket is called THEN NEW is used as fallback")
     void toTicket_usesNewAsFallback_whenStatusFieldIsMissing() {
 
         // GIVEN: Ich lasse das status-Feld komplett weg, um zu prüfen, dass mein
@@ -86,7 +86,7 @@ class GlpiTicketMapperTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein GLPI-Ticket mit unlesbarem Datum WHEN toTicket aufgerufen wird THEN wird das aktuelle Datum als Fallback verwendet")
+    @DisplayName("GIVEN a GLPI ticket with an unreadable date WHEN toTicket is called THEN the current date is used as fallback")
     void toTicket_usesCurrentDateAsFallback_whenDateIsUnreadable() {
 
         // GIVEN: Ich simuliere ein kaputtes/unerwartetes Datumsformat.
@@ -110,7 +110,7 @@ class GlpiTicketMapperTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein GLPI-Ticket ohne Titel und Beschreibung WHEN toTicket wird THEN werden leere Strings statt null verwendet")
+    @DisplayName("GIVEN a GLPI ticket without title and description WHEN toTicket is called THEN empty strings are used instead of null")
     void toTicket_usesEmptyStrings_whenTitleAndDescriptionAreMissing() {
 
         // GIVEN:

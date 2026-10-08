@@ -45,7 +45,7 @@ class GlpiClientTest {
     }
 
     @Test
-    @DisplayName("GIVEN gültige GLPI-Zugangsdaten WHEN getAllGlpiTickets aufgerufen wird THEN wird zuerst initSession und dann Tickets abgefragt")
+    @DisplayName("GIVEN valid GLPI credentials WHEN getAllGlpiTickets is called THEN initSession is called first and the tickets are fetched afterwards")
     void getAllGlpiTickets_callsInitSessionAndFetchesTickets() {
 
         // GIVEN: Wir legen fest, was der (simulierte) GLPI-Server auf die beiden

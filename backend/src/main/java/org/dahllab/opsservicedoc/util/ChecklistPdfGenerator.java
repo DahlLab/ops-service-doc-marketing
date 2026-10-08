@@ -86,9 +86,9 @@ public class ChecklistPdfGenerator {
         cell.setPadding(14);
 
         cell.addElement(new Paragraph("Checkliste – Technikerexemplar", titleFont));
-        String bezug = ipdDocument.title() != null ? ipdDocument.title() : "IPD-Dokument";
+        String reference = ipdDocument.title() != null ? ipdDocument.title() : "IPD-Dokument";
         String customer = ipdDocument.customer() != null && !ipdDocument.customer().isBlank() ? " · Kunde: " + ipdDocument.customer() : "";
-        Paragraph subtitle = new Paragraph(bezug + customer + " · intern, nicht für den Kunden", subtitleFont);
+        Paragraph subtitle = new Paragraph(reference + customer + " · intern, nicht für den Kunden", subtitleFont);
         subtitle.setSpacingBefore(4);
         cell.addElement(subtitle);
 

@@ -39,7 +39,7 @@ class TicketServiceTest {
     private TicketService ticketService;
 
     @Test
-    @DisplayName("GIVEN eine leere Datenbank WHEN getAllTickets aufgerufen wird THEN werden Mock-Tickets angelegt und zurückgegeben")
+    @DisplayName("GIVEN an empty database WHEN getAllTickets is called THEN mock tickets are created and returned")
     void getAllTickets_createsMockData_whenDatabaseIsEmpty() {
 
         // GIVEN: Ich simuliere eine leere Datenbank: count() liefert 0,
@@ -65,7 +65,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN eine bereits befüllte Datenbank WHEN getAllTickets aufgerufen wird THEN werden KEINE neuen Mock-Daten angelegt")
+    @DisplayName("GIVEN an already filled database WHEN getAllTickets is called THEN NO new mock data is created")
     void getAllTickets_createsNoMockData_whenDatabaseIsAlreadyFilled() {
 
         // GIVEN: Die Datenbank enthält bereits ein Ticket (count() > 0).
@@ -86,7 +86,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN eine existierende ID WHEN getTicketById aufgerufen wird THEN wird das passende Ticket zurückgegeben")
+    @DisplayName("GIVEN an existing ID WHEN getTicketById is called THEN the matching ticket is returned")
     void getTicketById_returnsTicket_whenIdExists() {
 
         // GIVEN:
@@ -102,7 +102,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN eine nicht existierende ID WHEN getTicketById aufgerufen wird THEN wird eine NoSuchElementException geworfen")
+    @DisplayName("GIVEN a non-existing ID WHEN getTicketById is called THEN a NoSuchElementException is thrown")
     void getTicketById_throwsException_whenIdDoesNotExist() {
 
         // GIVEN:
@@ -118,7 +118,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein neues Ticket WHEN createTicket aufgerufen wird THEN wird es gespeichert und als DTO zurückgegeben")
+    @DisplayName("GIVEN a new ticket WHEN createTicket is called THEN it is saved and returned as DTO")
     void createTicket_savesAndReturnsTicket() {
 
         // GIVEN:
@@ -143,7 +143,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN eine existierende ID WHEN updateTicket aufgerufen wird THEN wird das Ticket aktualisiert")
+    @DisplayName("GIVEN an existing ID WHEN updateTicket is called THEN the ticket is updated")
     void updateTicket_updatesTicket_whenIdExists() {
 
         // GIVEN:
@@ -165,7 +165,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN eine nicht existierende ID WHEN updateTicket aufgerufen wird THEN wird eine NoSuchElementException geworfen")
+    @DisplayName("GIVEN a non-existing ID WHEN updateTicket is called THEN a NoSuchElementException is thrown")
     void updateTicket_throwsException_whenIdDoesNotExist() {
 
         // GIVEN:
@@ -186,7 +186,7 @@ class TicketServiceTest {
     private GlpiClient glpiClient;
 
     @Test
-    @DisplayName("GIVEN ein neues GLPI-Ticket WHEN syncFromGlpi aufgerufen wird THEN wird es neu angelegt")
+    @DisplayName("GIVEN a new GLPI ticket WHEN syncFromGlpi is called THEN it is created")
     void syncFromGlpi_createsNewTicket_whenNotYetPresent() {
 
         // GIVEN:
@@ -213,7 +213,7 @@ class TicketServiceTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein bereits importiertes GLPI-Ticket WHEN syncFromGlpi erneut aufgerufen wird THEN wird das bestehende Ticket aktualisiert statt dupliziert")
+    @DisplayName("GIVEN an already imported GLPI ticket WHEN syncFromGlpi is called again THEN the existing ticket is updated instead of duplicated")
     void syncFromGlpi_updatesExistingTicket_whenGlpiTicketIdAlreadyExists() {
 
         // GIVEN:

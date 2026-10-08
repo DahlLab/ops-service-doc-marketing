@@ -45,7 +45,7 @@ class TicketControllerTest {
     private TicketService ticketService;
 
     @Test
-    @DisplayName("GIVEN ein eingeloggter User WHEN GET /api/tickets aufgerufen wird THEN werden die Tickets als JSON zurückgegeben")
+    @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets is called THEN the tickets are returned as JSON")
     void getAllTickets_returnsTickets_whenLoggedIn() throws Exception {
 
         // GIVEN: Ich bereite vor, was der (gemockte) Service zurückgeben soll,
@@ -69,7 +69,7 @@ class TicketControllerTest {
     }
 
     @Test
-    @DisplayName("GIVEN kein eingeloggter User WHEN GET /api/tickets aufgerufen wird THEN kommt 401 Unauthorized")
+    @DisplayName("GIVEN no logged-in user WHEN GET /api/tickets is called THEN 401 Unauthorized is returned")
     void getAllTickets_returns401_whenNotLoggedIn() throws Exception {
 
         // WHEN: Request OHNE simulierten Login.
@@ -82,7 +82,7 @@ class TicketControllerTest {
 
 
     @Test
-    @DisplayName("GIVEN ein eingeloggter User WHEN GET /api/tickets/{id} aufgerufen wird THEN wird das Ticket zurückgegeben")
+    @DisplayName("GIVEN a logged-in user WHEN GET /api/tickets/{id} is called THEN the ticket is returned")
     void getTicketById_returnsTicket_whenLoggedIn() throws Exception {
 
         // GIVEN:
@@ -102,7 +102,7 @@ class TicketControllerTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein eingeloggter User WHEN POST /api/tickets mit gültigen Daten aufgerufen wird THEN wird das Ticket angelegt")
+    @DisplayName("GIVEN a logged-in user WHEN POST /api/tickets is called with valid data THEN the ticket is created")
     void createTicket_createsTicket_whenDataIsValid() throws Exception {
 
         // GIVEN:
@@ -134,7 +134,7 @@ class TicketControllerTest {
     }
 
     @Test
-    @DisplayName("GIVEN ein eingeloggter User WHEN PUT /api/tickets/{id} aufgerufen wird THEN wird das Ticket aktualisiert")
+    @DisplayName("GIVEN a logged-in user WHEN PUT /api/tickets/{id} is called THEN the ticket is updated")
     void updateTicket_updatesTicket_whenLoggedIn() throws Exception {
 
         // GIVEN:
