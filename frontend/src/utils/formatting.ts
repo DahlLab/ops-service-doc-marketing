@@ -12,9 +12,9 @@ import type { IpdDocumentStatus, TaskStatus, TicketStatus } from '../api/types';
 // in deutsches Datumsformat mit Uhrzeit. null wird als "–" angezeigt
 // (z.B. solange ein Task noch nicht erledigt ist) - die Seiten, die nie
 // null bekommen, sind davon nicht betroffen.
-export function formatiereDatum(isoDatum: string | null): string {
-    if (!isoDatum) return '–';
-    return new Date(isoDatum).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+export function formatDate(isoDate: string | null): string {
+    if (!isoDate) return '–';
+    return new Date(isoDate).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 // Eigene Funktion für das Zieldatum (LocalDate statt LocalDateTime),
@@ -22,9 +22,9 @@ export function formatiereDatum(isoDatum: string | null): string {
 // würde new Date("2026-10-10") durch die Zeitzonen-Interpretation
 // des Browsers manchmal den Vortag anzeigen, toLocaleDateString ohne
 // timeStyle vermeidet diese Verwirrung in der Anzeige.
-export function formatiereZieldatum(datum: string | null): string {
-    if (!datum) return '–';
-    return new Date(datum).toLocaleDateString('de-DE', { dateStyle: 'medium' });
+export function formatDueDate(date: string | null): string {
+    if (!date) return '–';
+    return new Date(date).toLocaleDateString('de-DE', { dateStyle: 'medium' });
 }
 
 // Ordnet jedem Ticket-Status eine Bootstrap-Badge-Farbe zu, damit man
@@ -32,15 +32,15 @@ export function formatiereZieldatum(datum: string | null): string {
 // Text lesen zu müssen (z.B. grün = fertig, grau = noch nicht begonnen).
 export function ticketStatusBadgeVariante(status: TicketStatus): string {
     switch (status) {
-        case 'NEU':
+        case 'NEW':
             return 'secondary';
-        case 'IN_BEARBEITUNG':
+        case 'IN_PROGRESS':
             return 'primary';
-        case 'AUSSTEHEND':
+        case 'PENDING':
             return 'warning';
-        case 'GELOEST':
+        case 'SOLVED':
             return 'success';
-        case 'GESCHLOSSEN':
+        case 'CLOSED':
             return 'dark';
     }
 }
@@ -49,16 +49,16 @@ export function ticketStatusBadgeVariante(status: TicketStatus): string {
 // Blick erkennbar, ohne den Text lesen zu müssen.
 export function taskStatusBadgeVariante(status: TaskStatus): string {
     switch (status) {
-        case 'OFFEN':
+        case 'OPEN':
             return 'secondary';
-        case 'IN_BEARBEITUNG':
+        case 'IN_PROGRESS':
             return 'primary';
-        case 'ERLEDIGT':
+        case 'DONE':
             return 'success';
     }
 }
 
 // Grün = abgeschlossen, Grau = noch im Entwurf.
 export function ipdStatusBadgeVariante(status: IpdDocumentStatus): string {
-    return status === 'ABGESCHLOSSEN' ? 'success' : 'secondary';
+    return status === 'COMPLETED' ? 'success' : 'secondary';
 }

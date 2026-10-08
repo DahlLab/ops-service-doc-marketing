@@ -5,8 +5,8 @@ import { ApiError } from '../api/api';
 // eines einfachen <a href>: so geht das Session-Cookie sicher mit, und ein
 // 401/404 wird als Fehler erkannt, statt dass eine Fehlerseite als "PDF"
 // heruntergeladen wird. Wirft ApiError bei Fehlerantwort.
-export async function ladeDateiHerunter(pfad: string, dateiname: string): Promise<void> {
-    const response = await fetch(pfad, { credentials: 'include' });
+export async function downloadFile(path: string, fileName: string): Promise<void> {
+    const response = await fetch(path, { credentials: 'include' });
     if (!response.ok) {
         throw new ApiError(response.status, response.statusText);
     }
@@ -16,7 +16,7 @@ export async function ladeDateiHerunter(pfad: string, dateiname: string): Promis
     // Flüchtigen Download-Link erzeugen, klicken, wieder entfernen.
     const link = document.createElement('a');
     link.href = objectUrl;
-    link.download = dateiname;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();

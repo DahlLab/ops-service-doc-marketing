@@ -9,20 +9,20 @@ interface GlpiUrlResponse {
 // /api/config/glpi-url), solange jemand eingeloggt ist. Liefert einen
 // leeren String, solange nichts geladen ist oder keine URL konfiguriert
 // ist - die aufrufende Komponente blendet den Link dann aus.
-export function useGlpiUrl(eingeloggt: boolean): string {
+export function useGlpiUrl(loggedIn: boolean): string {
     const [url, setUrl] = useState('');
 
     useEffect(() => {
-        if (!eingeloggt) {
+        if (!loggedIn) {
             return;
         }
         api.get<GlpiUrlResponse>('/api/config/glpi-url')
-            .then((antwort) => setUrl(antwort.url))
+            .then((reply) => setUrl(reply.url))
             .catch(() => setUrl(''));
-    }, [eingeloggt]);
+    }, [loggedIn]);
 
     // Ausgeloggt gebe ich immer '' zurück, ohne dafür synchron setState im
     // Effect aufzurufen (react-hooks/set-state-in-effect): die URL wird nur
     // im Promise-Callback gesetzt und hier beim Rückgeben ausgeblendet.
-    return eingeloggt ? url : '';
+    return loggedIn ? url : '';
 }

@@ -4,7 +4,7 @@ import {Home} from './pages/Home';
 import {TicketsPage} from './pages/TicketsPage';
 import {TaskPlannerPage} from './pages/TaskPlannerPage';
 import {ProtectedRoute} from './auth/ProtectedRoute';
-import {ChecklistenPage} from './pages/ChecklistenPage';
+import {ChecklistsPage} from './pages/ChecklistsPage';
 import {IpdGeneratorPage} from './pages/IpdGeneratorPage';
 import {IpdDocumentPage} from './pages/IpdDocumentPage';
 import './App.css';
@@ -36,10 +36,10 @@ function App() {
                     }
                 />
                 <Route
-                    path="/checklisten"
+                    path="/checklists"
                     element={
                         <ProtectedRoute>
-                            <ChecklistenPage/>
+                            <ChecklistsPage/>
                         </ProtectedRoute>
                     }
                 />

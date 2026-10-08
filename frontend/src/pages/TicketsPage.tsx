@@ -2,26 +2,26 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
-import { formatiereDatum, ticketStatusBadgeVariante } from '../utils/formatierung';
+import { formatDate, ticketStatusBadgeVariante } from '../utils/formatting';
 import {
-    SZENARIO_TYP_LABELS,
+    SCENARIO_TYPE_LABELS,
     TICKET_STATUS_LABELS,
     type TicketDto,
     type TicketFormData,
     type TicketStatus,
-    type SzenarioTyp,
+    type ScenarioType,
 } from '../api/types';
 
 // Ausgangszustand des Formulars beim Anlegen eines NEUEN Tickets -
 // als eigene Konstante statt inline, damit ich sie sowohl beim
 // Öffnen des "Neu"-Modals als auch als Vergleichswert wiederverwenden
 // kann, ohne das Objekt zweimal von Hand hinzuschreiben.
-const LEERES_FORMULAR: TicketFormData = {
-    titel: '',
-    beschreibung: '',
-    status: 'NEU',
-    techniker: '',
-    szenarioTyp: 'SERVER_WARTUNG',
+const EMPTY_FORM: TicketFormData = {
+    title: '',
+    description: '',
+    status: 'NEW',
+    technician: '',
+    scenarioType: 'SERVER_MAINTENANCE',
 };
 
 // Seite für den Bereich "Tickets" (entspricht meinem TicketController
@@ -50,32 +50,32 @@ export function TicketsPage() {
     // bedeutet "kein Fehler" - ich nutze eine eigene Variable statt z.B.
     // try/catch direkt im JSX, weil ich den Fehler über mehrere
     // Funktionen hinweg (laden, syncen, speichern) konsistent anzeigen will.
-    const [fehler, setFehler] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Steuert Sichtbarkeit des Anlegen/Bearbeiten-Modals.
-    const [modalOffen, setModalOffen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
     // null = ich lege gerade ein NEUES Ticket an; ist hier ein Ticket
     // gesetzt, bin ich im Bearbeiten-Modus für genau dieses Ticket (siehe
     // handleSpeichern, wo ich danach entscheide, ob POST oder PUT nötig ist).
-    const [bearbeitetesTicket, setBearbeitetesTicket] = useState<TicketDto | null>(null);
+    const [editedTicket, setEditedTicket] = useState<TicketDto | null>(null);
     // Die aktuellen Formularwerte im Modal, unabhängig davon, ob ich
     // gerade anlege oder bearbeite.
-    const [formular, setFormular] = useState<TicketFormData>(LEERES_FORMULAR);
+    const [form, setForm] = useState<TicketFormData>(EMPTY_FORM);
 
     // Lädt die komplette Ticket-Liste neu vom Backend. Als eigene,
     // benannte Funktion (statt direkt im useEffect), weil ich sie an
     // DREI Stellen brauche: beim ersten Laden der Seite, nach einem
     // erfolgreichen GLPI-Sync, und nach dem Speichern eines Tickets -
     // so muss ich den fetch-Aufruf nicht dreimal duplizieren (DRY).
-    async function ladeTickets() {
+    async function loadTickets() {
         try {
-            const geladeneTickets = await api.get<TicketDto[]>('/api/tickets');
-            setTickets(geladeneTickets);
+            const loadedTickets = await api.get<TicketDto[]>('/api/tickets');
+            setTickets(loadedTickets);
             // Einen eventuell vorherigen Fehler wieder zurücksetzen, sobald
             // ein Ladevorgang erfolgreich war.
-            setFehler(null);
+            setErrorMessage(null);
         } catch (error) {
-            setFehler('Tickets konnten nicht geladen werden.');
+            setErrorMessage('Tickets konnten nicht geladen werden.');
             // console.error zusätzlich zur UI-Fehlermeldung, damit ich beim
             // Debuggen in der Browser-Konsole den vollen Fehler/Stacktrace sehe.
             console.error(error);
@@ -93,23 +93,23 @@ export function TicketsPage() {
     // die Daten ankommen - nicht synchron beim Start des Effects. `abgebrochen`
     // verhindert, dass ich State setze, wenn die Seite schon verlassen wurde.
     useEffect(() => {
-        let abgebrochen = false;
+        let aborted = false;
         api.get<TicketDto[]>('/api/tickets')
-            .then((geladeneTickets) => {
-                if (abgebrochen) return;
-                setTickets(geladeneTickets);
-                setFehler(null);
+            .then((loadedTickets) => {
+                if (aborted) return;
+                setTickets(loadedTickets);
+                setErrorMessage(null);
             })
             .catch((error) => {
-                if (abgebrochen) return;
-                setFehler('Tickets konnten nicht geladen werden.');
+                if (aborted) return;
+                setErrorMessage('Tickets konnten nicht geladen werden.');
                 console.error(error);
             })
             .finally(() => {
-                if (!abgebrochen) setLoading(false);
+                if (!aborted) setLoading(false);
             });
         return () => {
-            abgebrochen = true;
+            aborted = true;
         };
     }, []);
 
@@ -119,12 +119,12 @@ export function TicketsPage() {
     // die Liste neu, damit die frisch importierten Tickets sofort sichtbar sind.
     async function handleGlpiSync() {
         setSyncing(true);
-        setFehler(null);
+        setErrorMessage(null);
         try {
             await api.post<TicketDto[]>('/api/tickets/sync-glpi');
-            await ladeTickets();
+            await loadTickets();
         } catch (error) {
-            setFehler('GLPI-Synchronisierung ist fehlgeschlagen.');
+            setErrorMessage('GLPI-Synchronisierung ist fehlgeschlagen.');
             console.error(error);
         } finally {
             setSyncing(false);
@@ -135,10 +135,10 @@ export function TicketsPage() {
     // auf null gesetzt (wichtig für handleSpeichern!) und das Formular
     // auf die leeren Ausgangswerte zurückgesetzt - sonst würden beim
     // zweiten Öffnen noch die Werte vom letzten bearbeiteten Ticket drinstehen.
-    function handleNeuesTicket() {
-        setBearbeitetesTicket(null);
-        setFormular(LEERES_FORMULAR);
-        setModalOffen(true);
+    function handleNewTicket() {
+        setEditedTicket(null);
+        setForm(EMPTY_FORM);
+        setModalOpen(true);
     }
 
     // Öffnet das Modal im "Bearbeiten"-Modus, vorbefüllt mit den
@@ -147,44 +147,44 @@ export function TicketsPage() {
     // reinzureichen), weil TicketFormData id und erstelltAm nicht kennt -
     // so kann ich nicht versehentlich eine veraltete erstelltAm ans
     // Backend zurückschicken.
-    function handleBearbeiten(ticket: TicketDto) {
-        setBearbeitetesTicket(ticket);
-        setFormular({
-            titel: ticket.titel,
-            beschreibung: ticket.beschreibung,
+    function handleEdit(ticket: TicketDto) {
+        setEditedTicket(ticket);
+        setForm({
+            title: ticket.title,
+            description: ticket.description,
             status: ticket.status,
-            techniker: ticket.techniker,
-            szenarioTyp: ticket.szenarioTyp,
+            technician: ticket.technician,
+            scenarioType: ticket.scenarioType,
         });
-        setModalOffen(true);
+        setModalOpen(true);
     }
 
     // Speichert das Formular - je nachdem, ob bearbeitetesTicket gesetzt
     // ist, entweder per PUT (Bearbeiten, ID aus dem bestehenden Ticket)
     // oder per POST (Neu anlegen, Backend vergibt die ID selbst).
-    async function handleSpeichern() {
+    async function handleSave() {
         setSaving(true);
-        setFehler(null);
+        setErrorMessage(null);
         try {
-            if (bearbeitetesTicket) {
-                await api.put<TicketDto>(`/api/tickets/${bearbeitetesTicket.id}`, formular);
+            if (editedTicket) {
+                await api.put<TicketDto>(`/api/tickets/${editedTicket.id}`, form);
             } else {
-                await api.post<TicketDto>('/api/tickets', formular);
+                await api.post<TicketDto>('/api/tickets', form);
             }
-            setModalOffen(false);
+            setModalOpen(false);
             // Liste neu laden statt das neue/geänderte Ticket manuell in den
             // State einzufügen - etwas mehr Netzwerk-Traffic, aber dafür bin
             // ich sicher, dass die Tabelle immer exakt dem Datenbankstand
             // entspricht (z.B. falls das Backend noch Felder ergänzt/normalisiert).
-            await ladeTickets();
+            await loadTickets();
         } catch (error) {
             // 400 Bad Request kommt typischerweise von der @Valid-Prüfung im
             // Backend (z.B. wenn titel fehlt) - dafür zeige ich eine
             // konkretere Fehlermeldung als für andere Fehler.
             if (error instanceof ApiError && error.status === 400) {
-                setFehler('Bitte alle Pflichtfelder ausfüllen (mindestens der Titel).');
+                setErrorMessage('Bitte alle Pflichtfelder ausfüllen (mindestens der Titel).');
             } else {
-                setFehler('Ticket konnte nicht gespeichert werden.');
+                setErrorMessage('Ticket konnte nicht gespeichert werden.');
             }
             console.error(error);
         } finally {
@@ -214,7 +214,7 @@ export function TicketsPage() {
                     <Button variant="outline-primary" onClick={handleGlpiSync} disabled={syncing}>
                         {syncing ? 'Synchronisiere…' : 'Aus GLPI synchronisieren'}
                     </Button>
-                    <Button variant="primary" onClick={handleNeuesTicket}>
+                    <Button variant="primary" onClick={handleNewTicket}>
                         Neues Ticket
                     </Button>
                 </div>
@@ -222,7 +222,7 @@ export function TicketsPage() {
 
             {/* Fehler-Box wird nur gerendert, wenn tatsächlich ein Fehler
             vorliegt (fehler ist dann nicht null). */}
-            {fehler && <Alert variant="danger">{fehler}</Alert>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
             {tickets.length === 0 ? (
                 <p className="text-muted">Noch keine Tickets vorhanden.</p>
@@ -249,17 +249,17 @@ export function TicketsPage() {
                         // Rendern effizient zu erkennen, welche Zeilen sich
                         // geändert haben - die MongoDB-ID eignet sich dafür perfekt.
                         <tr key={ticket.id}>
-                            <td>{ticket.titel}</td>
-                            <td>{ticket.techniker}</td>
-                            <td>{SZENARIO_TYP_LABELS[ticket.szenarioTyp]}</td>
+                            <td>{ticket.title}</td>
+                            <td>{ticket.technician}</td>
+                            <td>{SCENARIO_TYPE_LABELS[ticket.scenarioType]}</td>
                             <td>
                                 <Badge bg={ticketStatusBadgeVariante(ticket.status)}>
                                     {TICKET_STATUS_LABELS[ticket.status]}
                                 </Badge>
                             </td>
-                            <td>{formatiereDatum(ticket.erstelltAm)}</td>
+                            <td>{formatDate(ticket.createdAt)}</td>
                             <td>
-                                <Button variant="outline-secondary" size="sm" onClick={() => handleBearbeiten(ticket)}>
+                                <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(ticket)}>
                                     Bearbeiten
                                 </Button>
                             </td>
@@ -274,9 +274,9 @@ export function TicketsPage() {
             Formulare - der einzige Unterschied zwischen beiden Fällen
             ist, ob bearbeitetesTicket gesetzt ist (siehe
             handleSpeichern oben), das Formular-Markup ist identisch. */}
-            <Modal show={modalOffen} onHide={() => setModalOffen(false)}>
+            <Modal show={modalOpen} onHide={() => setModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{bearbeitetesTicket ? 'Ticket bearbeiten' : 'Neues Ticket'}</Modal.Title>
+                    <Modal.Title>{editedTicket ? 'Ticket bearbeiten' : 'Neues Ticket'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -284,13 +284,13 @@ export function TicketsPage() {
                             <Form.Label>Titel</Form.Label>
                             <Form.Control
                                 type="text"
-                                value={formular.titel}
+                                value={form.title}
                                 // Ich baue bei jeder Eingabe ein neues Formular-
                                 // Objekt per Spread (...formular), statt das
                                 // bestehende Objekt zu mutieren - React erkennt
                                 // Zustandsänderungen nur zuverlässig bei neuen
                                 // Objektreferenzen, nicht bei mutierten bestehenden.
-                                onChange={(e) => setFormular({ ...formular, titel: e.target.value })}
+                                onChange={(e) => setForm({ ...form, title: e.target.value })}
                                 required
                             />
                         </Form.Group>
@@ -300,8 +300,8 @@ export function TicketsPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.beschreibung}
-                                onChange={(e) => setFormular({ ...formular, beschreibung: e.target.value })}
+                                value={form.description}
+                                onChange={(e) => setForm({ ...form, description: e.target.value })}
                             />
                         </Form.Group>
 
@@ -309,27 +309,27 @@ export function TicketsPage() {
                             <Form.Label>Techniker</Form.Label>
                             <Form.Control
                                 type="text"
-                                value={formular.techniker}
-                                onChange={(e) => setFormular({ ...formular, techniker: e.target.value })}
+                                value={form.technician}
+                                onChange={(e) => setForm({ ...form, technician: e.target.value })}
                             />
                         </Form.Group>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Status</Form.Label>
                             <Form.Select
-                                value={formular.status}
+                                value={form.status}
                                 // e.target.value ist vom Typ string - ich caste
                                 // explizit auf TicketStatus, weil ich über die
                                 // <option>-Werte unten selbst sicherstelle, dass
                                 // dort nur gültige TicketStatus-Werte stehen können.
-                                onChange={(e) => setFormular({ ...formular, status: e.target.value as TicketStatus })}
+                                onChange={(e) => setForm({ ...form, status: e.target.value as TicketStatus })}
                             >
                                 {/* Ich generiere die Optionen aus TICKET_STATUS_LABELS
                       statt sie einzeln hinzuschreiben - so bleibt die
                       Liste automatisch synchron mit dem Typ TicketStatus
                       in types.ts, ohne dass ich zwei Stellen pflegen muss. */}
-                                {Object.entries(TICKET_STATUS_LABELS).map(([wert, label]) => (
-                                    <option key={wert} value={wert}>
+                                {Object.entries(TICKET_STATUS_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>
                                         {label}
                                     </option>
                                 ))}
@@ -339,11 +339,11 @@ export function TicketsPage() {
                         <Form.Group className="mb-3">
                             <Form.Label>Szenario</Form.Label>
                             <Form.Select
-                                value={formular.szenarioTyp}
-                                onChange={(e) => setFormular({ ...formular, szenarioTyp: e.target.value as SzenarioTyp })}
+                                value={form.scenarioType}
+                                onChange={(e) => setForm({ ...form, scenarioType: e.target.value as ScenarioType })}
                             >
-                                {Object.entries(SZENARIO_TYP_LABELS).map(([wert, label]) => (
-                                    <option key={wert} value={wert}>
+                                {Object.entries(SCENARIO_TYPE_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>
                                         {label}
                                     </option>
                                 ))}
@@ -352,13 +352,13 @@ export function TicketsPage() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setModalOffen(false)}>
+                    <Button variant="secondary" onClick={() => setModalOpen(false)}>
                         Abbrechen
                     </Button>
                     {/* Button deaktiviert, solange gespeichert wird (verhindert
                 Doppelklick-Doppelanlage) oder solange der Titel leer
                 ist (Pflichtfeld laut Backend-Validierung @NotBlank). */}
-                    <Button variant="primary" onClick={handleSpeichern} disabled={saving || !formular.titel}>
+                    <Button variant="primary" onClick={handleSave} disabled={saving || !form.title}>
                         {saving ? 'Speichere…' : 'Speichern'}
                     </Button>
                 </Modal.Footer>

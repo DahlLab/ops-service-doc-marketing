@@ -20,11 +20,11 @@ export class ApiError extends Error {
 // Liest den Wert eines Cookies anhand seines Namens. Ich zerlege den
 // Cookie-String bewusst mit split statt mit einem regulären Ausdruck -
 // einfacher zu lesen und ohne Backtracking-Risiko.
-function lesCookie(name: string): string | null {
-    for (const eintrag of document.cookie.split(';')) {
-        const trenner = eintrag.indexOf('=');
-        if (trenner > 0 && eintrag.slice(0, trenner).trim() === name) {
-            return decodeURIComponent(eintrag.slice(trenner + 1).trim());
+function readCookie(name: string): string | null {
+    for (const entry of document.cookie.split(';')) {
+        const separator = entry.indexOf('=');
+        if (separator > 0 && entry.slice(0, separator).trim() === name) {
+            return decodeURIComponent(entry.slice(separator + 1).trim());
         }
     }
     return null;
@@ -35,13 +35,13 @@ function lesCookie(name: string): string | null {
 // es als Header "X-XSRF-TOKEN" zurück - nur meine eigene Seite kann das
 // Cookie lesen, eine fremde Seite kann den Header also nicht setzen.
 // Auch für das Logout-Formular in AuthContext exportiert.
-export function holeCsrfToken(): string | null {
-    return lesCookie('XSRF-TOKEN');
+export function fetchCsrfToken(): string | null {
+    return readCookie('XSRF-TOKEN');
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const methode = (options.method ?? 'GET').toUpperCase();
-    const csrfToken = methode === 'GET' ? null : holeCsrfToken();
+    const method = (options.method ?? 'GET').toUpperCase();
+    const csrfToken = method === 'GET' ? null : fetchCsrfToken();
 
     const response = await fetch(path, {
         credentials: 'include',

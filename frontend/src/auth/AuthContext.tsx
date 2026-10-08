@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { fetchCurrentUser, holeCsrfToken } from '../api/api';
+import { fetchCurrentUser, fetchCsrfToken } from '../api/api';
 import { AuthContext, type AuthContextValue } from './useAuth';
 
 // URL, unter der mein Backend läuft. Für den GitHub-Login und das
@@ -34,13 +34,13 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
         form.action = `${BACKEND_URL}/logout`;
         // Spring Security verlangt auch beim Logout (POST) das CSRF-Token -
         // bei einem Formular als verstecktes Feld "_csrf" statt als Header.
-        const csrfToken = holeCsrfToken();
+        const csrfToken = fetchCsrfToken();
         if (csrfToken) {
-            const feld = document.createElement('input');
-            feld.type = 'hidden';
-            feld.name = '_csrf';
-            feld.value = csrfToken;
-            form.appendChild(feld);
+            const field = document.createElement('input');
+            field.type = 'hidden';
+            field.name = '_csrf';
+            field.value = csrfToken;
+            form.appendChild(field);
         }
         document.body.appendChild(form);
         form.submit();

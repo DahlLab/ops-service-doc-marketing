@@ -3,7 +3,7 @@ import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
-import { formatiereDatum, ipdStatusBadgeVariante } from '../utils/formatierung';
+import { formatDate, ipdStatusBadgeVariante } from '../utils/formatting';
 import { IPD_DOCUMENT_STATUS_LABELS, type IpdDocumentDto, type TicketDto } from '../api/types';
 
 // Seite für den Bereich "IPD-Generator" (entspricht IpdDocumentController
@@ -17,33 +17,33 @@ import { IPD_DOCUMENT_STATUS_LABELS, type IpdDocumentDto, type TicketDto } from 
 export function IpdGeneratorPage() {
     const navigate = useNavigate();
 
-    const [dokumente, setDokumente] = useState<IpdDocumentDto[]>([]);
+    const [ipdDocuments, setDocuments] = useState<IpdDocumentDto[]>([]);
     const [tickets, setTickets] = useState<TicketDto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [fehler, setFehler] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Filter für die Tabelle (wie bei Task/Checklist) UND gleichzeitig
     // die Auswahl, aus welchem Ticket ich einen neuen Entwurf erzeugen
     // will - beides zusammenzulegen spart ein zweites Dropdown, da ich
     // beim Erzeugen eines Entwurfs ohnehin meistens genau das Ticket im
     // Blick habe, nach dem ich gerade filtere.
-    const [ticketAuswahl, setTicketAuswahl] = useState('');
-    const [erzeugeLaeuft, setErzeugeLaeuft] = useState(false);
+    const [ticketSelection, setTicketSelection] = useState('');
+    const [creating, setCreating] = useState(false);
 
-    async function ladeDaten() {
+    async function loadData() {
         try {
-            const [geladeneDokumente, geladeneTickets] = await Promise.all([
+            const [loadedDocuments, loadedTickets] = await Promise.all([
                 api.get<IpdDocumentDto[]>('/api/ipd'),
                 api.get<TicketDto[]>('/api/tickets'),
             ]);
-            setDokumente(geladeneDokumente);
-            setTickets(geladeneTickets);
+            setDocuments(loadedDocuments);
+            setTickets(loadedTickets);
             // Erstbefüllung der Auswahl mit dem ersten Ticket, damit der
             // "Entwurf erzeugen"-Button nicht erst nach manueller Auswahl
             // nutzbar wird.
-            setTicketAuswahl((bisher) => bisher || geladeneTickets[0]?.id || '');
+            setTicketSelection((previous) => previous || loadedTickets[0]?.id || '');
         } catch (error) {
-            setFehler('Daten konnten nicht geladen werden.');
+            setErrorMessage('Daten konnten nicht geladen werden.');
             console.error(error);
         } finally {
             setLoading(false);
@@ -54,30 +54,30 @@ export function IpdGeneratorPage() {
     // die Daten ankommen. `abgebrochen` schützt davor, State nach dem Verlassen der
     // Seite zu setzen.
     useEffect(() => {
-        let abgebrochen = false;
+        let aborted = false;
         Promise.all([api.get<IpdDocumentDto[]>('/api/ipd'), api.get<TicketDto[]>('/api/tickets')])
-            .then(([geladeneDokumente, geladeneTickets]) => {
-                if (abgebrochen) return;
-                setDokumente(geladeneDokumente);
-                setTickets(geladeneTickets);
+            .then(([loadedDocuments, loadedTickets]) => {
+                if (aborted) return;
+                setDocuments(loadedDocuments);
+                setTickets(loadedTickets);
                 // Erstbefüllung der Auswahl mit dem ersten Ticket
-                setTicketAuswahl((bisher) => bisher || geladeneTickets[0]?.id || '');
+                setTicketSelection((previous) => previous || loadedTickets[0]?.id || '');
             })
             .catch((error) => {
-                if (abgebrochen) return;
-                setFehler('Daten konnten nicht geladen werden.');
+                if (aborted) return;
+                setErrorMessage('Daten konnten nicht geladen werden.');
                 console.error(error);
             })
             .finally(() => {
-                if (!abgebrochen) setLoading(false);
+                if (!aborted) setLoading(false);
             });
         return () => {
-            abgebrochen = true;
+            aborted = true;
         };
     }, []);
 
-    function ticketTitel(ticketId: string): string {
-        return tickets.find((t) => t.id === ticketId)?.titel ?? '(unbekanntes Ticket)';
+    function ticketTitle(ticketId: string): string {
+        return tickets.find((t) => t.id === ticketId)?.title ?? '(unbekanntes Ticket)';
     }
 
     // Prüft, ob für das gerade ausgewählte Ticket bereits ein Entwurf
@@ -86,49 +86,49 @@ export function IpdGeneratorPage() {
     // wenn eine Wartung sich wiederholt), ich will nur nicht aus
     // Versehen einen zweiten Entwurf für dieselbe laufende Wartung
     // anlegen.
-    function bestehenderEntwurf(ticketId: string): IpdDocumentDto | undefined {
-        return dokumente.find((dokument) => dokument.ticketId === ticketId && dokument.status === 'ENTWURF');
+    function findExistingDraft(ticketId: string): IpdDocumentDto | undefined {
+        return ipdDocuments.find((ipdDocument) => ipdDocument.ticketId === ticketId && ipdDocument.status === 'DRAFT');
     }
 
-    async function handleEntwurfErzeugen() {
-        if (!ticketAuswahl) {
+    async function handleDraftCreate() {
+        if (!ticketSelection) {
             return;
         }
-        const vorhandenerEntwurf = bestehenderEntwurf(ticketAuswahl);
+        const existingDraft = findExistingDraft(ticketSelection);
         if (
-            vorhandenerEntwurf &&
+            existingDraft &&
             !window.confirm(
-                `Für "${ticketTitel(ticketAuswahl)}" existiert bereits ein Entwurf ("${vorhandenerEntwurf.titel}"). Trotzdem einen weiteren erzeugen?`,
+                `Für "${ticketTitle(ticketSelection)}" existiert bereits ein Entwurf ("${existingDraft.title}"). Trotzdem einen weiteren erzeugen?`,
             )
         ) {
             return;
         }
 
-        setErzeugeLaeuft(true);
-        setFehler(null);
+        setCreating(true);
+        setErrorMessage(null);
         try {
-            const neuesDokument = await api.post<IpdDocumentDto>(`/api/ipd/from-ticket/${ticketAuswahl}`);
+            const newDocument = await api.post<IpdDocumentDto>(`/api/ipd/from-ticket/${ticketSelection}`);
             // Direkt zur Detailseite springen, damit ich sofort mit dem
             // Ausfüllen der restlichen Abschnitte weitermachen kann,
             // statt erst wieder in der Liste danach suchen zu müssen.
-            void navigate(`/ipd/${neuesDokument.id}`);
+            void navigate(`/ipd/${newDocument.id}`);
         } catch (error) {
-            setFehler('Entwurf konnte nicht erzeugt werden.');
+            setErrorMessage('Entwurf konnte nicht erzeugt werden.');
             console.error(error);
         } finally {
-            setErzeugeLaeuft(false);
+            setCreating(false);
         }
     }
 
-    async function handleLoeschen(dokument: IpdDocumentDto) {
-        if (!window.confirm(`IPD-Dokument "${dokument.titel}" wirklich löschen?`)) {
+    async function handleDelete(ipdDocument: IpdDocumentDto) {
+        if (!window.confirm(`IPD-Dokument "${ipdDocument.title}" wirklich löschen?`)) {
             return;
         }
         try {
-            await api.delete(`/api/ipd/${dokument.id}`);
-            await ladeDaten();
+            await api.delete(`/api/ipd/${ipdDocument.id}`);
+            await loadData();
         } catch (error) {
-            setFehler('IPD-Dokument konnte nicht gelöscht werden.');
+            setErrorMessage('IPD-Dokument konnte nicht gelöscht werden.');
             console.error(error);
         }
     }
@@ -145,7 +145,7 @@ export function IpdGeneratorPage() {
         <div className="py-4">
             <h1 className="mb-4">IPD-Generator</h1>
 
-            {fehler && <Alert variant="danger">{fehler}</Alert>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
             {tickets.length === 0 ? (
                 <Alert variant="info">
@@ -160,22 +160,22 @@ export function IpdGeneratorPage() {
 <div className="d-flex flex-wrap align-items-end gap-3">
                     <Form.Group style={{ maxWidth: 320 }}>
                         <Form.Label>Ticket</Form.Label>
-                        <Form.Select value={ticketAuswahl} onChange={(e) => setTicketAuswahl(e.target.value)}>
+                        <Form.Select value={ticketSelection} onChange={(e) => setTicketSelection(e.target.value)}>
                             {tickets.map((ticket) => (
                                 <option key={ticket.id} value={ticket.id}>
-                                    {ticket.titel}
+                                    {ticket.title}
                                 </option>
                             ))}
                         </Form.Select>
                     </Form.Group>
-                    <Button variant="primary" onClick={handleEntwurfErzeugen} disabled={erzeugeLaeuft}>
-                        {erzeugeLaeuft ? 'Erzeuge…' : 'Entwurf aus Ticket erzeugen'}
+                    <Button variant="primary" onClick={handleDraftCreate} disabled={creating}>
+                        {creating ? 'Erzeuge…' : 'Entwurf aus Ticket erzeugen'}
                     </Button>
                 </div>
                 </HudPanel>
             )}
 
-            {dokumente.length === 0 ? (
+            {ipdDocuments.length === 0 ? (
                 <Alert variant="dark" className="text-center">
                     Noch keine IPD-Dokumente vorhanden.
                 </Alert>
@@ -193,24 +193,24 @@ export function IpdGeneratorPage() {
                     </tr>
                     </thead>
                     <tbody>
-                    {dokumente.map((dokument) => (
-                        <tr key={dokument.id}>
-                            <td>{dokument.titel}</td>
-                            <td>{ticketTitel(dokument.ticketId)}</td>
+                    {ipdDocuments.map((ipdDocument) => (
+                        <tr key={ipdDocument.id}>
+                            <td>{ipdDocument.title}</td>
+                            <td>{ticketTitle(ipdDocument.ticketId)}</td>
                             <td>
-                                <Badge bg={ipdStatusBadgeVariante(dokument.status)}>
-                                    {IPD_DOCUMENT_STATUS_LABELS[dokument.status]}
+                                <Badge bg={ipdStatusBadgeVariante(ipdDocument.status)}>
+                                    {IPD_DOCUMENT_STATUS_LABELS[ipdDocument.status]}
                                 </Badge>
                             </td>
-                            <td>{formatiereDatum(dokument.erstelltAm)}</td>
-                            <td>{formatiereDatum(dokument.aktualisiertAm)}</td>
+                            <td>{formatDate(ipdDocument.createdAt)}</td>
+                            <td>{formatDate(ipdDocument.updatedAt)}</td>
                             <td>
                                 {/* Flex sitzt im div, damit die td eine echte Tabellenzelle bleibt und die Linie durchgeht */}
                                 <div className="d-flex gap-2">
-                                    <Button variant="outline-secondary" size="sm" onClick={() => navigate(`/ipd/${dokument.id}`)}>
+                                    <Button variant="outline-secondary" size="sm" onClick={() => navigate(`/ipd/${ipdDocument.id}`)}>
                                         Öffnen
                                     </Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleLoeschen(dokument)}>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(ipdDocument)}>
                                         Löschen
                                     </Button>
                                 </div>

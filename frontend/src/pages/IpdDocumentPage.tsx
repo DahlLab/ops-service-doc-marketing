@@ -3,11 +3,11 @@ import { Alert, Badge, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/api';
-import { ladeDateiHerunter } from '../utils/download';
-import { formatiereDatum, ipdStatusBadgeVariante } from '../utils/formatierung';
+import { downloadFile } from '../utils/download';
+import { formatDate, ipdStatusBadgeVariante } from '../utils/formatting';
 import {
     IPD_DOCUMENT_STATUS_LABELS,
-    SZENARIO_TYP_LABELS,
+    SCENARIO_TYPE_LABELS,
     type IpdDocumentDto,
     type IpdDocumentFormData,
     type IpdDocumentStatus,
@@ -18,24 +18,24 @@ import {
 // techniker, szenarioTyp, durchgefuehrteSchritte,
 // qualitaetssicherungAbgeschlossen, erstelltAm, aktualisiertAm) zeige ich
 // separat read-only an, siehe JSX unten.
-function formularAusDokument(dokument: IpdDocumentDto): IpdDocumentFormData {
+function formFromDocument(ipdDocument: IpdDocumentDto): IpdDocumentFormData {
     return {
-        titel: dokument.titel,
-        kunde: dokument.kunde,
-        ansprechpartnerKunde: dokument.ansprechpartnerKunde,
-        zeitraum: dokument.zeitraum,
-        ausgangslage: dokument.ausgangslage,
-        anforderungen: dokument.anforderungen,
-        infrastrukturUebersicht: dokument.infrastrukturUebersicht,
-        serverUndVms: dokument.serverUndVms,
-        netzwerk: dokument.netzwerk,
-        rollenUndVerantwortlichkeiten: dokument.rollenUndVerantwortlichkeiten,
-        backupKonzept: dokument.backupKonzept,
-        securityUeberlegungen: dokument.securityUeberlegungen,
-        entscheidungen: dokument.entscheidungen,
-        risikenUndAnnahmen: dokument.risikenUndAnnahmen,
-        rollbackPlan: dokument.rollbackPlan,
-        status: dokument.status,
+        title: ipdDocument.title,
+        customer: ipdDocument.customer,
+        customerContact: ipdDocument.customerContact,
+        period: ipdDocument.period,
+        initialSituation: ipdDocument.initialSituation,
+        requirements: ipdDocument.requirements,
+        infrastructureOverview: ipdDocument.infrastructureOverview,
+        serversAndVms: ipdDocument.serversAndVms,
+        network: ipdDocument.network,
+        rolesAndResponsibilities: ipdDocument.rolesAndResponsibilities,
+        backupPlan: ipdDocument.backupPlan,
+        securityConsiderations: ipdDocument.securityConsiderations,
+        decisions: ipdDocument.decisions,
+        risksAndAssumptions: ipdDocument.risksAndAssumptions,
+        rollbackPlan: ipdDocument.rollbackPlan,
+        status: ipdDocument.status,
     };
 }
 
@@ -49,59 +49,59 @@ export function IpdDocumentPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [dokument, setDokument] = useState<IpdDocumentDto | null>(null);
-    const [formular, setFormular] = useState<IpdDocumentFormData | null>(null);
+    const [ipdDocument, setDocument] = useState<IpdDocumentDto | null>(null);
+    const [form, setForm] = useState<IpdDocumentFormData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [speichernLaeuft, setSpeichernLaeuft] = useState(false);
-    const [pdfLaeuft, setPdfLaeuft] = useState(false);
-    const [checklisteLaeuft, setChecklisteLaeuft] = useState(false);
-    const [fehler, setFehler] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [pdfRunning, setPdfRunning] = useState(false);
+    const [checklistRunning, setChecklistRunning] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     // Separate Erfolgsmeldung statt nur eines Fehlerfelds, damit ich dem
     // Nutzer nach dem Speichern kurz sichtbares Feedback geben kann,
     // ohne auf eine neue Seite zu springen (anders als bei Erzeugen, wo
     // ich direkt hierher navigiere, bleibe ich nach dem Speichern bewusst
     // auf dieser Seite, weil man idR mehrere Abschnitte nacheinander
     // ergänzt).
-    const [erfolg, setErfolg] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     // Dokument beim Öffnen (und bei geänderter id) laden: Anfrage direkt im Effect,
     // State nur im Callback. `abgebrochen` verhindert, dass eine späte Antwort eines
     // alten Dokuments das neue überschreibt.
     useEffect(() => {
         if (!id) return;
-        let abgebrochen = false;
+        let aborted = false;
         api.get<IpdDocumentDto>(`/api/ipd/${id}`)
-            .then((geladenesDokument) => {
-                if (abgebrochen) return;
-                setDokument(geladenesDokument);
-                setFormular(formularAusDokument(geladenesDokument));
-                setFehler(null);
+            .then((loadedDocument) => {
+                if (aborted) return;
+                setDocument(loadedDocument);
+                setForm(formFromDocument(loadedDocument));
+                setErrorMessage(null);
             })
             .catch((error) => {
-                if (abgebrochen) return;
-                setFehler('IPD-Dokument konnte nicht geladen werden.');
+                if (aborted) return;
+                setErrorMessage('IPD-Dokument konnte nicht geladen werden.');
                 console.error(error);
             })
             .finally(() => {
-                if (!abgebrochen) setLoading(false);
+                if (!aborted) setLoading(false);
             });
         return () => {
-            abgebrochen = true;
+            aborted = true;
         };
     }, [id]);
 
     // Generischer Change-Handler für alle Textarea-Felder: erspart mir
     // 14 fast identische onChange-Funktionen für jedes Formularfeld.
-    function handleFeldAendern(feld: keyof IpdDocumentFormData, wert: string) {
-        if (!formular) return;
-        setFormular({ ...formular, [feld]: wert || null });
+    function handleFieldChange(field: keyof IpdDocumentFormData, value: string) {
+        if (!form) return;
+        setForm({ ...form, [field]: value || null });
     }
 
-    async function handleSpeichern() {
-        if (!dokument || !formular) return;
-        setSpeichernLaeuft(true);
-        setFehler(null);
-        setErfolg(null);
+    async function handleSave() {
+        if (!ipdDocument || !form) return;
+        setSaving(true);
+        setErrorMessage(null);
+        setSuccess(null);
         try {
             // Das Backend erwartet den VOLLSTÄNDIGEN IpdDocumentDto als
             // Request-Body (auch wenn es einen Großteil der Felder
@@ -110,72 +110,72 @@ export function IpdDocumentPage() {
             // hier aus dem zuletzt geladenen Dokument plus meinen
             // Formular-Änderungen wieder ein komplettes Objekt
             // zusammen, statt nur die editierbaren Felder zu schicken.
-            const aktualisiertesDokument = await api.put<IpdDocumentDto>(`/api/ipd/${dokument.id}`, {
-                ...dokument,
-                ...formular,
+            const updatedDocument = await api.put<IpdDocumentDto>(`/api/ipd/${ipdDocument.id}`, {
+                ...ipdDocument,
+                ...form,
             });
-            setDokument(aktualisiertesDokument);
-            setFormular(formularAusDokument(aktualisiertesDokument));
-            setErfolg('Gespeichert.');
+            setDocument(updatedDocument);
+            setForm(formFromDocument(updatedDocument));
+            setSuccess('Gespeichert.');
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setFehler('Bitte prüfe deine Eingaben - der Titel darf z.B. nicht leer sein.');
+                setErrorMessage('Bitte prüfe deine Eingaben - der Titel darf z.B. nicht leer sein.');
             } else {
-                setFehler('IPD-Dokument konnte nicht gespeichert werden.');
+                setErrorMessage('IPD-Dokument konnte nicht gespeichert werden.');
             }
             console.error(error);
         } finally {
-            setSpeichernLaeuft(false);
+            setSaving(false);
         }
     }
 
     // Lädt das Kunden-PDF herunter (siehe utils/download.ts für das
     // Blob/ObjectURL-Verfahren).
-    async function handlePdfHerunterladen() {
-        if (!dokument) return;
-        setPdfLaeuft(true);
-        setFehler(null);
+    async function handlePdfDownload() {
+        if (!ipdDocument) return;
+        setPdfRunning(true);
+        setErrorMessage(null);
         try {
-            await ladeDateiHerunter(`/api/ipd/${dokument.id}/pdf`, `ipd-${dokument.id}.pdf`);
+            await downloadFile(`/api/ipd/${ipdDocument.id}/pdf`, `ipd-${ipdDocument.id}.pdf`);
         } catch (error) {
-            setFehler('PDF konnte nicht erzeugt werden.');
+            setErrorMessage('PDF konnte nicht erzeugt werden.');
             console.error(error);
         } finally {
-            setPdfLaeuft(false);
+            setPdfRunning(false);
         }
     }
 
     // Lädt die interne Checkliste (Technikerversion mit ausfüllbaren
     // Checkboxen) herunter - getrennt vom Kunden-PDF. 404 heißt: zu diesem
     // Ticket gibt es (noch) keine Checkliste.
-    async function handleChecklisteHerunterladen() {
-        if (!dokument) return;
-        setChecklisteLaeuft(true);
-        setFehler(null);
+    async function handleChecklistDownload() {
+        if (!ipdDocument) return;
+        setChecklistRunning(true);
+        setErrorMessage(null);
         try {
-            await ladeDateiHerunter(`/api/ipd/${dokument.id}/checklist-pdf`, `checkliste-${dokument.id}.pdf`);
+            await downloadFile(`/api/ipd/${ipdDocument.id}/checklist-pdf`, `checkliste-${ipdDocument.id}.pdf`);
         } catch (error) {
             if (error instanceof ApiError && error.status === 404) {
-                setFehler('Zu diesem Dokument gibt es noch keine Checkliste.');
+                setErrorMessage('Zu diesem Dokument gibt es noch keine Checkliste.');
             } else {
-                setFehler('Checkliste konnte nicht erzeugt werden.');
+                setErrorMessage('Checkliste konnte nicht erzeugt werden.');
             }
             console.error(error);
         } finally {
-            setChecklisteLaeuft(false);
+            setChecklistRunning(false);
         }
     }
 
-    async function handleLoeschen() {
-        if (!dokument) return;
-        if (!window.confirm(`IPD-Dokument "${dokument.titel}" wirklich löschen?`)) {
+    async function handleDelete() {
+        if (!ipdDocument) return;
+        if (!window.confirm(`IPD-Dokument "${ipdDocument.title}" wirklich löschen?`)) {
             return;
         }
         try {
-            await api.delete(`/api/ipd/${dokument.id}`);
+            await api.delete(`/api/ipd/${ipdDocument.id}`);
             void navigate('/ipd');
         } catch (error) {
-            setFehler('IPD-Dokument konnte nicht gelöscht werden.');
+            setErrorMessage('IPD-Dokument konnte nicht gelöscht werden.');
             console.error(error);
         }
     }
@@ -188,7 +188,7 @@ export function IpdDocumentPage() {
         );
     }
 
-    if (!dokument || !formular) {
+    if (!ipdDocument || !form) {
         return <Alert variant="danger">IPD-Dokument konnte nicht geladen werden.</Alert>;
     }
 
@@ -200,30 +200,30 @@ export function IpdDocumentPage() {
 
             <div className="d-flex justify-content-between align-items-start mb-4">
                 <div>
-                    <h1 className="mb-1">{dokument.titel}</h1>
-                    <Badge bg={ipdStatusBadgeVariante(dokument.status)}>
-                        {IPD_DOCUMENT_STATUS_LABELS[dokument.status]}
+                    <h1 className="mb-1">{ipdDocument.title}</h1>
+                    <Badge bg={ipdStatusBadgeVariante(ipdDocument.status)}>
+                        {IPD_DOCUMENT_STATUS_LABELS[ipdDocument.status]}
                     </Badge>
                 </div>
                 <div className="d-flex gap-2">
-                    <Button variant="primary" onClick={handlePdfHerunterladen} disabled={pdfLaeuft}>
-                        {pdfLaeuft ? 'Erzeuge PDF…' : 'PDF herunterladen'}
+                    <Button variant="primary" onClick={handlePdfDownload} disabled={pdfRunning}>
+                        {pdfRunning ? 'Erzeuge PDF…' : 'PDF herunterladen'}
                     </Button>
                     <Button
                         variant="outline-secondary"
-                        onClick={handleChecklisteHerunterladen}
-                        disabled={checklisteLaeuft}
+                        onClick={handleChecklistDownload}
+                        disabled={checklistRunning}
                     >
-                        {checklisteLaeuft ? 'Erzeuge Checkliste…' : 'Checkliste herunterladen'}
+                        {checklistRunning ? 'Erzeuge Checkliste…' : 'Checkliste herunterladen'}
                     </Button>
-                    <Button variant="outline-danger" onClick={handleLoeschen}>
+                    <Button variant="outline-danger" onClick={handleDelete}>
                         Löschen
                     </Button>
                 </div>
             </div>
 
-            {fehler && <Alert variant="danger">{fehler}</Alert>}
-            {erfolg && <Alert variant="success">{erfolg}</Alert>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+            {success && <Alert variant="success">{success}</Alert>}
 
             {/* Automatisch verwaltete Felder zeige ich read-only in einer
             eigenen Card an - hier zu tippen hätte ohnehin keinen Effekt,
@@ -233,14 +233,14 @@ export function IpdDocumentPage() {
                 <div>
                     <Row>
                         <Col md={4}>
-                            <strong>Techniker:</strong> {dokument.techniker}
+                            <strong>Techniker:</strong> {ipdDocument.technician}
                         </Col>
                         <Col md={4}>
-                            <strong>Szenario:</strong> {SZENARIO_TYP_LABELS[dokument.szenarioTyp]}
+                            <strong>Szenario:</strong> {SCENARIO_TYPE_LABELS[ipdDocument.scenarioType]}
                         </Col>
                         <Col md={4}>
                             <strong>Qualitätssicherung:</strong>{' '}
-                            {dokument.qualitaetssicherungAbgeschlossen ? (
+                            {ipdDocument.qualityAssuranceCompleted ? (
                                 <Badge bg="success">Durchgeführt</Badge>
                             ) : (
                                 <Badge bg="warning">
@@ -251,13 +251,13 @@ export function IpdDocumentPage() {
                     </Row>
                     <Row className="mt-2">
                         <Col md={4}>
-                            <strong>Erstellt am:</strong> {formatiereDatum(dokument.erstelltAm)}
+                            <strong>Erstellt am:</strong> {formatDate(ipdDocument.createdAt)}
                         </Col>
                         <Col md={4}>
-                            <strong>Aktualisiert am:</strong> {formatiereDatum(dokument.aktualisiertAm)}
+                            <strong>Aktualisiert am:</strong> {formatDate(ipdDocument.updatedAt)}
                         </Col>
                     </Row>
-                    {dokument.durchgefuehrteSchritte && (
+                    {ipdDocument.performedSteps && (
                         <Row className="mt-2">
                             <Col>
                                 <strong>Durchgeführte Schritte (aus TaskPlanner übernommen):</strong>
@@ -265,7 +265,7 @@ export function IpdDocumentPage() {
                                 dem vom Backend gebauten Fließtext (ein Task pro
                                 Zeile) auch wirklich als Zeilenumbrüche
                                 dargestellt werden. */}
-                                <div style={{ whiteSpace: 'pre-line' }}>{dokument.durchgefuehrteSchritte}</div>
+                                <div style={{ whiteSpace: 'pre-line' }}>{ipdDocument.performedSteps}</div>
                             </Col>
                         </Row>
                     )}
@@ -285,8 +285,8 @@ export function IpdDocumentPage() {
                                     <Form.Label>Titel</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={formular.titel}
-                                        onChange={(e) => handleFeldAendern('titel', e.target.value)}
+                                        value={form.title}
+                                        onChange={(e) => handleFieldChange('title', e.target.value)}
                                         required
                                     />
                                 </Form.Group>
@@ -296,8 +296,8 @@ export function IpdDocumentPage() {
                                     <Form.Label>Kunde</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={formular.kunde ?? ''}
-                                        onChange={(e) => handleFeldAendern('kunde', e.target.value)}
+                                        value={form.customer ?? ''}
+                                        onChange={(e) => handleFieldChange('customer', e.target.value)}
                                     />
                                 </Form.Group>
                             </Col>
@@ -308,8 +308,8 @@ export function IpdDocumentPage() {
                                     <Form.Label>Ansprechpartner Kunde</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={formular.ansprechpartnerKunde ?? ''}
-                                        onChange={(e) => handleFeldAendern('ansprechpartnerKunde', e.target.value)}
+                                        value={form.customerContact ?? ''}
+                                        onChange={(e) => handleFieldChange('customerContact', e.target.value)}
                                     />
                                 </Form.Group>
                             </Col>
@@ -319,8 +319,8 @@ export function IpdDocumentPage() {
                                     <Form.Control
                                         type="text"
                                         placeholder="z.B. 01.10.2026 - 03.10.2026"
-                                        value={formular.zeitraum ?? ''}
-                                        onChange={(e) => handleFeldAendern('zeitraum', e.target.value)}
+                                        value={form.period ?? ''}
+                                        onChange={(e) => handleFieldChange('period', e.target.value)}
                                     />
                                 </Form.Group>
                             </Col>
@@ -333,8 +333,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.ausgangslage ?? ''}
-                                onChange={(e) => handleFeldAendern('ausgangslage', e.target.value)}
+                                value={form.initialSituation ?? ''}
+                                onChange={(e) => handleFieldChange('initialSituation', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -342,8 +342,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.anforderungen ?? ''}
-                                onChange={(e) => handleFeldAendern('anforderungen', e.target.value)}
+                                value={form.requirements ?? ''}
+                                onChange={(e) => handleFieldChange('requirements', e.target.value)}
                             />
                         </Form.Group>
                     </HudPanel>
@@ -354,8 +354,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.infrastrukturUebersicht ?? ''}
-                                onChange={(e) => handleFeldAendern('infrastrukturUebersicht', e.target.value)}
+                                value={form.infrastructureOverview ?? ''}
+                                onChange={(e) => handleFieldChange('infrastructureOverview', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -363,8 +363,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.serverUndVms ?? ''}
-                                onChange={(e) => handleFeldAendern('serverUndVms', e.target.value)}
+                                value={form.serversAndVms ?? ''}
+                                onChange={(e) => handleFieldChange('serversAndVms', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -372,8 +372,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.netzwerk ?? ''}
-                                onChange={(e) => handleFeldAendern('netzwerk', e.target.value)}
+                                value={form.network ?? ''}
+                                onChange={(e) => handleFieldChange('network', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -381,8 +381,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.rollenUndVerantwortlichkeiten ?? ''}
-                                onChange={(e) => handleFeldAendern('rollenUndVerantwortlichkeiten', e.target.value)}
+                                value={form.rolesAndResponsibilities ?? ''}
+                                onChange={(e) => handleFieldChange('rolesAndResponsibilities', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -390,8 +390,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.backupKonzept ?? ''}
-                                onChange={(e) => handleFeldAendern('backupKonzept', e.target.value)}
+                                value={form.backupPlan ?? ''}
+                                onChange={(e) => handleFieldChange('backupPlan', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -399,8 +399,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.securityUeberlegungen ?? ''}
-                                onChange={(e) => handleFeldAendern('securityUeberlegungen', e.target.value)}
+                                value={form.securityConsiderations ?? ''}
+                                onChange={(e) => handleFieldChange('securityConsiderations', e.target.value)}
                             />
                         </Form.Group>
                     </HudPanel>
@@ -411,8 +411,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.entscheidungen ?? ''}
-                                onChange={(e) => handleFeldAendern('entscheidungen', e.target.value)}
+                                value={form.decisions ?? ''}
+                                onChange={(e) => handleFieldChange('decisions', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -420,8 +420,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.risikenUndAnnahmen ?? ''}
-                                onChange={(e) => handleFeldAendern('risikenUndAnnahmen', e.target.value)}
+                                value={form.risksAndAssumptions ?? ''}
+                                onChange={(e) => handleFieldChange('risksAndAssumptions', e.target.value)}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -429,8 +429,8 @@ export function IpdDocumentPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.rollbackPlan ?? ''}
-                                onChange={(e) => handleFeldAendern('rollbackPlan', e.target.value)}
+                                value={form.rollbackPlan ?? ''}
+                                onChange={(e) => handleFieldChange('rollbackPlan', e.target.value)}
                             />
                         </Form.Group>
                     </HudPanel>
@@ -439,13 +439,13 @@ export function IpdDocumentPage() {
                         <Form.Group style={{ maxWidth: 320 }}>
                             <Form.Label>Status</Form.Label>
                             <Form.Select
-                                value={formular.status}
+                                value={form.status}
                                 onChange={(e) =>
-                                    setFormular({ ...formular, status: e.target.value as IpdDocumentStatus })
+                                    setForm({ ...form, status: e.target.value as IpdDocumentStatus })
                                 }
                             >
-                                {Object.entries(IPD_DOCUMENT_STATUS_LABELS).map(([wert, label]) => (
-                                    <option key={wert} value={wert}>
+                                {Object.entries(IPD_DOCUMENT_STATUS_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>
                                         {label}
                                     </option>
                                 ))}
@@ -453,8 +453,8 @@ export function IpdDocumentPage() {
                         </Form.Group>
                     </HudPanel>
 
-                <Button variant="primary" onClick={handleSpeichern} disabled={speichernLaeuft || !formular.titel}>
-                    {speichernLaeuft ? 'Speichere…' : 'Speichern'}
+                <Button variant="primary" onClick={handleSave} disabled={saving || !form.title}>
+                    {saving ? 'Speichere…' : 'Speichern'}
                 </Button>
             </Form>
         </div>

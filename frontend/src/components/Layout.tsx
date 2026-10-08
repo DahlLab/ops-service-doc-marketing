@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../auth/useAuth'
 import { useGlpiUrl } from '../hooks/useGlpiUrl'
 import { OsdLogo } from './OsdLogo'
-import { HudUhr } from './HudUhr'
+import { HudClock } from './HudClock'
 import { UserMenu } from './UserMenu'
 import '../hud-layout.css'
 
@@ -21,11 +21,11 @@ import '../hud-layout.css'
 // lesen aus derselben Liste, so müssen neue Seiten nur einmal eingetragen
 // werden. `end` sorgt dafür, dass "/" nur bei der Startseite aktiv ist und
 // nicht bei jeder Unterseite.
-const MENUE = [
+const MENU = [
     { to: '/', label: 'Dashboard', icon: <FaTachometerAlt />, end: true },
     { to: '/tickets', label: 'Tickets', icon: <FaTicketAlt />, end: false },
     { to: '/tasks', label: 'TaskPlanner', icon: <FaTasks />, end: false },
-    { to: '/checklisten', label: 'Checklisten', icon: <FaClipboardCheck />, end: false },
+    { to: '/checklists', label: 'Checklisten', icon: <FaClipboardCheck />, end: false },
     { to: '/ipd', label: 'IPD-Generator', icon: <FaFileAlt />, end: false },
 ]
 
@@ -37,7 +37,7 @@ export function Layout() {
     const { username, loading, logout } = useAuth()
     const glpiUrl = useGlpiUrl(Boolean(username))
     // Steuert das mobile Vollbild-Menü
-    const [menueOffen, setMenueOffen] = useState(false)
+    const [menuOpen, setMenuOpen] = useState(false)
     // Verweis auf das <dialog>-Element, damit ich es per showModal() öffnen kann
     const dialogRef = useRef<HTMLDialogElement>(null)
 
@@ -48,34 +48,34 @@ export function Layout() {
     // StrictMode zweimal läuft.
     useEffect(() => {
         const dialog = dialogRef.current
-        if (menueOffen && dialog && !dialog.open) {
+        if (menuOpen && dialog && !dialog.open) {
             dialog.showModal()
         }
-    }, [menueOffen])
+    }, [menuOpen])
 
     // Die Navigation zeige ich nur, wenn jemand eingeloggt ist - ohne Login
     // würden die Links ohnehin nur in einen 401 laufen (siehe SecurityConfig).
-    const eingeloggt = !loading && Boolean(username)
+    const loggedIn = !loading && Boolean(username)
 
     return (
-        <div className={`hud-shell ${eingeloggt ? 'hud-shell--mit-sidebar' : ''}`}>
+        <div className={`hud-shell ${loggedIn ? 'hud-shell--mit-sidebar' : ''}`}>
             {/* ---------- Sidebar (nur Desktop, nur eingeloggt) ---------- */}
-            {eingeloggt && (
+            {loggedIn && (
                 <aside className="hud-sidebar">
                     <Link to="/" className="hud-sidebar__logo" aria-label="Zur Startseite">
                         <OsdLogo />
                     </Link>
 
                     <nav className="hud-nav" aria-label="Hauptnavigation">
-                        {MENUE.map((punkt) => (
+                        {MENU.map((entry) => (
                             <NavLink
-                                key={punkt.to}
-                                to={punkt.to}
-                                end={punkt.end}
+                                key={entry.to}
+                                to={entry.to}
+                                end={entry.end}
                                 className={({ isActive }) => `hud-nav__item ${isActive ? 'is-active' : ''}`}
                             >
-                                {punkt.icon}
-                                <span>{punkt.label}</span>
+                                {entry.icon}
+                                <span>{entry.label}</span>
                             </NavLink>
                         ))}
                         {/* GLPI ist ein externes System: eigener Tab, daher normaler <a>-Link
@@ -100,12 +100,12 @@ export function Layout() {
                 {/* ---------- Kopfleiste ---------- */}
                 <header className="hud-topbar">
                     {/* Mobil: Hamburger links */}
-                    {eingeloggt && (
+                    {loggedIn && (
                         <button
                             type="button"
                             className="hud-topbar__burger"
                             aria-label="Menü öffnen"
-                            onClick={() => setMenueOffen(true)}
+                            onClick={() => setMenuOpen(true)}
                         >
                             <FaBars />
                         </button>
@@ -116,9 +116,9 @@ export function Layout() {
                         <OsdLogo />
                     </Link>
                     <div className="hud-topbar__spacer" />
-                    <HudUhr />
+                    <HudClock />
                     {/* Das Benutzermenü sitzt oben rechts in der Kopfleiste, neben der Uhr */}
-                    {eingeloggt && username && (
+                    {loggedIn && username && (
                         <div className="hud-topbar__user">
                             <UserMenu username={username} onLogout={logout} />
                         </div>
@@ -133,21 +133,21 @@ export function Layout() {
                 <footer className="hud-statusbar">
                     <span>OpsServiceDoc v1.0</span>
                     <span className="hud-statusbar__mitte">
-                        {eingeloggt ? 'Gesicherte Verbindung · Session aktiv' : 'Nicht angemeldet'}
+                        {loggedIn ? 'Gesicherte Verbindung · Session aktiv' : 'Nicht angemeldet'}
                     </span>
-                    <span>{eingeloggt ? username : ''}</span>
+                    <span>{loggedIn ? username : ''}</span>
                 </footer>
             </div>
 
             {/* ---------- Mobiles Vollbild-Menü (Kacheln) ---------- */}
-            {eingeloggt && menueOffen && (
+            {loggedIn && menuOpen && (
                 <dialog
                     ref={dialogRef}
                     className="hud-overlay"
                     aria-label="Menü"
                     // Esc schließt ein modales <dialog> von selbst - dann muss ich meinen
                     // State nachziehen, sonst wäre menueOffen weiterhin true.
-                    onClose={() => setMenueOffen(false)}
+                    onClose={() => setMenuOpen(false)}
                 >
                     <div className="hud-overlay__kopf">
                         <OsdLogo />
@@ -155,23 +155,23 @@ export function Layout() {
                             type="button"
                             className="hud-topbar__burger"
                             aria-label="Menü schließen"
-                            onClick={() => setMenueOffen(false)}
+                            onClick={() => setMenuOpen(false)}
                         >
                             <FaTimes />
                         </button>
                     </div>
                     <div className="hud-overlay__kacheln">
-                        {MENUE.map((punkt) => (
+                        {MENU.map((entry) => (
                             <NavLink
-                                key={punkt.to}
-                                to={punkt.to}
-                                end={punkt.end}
+                                key={entry.to}
+                                to={entry.to}
+                                end={entry.end}
                                 className={({ isActive }) => `hud-kachel ${isActive ? 'is-active' : ''}`}
                                 // Nach dem Klick Menü schließen, sonst läge es über der neuen Seite
-                                onClick={() => setMenueOffen(false)}
+                                onClick={() => setMenuOpen(false)}
                             >
-                                {punkt.icon}
-                                <span>{punkt.label}</span>
+                                {entry.icon}
+                                <span>{entry.label}</span>
                             </NavLink>
                         ))}
                         {glpiUrl && (
@@ -180,7 +180,7 @@ export function Layout() {
                                 href={glpiUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onClick={() => setMenueOffen(false)}
+                                onClick={() => setMenuOpen(false)}
                             >
                                 <FaExternalLinkAlt />
                                 <span>GLPI ↗</span>

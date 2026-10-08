@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
-import { formatiereDatum, formatiereZieldatum, taskStatusBadgeVariante } from '../utils/formatierung';
+import { formatDate, formatDueDate, taskStatusBadgeVariante } from '../utils/formatting';
 import {
     TASK_STATUS_LABELS,
     type TaskDto,
@@ -11,12 +11,12 @@ import {
     type TicketDto,
 } from '../api/types';
 
-const LEERES_FORMULAR: TaskFormData = {
+const EMPTY_FORM: TaskFormData = {
     ticketId: '',
-    thema: '',
-    naechsteSchritte: '',
-    zieldatum: null,
-    status: 'OFFEN',
+    topic: '',
+    nextSteps: '',
+    dueDate: null,
+    status: 'OPEN',
 };
 
 // Seite für den Bereich "TaskPlanner" (entspricht meinem
@@ -34,17 +34,17 @@ export function TaskPlannerPage() {
     const [tickets, setTickets] = useState<TicketDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [fehler, setFehler] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Aktuell gewählter Filter: leerer String bedeutet "alle Tickets",
     // sonst die ID des Tickets, nach dem gefiltert wird.
     const [ticketFilter, setTicketFilter] = useState('');
 
-    const [modalOffen, setModalOffen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
     // null = Neuanlage, sonst der Task, der gerade bearbeitet wird
     // (siehe handleSpeichern für die POST/PUT-Entscheidung).
-    const [bearbeiteterTask, setBearbeiteterTask] = useState<TaskDto | null>(null);
-    const [formular, setFormular] = useState<TaskFormData>(LEERES_FORMULAR);
+    const [editedTask, setEditedTask] = useState<TaskDto | null>(null);
+    const [form, setForm] = useState<TaskFormData>(EMPTY_FORM);
 
     // Lädt die Task-Liste, optional gefiltert nach ticketId. Als eigene
     // Funktion mit Parameter (statt den State direkt zu lesen), weil ich
@@ -52,14 +52,14 @@ export function TaskPlannerPage() {
     // Filterwechsel und nach dem Speichern/Löschen mit dem jeweils
     // AKTUELLEN Filterwert aufrufen will, ohne auf einen State-Update
     // warten zu müssen, der asynchron ist.
-    async function ladeTasks(ticketId: string) {
+    async function loadTasks(ticketId: string) {
         try {
-            const pfad = ticketId ? `/api/tasks?ticketId=${ticketId}` : '/api/tasks';
-            const geladeneTasks = await api.get<TaskDto[]>(pfad);
-            setTasks(geladeneTasks);
-            setFehler(null);
+            const path = ticketId ? `/api/tasks?ticketId=${ticketId}` : '/api/tasks';
+            const loadedTasks = await api.get<TaskDto[]>(path);
+            setTasks(loadedTasks);
+            setErrorMessage(null);
         } catch (error) {
-            setFehler('Tasks konnten nicht geladen werden.');
+            setErrorMessage('Tasks konnten nicht geladen werden.');
             console.error(error);
         } finally {
             setLoading(false);
@@ -72,24 +72,24 @@ export function TaskPlannerPage() {
     // wenn die Daten ankommen (nicht synchron im Effect-Start), und `abgebrochen`
     // schützt davor, State nach dem Verlassen der Seite zu setzen.
     useEffect(() => {
-        let abgebrochen = false;
+        let aborted = false;
         api.get<TicketDto[]>('/api/tickets').then(setTickets).catch(console.error);
         api.get<TaskDto[]>('/api/tasks')
-            .then((geladeneTasks) => {
-                if (abgebrochen) return;
-                setTasks(geladeneTasks);
-                setFehler(null);
+            .then((loadedTasks) => {
+                if (aborted) return;
+                setTasks(loadedTasks);
+                setErrorMessage(null);
             })
             .catch((error) => {
-                if (abgebrochen) return;
-                setFehler('Tasks konnten nicht geladen werden.');
+                if (aborted) return;
+                setErrorMessage('Tasks konnten nicht geladen werden.');
                 console.error(error);
             })
             .finally(() => {
-                if (!abgebrochen) setLoading(false);
+                if (!aborted) setLoading(false);
             });
         return () => {
-            abgebrochen = true;
+            aborted = true;
         };
     }, []);
 
@@ -101,15 +101,15 @@ export function TaskPlannerPage() {
     function handleFilterChange(ticketId: string) {
         setTicketFilter(ticketId);
         setLoading(true);
-        void ladeTasks(ticketId);
+        void loadTasks(ticketId);
     }
 
     // Sucht zu einer ticketId den passenden Ticket-Titel für die
     // Tabellen-Anzeige. Der Fallback-Text greift nur in dem
     // (theoretisch möglichen) Fall, dass ein Ticket zwischenzeitlich
     // gelöscht wurde, der Task aber noch existiert.
-    function ticketTitel(ticketId: string): string {
-        return tickets.find((t) => t.id === ticketId)?.titel ?? '(unbekanntes Ticket)';
+    function ticketTitle(ticketId: string): string {
+        return tickets.find((t) => t.id === ticketId)?.title ?? '(unbekanntes Ticket)';
     }
 
     // Öffnet das Modal im "Neu anlegen"-Modus. Ist gerade ein
@@ -123,49 +123,49 @@ export function TaskPlannerPage() {
     // nutze ich für den Button in der Leer-Zeile der Tabelle, der
     // IMMER zum gerade gefilterten Ticket gehört, auch falls ich diese
     // Funktion später mal von woanders ohne aktiven Filter aufrufe.
-    function handleNeuerTask(ticketIdVorauswahl?: string) {
-        setBearbeiteterTask(null);
-        setFormular({
-            ...LEERES_FORMULAR,
-            ticketId: ticketIdVorauswahl || ticketFilter || tickets[0]?.id || '',
+    function handleNewTask(ticketIdPreselection?: string) {
+        setEditedTask(null);
+        setForm({
+            ...EMPTY_FORM,
+            ticketId: ticketIdPreselection || ticketFilter || tickets[0]?.id || '',
         });
-        setModalOffen(true);
+        setModalOpen(true);
     }
 
     // Öffnet das Modal im Bearbeiten-Modus, vorbefüllt mit den
     // aktuellen Werten - erfasstAm/erledigtAm lasse ich bewusst aus
     // (siehe TaskFormData in types.ts), die pflegt mein Backend selbst.
-    function handleBearbeiten(task: TaskDto) {
-        setBearbeiteterTask(task);
-        setFormular({
+    function handleEdit(task: TaskDto) {
+        setEditedTask(task);
+        setForm({
             ticketId: task.ticketId,
-            thema: task.thema,
-            naechsteSchritte: task.naechsteSchritte,
-            zieldatum: task.zieldatum,
+            topic: task.topic,
+            nextSteps: task.nextSteps,
+            dueDate: task.dueDate,
             status: task.status,
         });
-        setModalOffen(true);
+        setModalOpen(true);
     }
 
-    async function handleSpeichern() {
+    async function handleSave() {
         setSaving(true);
-        setFehler(null);
+        setErrorMessage(null);
         try {
-            if (bearbeiteterTask) {
-                await api.put<TaskDto>(`/api/tasks/${bearbeiteterTask.id}`, formular);
+            if (editedTask) {
+                await api.put<TaskDto>(`/api/tasks/${editedTask.id}`, form);
             } else {
-                await api.post<TaskDto>('/api/tasks', formular);
+                await api.post<TaskDto>('/api/tasks', form);
             }
-            setModalOffen(false);
+            setModalOpen(false);
             // Mit dem AKTUELLEN Filter neu laden, damit ich nach dem
             // Speichern wieder genau die Liste sehe, die zur aktuellen
             // Filterauswahl passt.
-            await ladeTasks(ticketFilter);
+            await loadTasks(ticketFilter);
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setFehler('Bitte Ticket und Thema ausfüllen.');
+                setErrorMessage('Bitte Ticket und Thema ausfüllen.');
             } else {
-                setFehler('Task konnte nicht gespeichert werden.');
+                setErrorMessage('Task konnte nicht gespeichert werden.');
             }
             console.error(error);
         } finally {
@@ -178,15 +178,15 @@ export function TaskPlannerPage() {
     // treffende Entscheidung wie "löschen ja/nein" reicht der
     // eingebaute Browser-Dialog aus, ohne dass ich dafür extra
     // Modal-State verwalten muss.
-    async function handleLoeschen(task: TaskDto) {
-        if (!window.confirm(`Task "${task.thema}" wirklich löschen?`)) {
+    async function handleDelete(task: TaskDto) {
+        if (!window.confirm(`Task "${task.topic}" wirklich löschen?`)) {
             return;
         }
         try {
             await api.delete(`/api/tasks/${task.id}`);
-            await ladeTasks(ticketFilter);
+            await loadTasks(ticketFilter);
         } catch (error) {
-            setFehler('Task konnte nicht gelöscht werden.');
+            setErrorMessage('Task konnte nicht gelöscht werden.');
             console.error(error);
         }
     }
@@ -211,7 +211,7 @@ export function TaskPlannerPage() {
               anlegen (ein Task braucht zwingend eine ticketId) - der
               Button ist dann deaktiviert statt einen Fehler zu
               provozieren. */}
-                <Button variant="primary" onClick={() => handleNeuerTask()} disabled={tickets.length === 0}>
+                <Button variant="primary" onClick={() => handleNewTask()} disabled={tickets.length === 0}>
                     Neuer Task
                 </Button>
             </div>
@@ -228,13 +228,13 @@ export function TaskPlannerPage() {
                     <option value="">Alle Tickets</option>
                     {tickets.map((ticket) => (
                         <option key={ticket.id} value={ticket.id}>
-                            {ticket.titel}
+                            {ticket.title}
                         </option>
                     ))}
                 </Form.Select>
             </Form.Group>
 
-            {fehler && <Alert variant="danger">{fehler}</Alert>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
             {/* Die Tabelle mit Kopfzeile zeige ich jetzt IMMER an, auch
             wenn tasks leer ist - so bleibt die Spaltenübersicht
@@ -267,7 +267,7 @@ export function TaskPlannerPage() {
                         <td colSpan={8} className="text-center text-muted py-4">
                             <div className="mb-2">
                                 {ticketFilter
-                                    ? `Für "${ticketTitel(ticketFilter)}" sind noch keine Tasks erfasst.`
+                                    ? `Für "${ticketTitle(ticketFilter)}" sind noch keine Tasks erfasst.`
                                     : 'Keine Tasks vorhanden.'}
                             </div>
                             {/* Ohne aktiven Filter übergebe ich keine ticketId -
@@ -280,7 +280,7 @@ export function TaskPlannerPage() {
                             <Button
                                 variant="outline-primary"
                                 size="sm"
-                                onClick={() => handleNeuerTask(ticketFilter)}
+                                onClick={() => handleNewTask(ticketFilter)}
                                 disabled={tickets.length === 0}
                             >
                                 + Task {ticketFilter ? 'für dieses Ticket' : ''} anlegen
@@ -290,22 +290,22 @@ export function TaskPlannerPage() {
                 ) : (
                     tasks.map((task) => (
                         <tr key={task.id}>
-                            <td>{task.thema}</td>
-                            <td>{ticketTitel(task.ticketId)}</td>
-                            <td>{task.naechsteSchritte}</td>
-                            <td>{formatiereZieldatum(task.zieldatum)}</td>
+                            <td>{task.topic}</td>
+                            <td>{ticketTitle(task.ticketId)}</td>
+                            <td>{task.nextSteps}</td>
+                            <td>{formatDueDate(task.dueDate)}</td>
                             <td>
                                 <Badge bg={taskStatusBadgeVariante(task.status)}>{TASK_STATUS_LABELS[task.status]}</Badge>
                             </td>
-                            <td>{formatiereDatum(task.erfasstAm)}</td>
-                            <td>{formatiereDatum(task.erledigtAm)}</td>
+                            <td>{formatDate(task.recordedAt)}</td>
+                            <td>{formatDate(task.doneAt)}</td>
                             <td>
                                 {/* Flex sitzt im div, damit die td eine echte Tabellenzelle bleibt und die Linie durchgeht */}
                                 <div className="d-flex gap-2">
-                                    <Button variant="outline-secondary" size="sm" onClick={() => handleBearbeiten(task)}>
+                                    <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(task)}>
                                         Bearbeiten
                                     </Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleLoeschen(task)}>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(task)}>
                                         Löschen
                                     </Button>
                                 </div>
@@ -317,21 +317,21 @@ export function TaskPlannerPage() {
             </Table>
 </HudPanel>
 
-            <Modal show={modalOffen} onHide={() => setModalOffen(false)}>
+            <Modal show={modalOpen} onHide={() => setModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{bearbeiteterTask ? 'Task bearbeiten' : 'Neuer Task'}</Modal.Title>
+                    <Modal.Title>{editedTask ? 'Task bearbeiten' : 'Neuer Task'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>Ticket</Form.Label>
                             <Form.Select
-                                value={formular.ticketId}
-                                onChange={(e) => setFormular({ ...formular, ticketId: e.target.value })}
+                                value={form.ticketId}
+                                onChange={(e) => setForm({ ...form, ticketId: e.target.value })}
                             >
                                 {tickets.map((ticket) => (
                                     <option key={ticket.id} value={ticket.id}>
-                                        {ticket.titel}
+                                        {ticket.title}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -341,8 +341,8 @@ export function TaskPlannerPage() {
                             <Form.Label>Thema</Form.Label>
                             <Form.Control
                                 type="text"
-                                value={formular.thema}
-                                onChange={(e) => setFormular({ ...formular, thema: e.target.value })}
+                                value={form.topic}
+                                onChange={(e) => setForm({ ...form, topic: e.target.value })}
                                 required
                             />
                         </Form.Group>
@@ -352,8 +352,8 @@ export function TaskPlannerPage() {
                             <Form.Control
                                 as="textarea"
                                 rows={3}
-                                value={formular.naechsteSchritte}
-                                onChange={(e) => setFormular({ ...formular, naechsteSchritte: e.target.value })}
+                                value={form.nextSteps}
+                                onChange={(e) => setForm({ ...form, nextSteps: e.target.value })}
                             />
                         </Form.Group>
 
@@ -365,23 +365,23 @@ export function TaskPlannerPage() {
                                 // mit null als value nicht umgehen (React würde
                                 // eine Warnung werfen), ein leerer String zeigt das
                                 // Feld dagegen einfach leer an.
-                                value={formular.zieldatum ?? ''}
+                                value={form.dueDate ?? ''}
                                 // Tippt der Nutzer das Datum wieder komplett raus,
                                 // kommt hier ein leerer String an - den wandle ich
                                 // zurück in null, damit zieldatum entweder ein
                                 // gültiges Datum oder wirklich "nicht gesetzt" ist.
-                                onChange={(e) => setFormular({ ...formular, zieldatum: e.target.value || null })}
+                                onChange={(e) => setForm({ ...form, dueDate: e.target.value || null })}
                             />
                         </Form.Group>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Status</Form.Label>
                             <Form.Select
-                                value={formular.status}
-                                onChange={(e) => setFormular({ ...formular, status: e.target.value as TaskStatus })}
+                                value={form.status}
+                                onChange={(e) => setForm({ ...form, status: e.target.value as TaskStatus })}
                             >
-                                {Object.entries(TASK_STATUS_LABELS).map(([wert, label]) => (
-                                    <option key={wert} value={wert}>
+                                {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>
                                         {label}
                                     </option>
                                 ))}
@@ -390,13 +390,13 @@ export function TaskPlannerPage() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setModalOffen(false)}>
+                    <Button variant="secondary" onClick={() => setModalOpen(false)}>
                         Abbrechen
                     </Button>
                     <Button
                         variant="primary"
-                        onClick={handleSpeichern}
-                        disabled={saving || !formular.thema || !formular.ticketId}
+                        onClick={handleSave}
+                        disabled={saving || !form.topic || !form.ticketId}
                     >
                         {saving ? 'Speichere…' : 'Speichern'}
                     </Button>

@@ -19,13 +19,13 @@ interface UserMenuProps {
 // Readonly<...> markiert die Props als schreibgeschützt - ich darf sie in der Komponente nicht ändern
 export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMenuProps>) {
     // Merkt sich, ob das Avatar-Bild nicht geladen werden konnte
-    const [avatarFehler, setAvatarFehler] = useState(false)
+    const [avatarError, setAvatarError] = useState(false)
 
     return (
         <Dropdown drop={drop} align="end" className="user-menu">
             {/* Eigener Toggle als Button, damit ich Avatar + Name selbst gestalten kann */}
             <Dropdown.Toggle as="button" className="user-menu__toggle" aria-label="Benutzermenü">
-                {avatarFehler ? (
+                {avatarError ? (
                     <span className="user-menu__avatar user-menu__avatar--fallback">
                         <FaGithub />
                     </span>
@@ -34,7 +34,7 @@ export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMen
                         className="user-menu__avatar"
                         src={`https://github.com/${encodeURIComponent(username)}.png?size=80`}
                         alt=""
-                        onError={() => setAvatarFehler(true)}
+                        onError={() => setAvatarError(true)}
                     />
                 )}
                 <span className="user-menu__text">
