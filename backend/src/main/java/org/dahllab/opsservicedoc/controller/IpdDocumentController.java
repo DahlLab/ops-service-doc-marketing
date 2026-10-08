@@ -70,7 +70,7 @@ public class IpdDocumentController {
     // ergänzen.
     @Operation(
             summary = "Neuen IPD-Entwurf aus einem Ticket erzeugen",
-            description = "Legt automatisch einen neuen IPD-Entwurf (Status ENTWURF) an und übernimmt " +
+            description = "Legt automatisch einen neuen IPD-Entwurf (Status DRAFT) an und übernimmt " +
                     "Titel, Techniker und Szenariotyp aus dem angegebenen Ticket. Zusätzlich werden " +
                     "die durchgeführten Schritte aus den erledigten Tasks sowie der Qualitätssicherungs-" +
                     "Status aus den Checklisten dieses Tickets automatisch ermittelt. Alle übrigen " +
@@ -94,7 +94,7 @@ public class IpdDocumentController {
             summary = "Ein IPD-Dokument aktualisieren",
             description = "Aktualisiert die manuell gepflegten Abschnitte eines bestehenden IPD-Dokuments " +
                     "(z.B. Kunde, Ansprechpartner, Infrastruktur, Risiken) und erlaubt den Statuswechsel " +
-                    "von ENTWURF auf ABGESCHLOSSEN. Die durchgeführten Schritte sowie der Qualitätssicherungs-" +
+                    "von DRAFT auf COMPLETED. Die durchgeführten Schritte sowie der Qualitätssicherungs-" +
                     "Status werden dabei serverseitig neu berechnet, nicht aus dem Request übernommen."
     )
     @ApiResponse(responseCode = "200", description = "IPD-Dokument wurde aktualisiert",

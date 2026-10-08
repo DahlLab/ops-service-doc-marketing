@@ -6,6 +6,6 @@ package org.dahllab.opsservicedoc.model;
 // ABGESCHLOSSEN sobald ich als Techniker alle Abschnitte geprüft/
 // ergänzt habe und es an den Kunden rausgehen kann.
 public enum IpdDocumentStatus {
-    ENTWURF,
-    ABGESCHLOSSEN
+    DRAFT,
+    COMPLETED
 }

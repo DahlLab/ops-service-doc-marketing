@@ -41,7 +41,7 @@ class ChecklistControllerTest {
     }
 
     @Test
-    void getAllChecklists_gibtLeereListeZurueck_wennKeineChecklistenVorhanden() throws Exception {
+    void getAllChecklists_returnsEmptyList_whenNoChecklistsExist() throws Exception {
         mockMvc.perform(get("/api/checklists").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -51,13 +51,13 @@ class ChecklistControllerTest {
     // mitgeschickten Werte in der Antwort, sowie automatisch gesetztes
     // erstelltAm und eine automatisch vergebene Item-ID.
     @Test
-    void postChecklist_legtNeueChecklisteAn_undGibt201Zurueck() throws Exception {
+    void postChecklist_createsNewChecklist_andReturns201() throws Exception {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "titel": "Server-Wartung",
+                    "title": "Server-Wartung",
                     "items": [
-                        { "beschreibung": "USV geprüft", "erledigt": false }
+                        { "description": "USV geprüft", "done": false }
                     ]
                 }
                 """;
@@ -68,21 +68,21 @@ class ChecklistControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.titel").value("Server-Wartung"))
-                .andExpect(jsonPath("$.erstelltAm").exists())
+                .andExpect(jsonPath("$.title").value("Server-Wartung"))
+                .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.items[0].id").exists());
     }
 
     // Prüft die Validierung: ein leerer Titel muss mit 400 abgelehnt
     // werden.
     @Test
-    void postChecklist_gibt400Zurueck_wennTitelLeerIst() throws Exception {
+    void postChecklist_returns400_whenTitleIsEmpty() throws Exception {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "titel": "",
+                    "title": "",
                     "items": [
-                        { "beschreibung": "USV geprüft", "erledigt": false }
+                        { "description": "USV geprüft", "done": false }
                     ]
                 }
                 """;
@@ -98,11 +98,11 @@ class ChecklistControllerTest {
     // Prüft die Validierung: eine Checkliste ohne Items muss mit 400
     // abgelehnt werden.
     @Test
-    void postChecklist_gibt400Zurueck_wennItemsLeerSind() throws Exception {
+    void postChecklist_returns400_whenItemsAreEmpty() throws Exception {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "titel": "Server-Wartung",
+                    "title": "Server-Wartung",
                     "items": []
                 }
                 """;
@@ -119,21 +119,21 @@ class ChecklistControllerTest {
     // Checkliste vorher direkt über das Repository an, um den
     // Controller unabhängig vom POST-Endpunkt zu testen.
     @Test
-    void getChecklistById_gibtChecklisteZurueck_wennIdExistiert() throws Exception {
+    void getChecklistById_returnsChecklist_whenIdExists() throws Exception {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist gespeicherteChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
+        Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
                 "Server-Wartung", List.of(item), LocalDateTime.now(), null));
 
-        mockMvc.perform(get("/api/checklists/" + gespeicherteChecklist.getId()).with(oauth2Login()))
+        mockMvc.perform(get("/api/checklists/" + savedChecklist.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.titel").value("Server-Wartung"));
+                .andExpect(jsonPath("$.title").value("Server-Wartung"));
     }
 
     // Prüft den Fehlerfall: eine unbekannte ID muss zu einem
     // 4xx-Fehler führen (die NoSuchElementException aus dem Service,
     // abgefangen vom GlobalExceptionHandler).
     @Test
-    void getChecklistById_gibt404_wennIdNichtExistiert() throws Exception {
+    void getChecklistById_returns404_whenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/checklists/unbekannt").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
@@ -142,40 +142,40 @@ class ChecklistControllerTest {
     // abgeschlossenAm-Logik: hake ich das einzige Item ab, muss die
     // Antwort ein gesetztes abgeschlossenAm enthalten.
     @Test
-    void putChecklist_aktualisiertItemsUndSetztAbgeschlossenAm() throws Exception {
+    void putChecklist_updatesItemsAndSetsCompletedAt() throws Exception {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist gespeicherteChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
+        Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
                 "Server-Wartung", List.of(item), LocalDateTime.now(), null));
 
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "titel": "Server-Wartung",
+                    "title": "Server-Wartung",
                     "items": [
-                        { "id": "item-1", "beschreibung": "USV geprüft", "erledigt": true }
+                        { "id": "item-1", "description": "USV geprüft", "done": true }
                     ]
                 }
                 """;
 
-        mockMvc.perform(put("/api/checklists/" + gespeicherteChecklist.getId())
+        mockMvc.perform(put("/api/checklists/" + savedChecklist.getId())
                         .with(oauth2Login())
                         .with(csrf())
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].erledigt").value(true))
-                .andExpect(jsonPath("$.abgeschlossenAm").exists());
+                .andExpect(jsonPath("$.items[0].done").value(true))
+                .andExpect(jsonPath("$.completedAt").exists());
     }
 
     // Prüft DELETE /api/checklists/{id}: erfolgreiches Löschen muss
     // 204 No Content liefern.
     @Test
-    void deleteChecklist_entferntChecklist_undGibt204Zurueck() throws Exception {
+    void deleteChecklist_removesChecklist_andReturns204() throws Exception {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist gespeicherteChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
+        Checklist savedChecklist = checklistRepository.save(new Checklist(null, "ticket-1",
                 "Server-Wartung", List.of(item), LocalDateTime.now(), null));
 
-        mockMvc.perform(delete("/api/checklists/" + gespeicherteChecklist.getId()).with(oauth2Login()).with(csrf()))
+        mockMvc.perform(delete("/api/checklists/" + savedChecklist.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
@@ -183,7 +183,7 @@ class ChecklistControllerTest {
     // sichert alle Pfade unter /api/ ab. Ohne diesen Test würde es nicht
     // auffallen, wenn ein neuer Controller versehentlich offen bliebe.
     @Test
-    void getAllChecklists_gibt401_wennNichtEingeloggt() throws Exception {
+    void getAllChecklists_returns401_whenNotLoggedIn() throws Exception {
         mockMvc.perform(get("/api/checklists"))
                 .andExpect(status().isUnauthorized());
     }

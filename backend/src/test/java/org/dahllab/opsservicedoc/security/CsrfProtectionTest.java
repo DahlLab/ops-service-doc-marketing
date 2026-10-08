@@ -35,7 +35,7 @@ class CsrfProtectionTest {
 
     @Test
     @DisplayName("GIVEN eingeloggt aber ohne CSRF-Token WHEN POST THEN 403 Forbidden")
-    void post_gibt403_ohneCsrfToken() throws Exception {
+    void post_returns403_withoutCsrfToken() throws Exception {
         mockMvc.perform(post("/api/tasks")
                         .with(oauth2Login())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -45,7 +45,7 @@ class CsrfProtectionTest {
 
     @Test
     @DisplayName("GIVEN Cookie und passender Header WHEN POST THEN geht der Request am CSRF-Filter vorbei")
-    void post_passiertCsrfFilter_mitPassendemCookieUndHeader() throws Exception {
+    void post_passesCsrfFilter_withMatchingCookieAndHeader() throws Exception {
         // Der leere Body ist absichtlich ungültig: 400 (Validierung) statt
         // 403 beweist, dass der CSRF-Filter den Request durchgelassen hat.
         mockMvc.perform(post("/api/tasks")
@@ -59,7 +59,7 @@ class CsrfProtectionTest {
 
     @Test
     @DisplayName("GIVEN Cookie und FALSCHER Header WHEN POST THEN 403 Forbidden")
-    void post_gibt403_beiFalschemToken() throws Exception {
+    void post_returns403_withWrongToken() throws Exception {
         mockMvc.perform(post("/api/tasks")
                         .with(oauth2Login())
                         .cookie(new Cookie("XSRF-TOKEN", "test-token"))
@@ -71,7 +71,7 @@ class CsrfProtectionTest {
 
     @Test
     @DisplayName("GIVEN ein GET-Request WHEN er beantwortet wird THEN setzt das Backend das XSRF-TOKEN-Cookie (nicht HttpOnly)")
-    void get_setztLesbaresCsrfCookie() throws Exception {
+    void get_setsReadableCsrfCookie() throws Exception {
         // "login"-Attribut setze ich, weil der LoginController es ausliest.
         mockMvc.perform(get("/api/auth/me")
                         .with(oauth2Login().attributes(attrs -> attrs.put("login", "testuser"))))

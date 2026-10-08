@@ -18,12 +18,12 @@ public class TicketMapper {
     public static TicketDto toDto(Ticket ticket) {
         return new TicketDto(
            ticket.getId(),
-           ticket.getTitel(),
-           ticket.getBeschreibung(),
+           ticket.getTitle(),
+           ticket.getDescription(),
            ticket.getStatus(),
-           ticket.getTechniker(),
-           ticket.getSzenarioTyp(),
-           ticket.getErstelltAm()
+           ticket.getTechnician(),
+           ticket.getScenarioType(),
+           ticket.getCreatedAt()
         );
     }
 }

@@ -34,22 +34,22 @@ public class Ticket {
     private String glpiTicketId;
 
     // Titel/Betreff des Tickets (entspricht dem Feld "name" in GLPI).
-    private String titel;
+    private String title;
 
     // Ausführliche Beschreibung des Tickets (entspricht dem Feld "content" in GLPI).
-    private String beschreibung;
+    private String description;
 
     // Aktueller Bearbeitungsstatus, als Enum statt als rohe Zahl (siehe TicketStatus.java).
     private TicketStatus status;
 
     // Name oder Kennung des zuständigen Technikers/der Technikerin.
-    private String techniker;
+    private String technician;
 
     // Art des Wartungsszenarios, siehe SzenarioTyp.java.
-    private SzenarioTyp szenarioTyp;
+    private ScenarioType scenarioType;
 
     // Zeitpunkt, an dem das Ticket bei uns erstellt wurde.
     // LocalDateTime speichert Datum UND Uhrzeit, ohne Zeitzonen-Informationen -
     // passt für unseren Anwendungsfall (ein Server, eine Zeitzone).
-    private LocalDateTime erstelltAm;
+    private LocalDateTime createdAt;
 }

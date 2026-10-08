@@ -28,20 +28,20 @@ public class Task {
     // weiß ich bei jedem Task, woran ich gerade arbeite
     private String ticketId;
 
-    private String thema;
+    private String topic;
 
-    private String naechsteSchritte;
+    private String nextSteps;
 
     // Wird beim Anlegen automatisch im Service gesetzt, analog zu
     // Ticket.erstelltAm, der Aufrufer muss sich darum nicht kümmern.
-    private LocalDateTime erfasstAm;
+    private LocalDateTime recordedAt;
 
-    private LocalDate zieldatum;
+    private LocalDate dueDate;
 
     // Bleibt null, solange der Task nicht erledigt ist. Wird im Service
     // automatisch gesetzt, sobald der Status auf ERLEDIGT wechselt,
     // ich muss das Datum also nicht manuell pflegen
-    private LocalDateTime erledigtAm;
+    private LocalDateTime doneAt;
 
     private TaskStatus status;
 }

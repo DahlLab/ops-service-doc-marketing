@@ -13,8 +13,8 @@ import java.util.NoSuchElementException;
 public class ChecklistTemplateService {
 
     // Gemeinsamer Teil der "nicht gefunden"-Fehlermeldungen: ein Literal statt vieler Kopien
-    private static final String NICHT_GEFUNDEN = " nicht gefunden";
-    private static final String VORLAGE_MIT_ID = "Checklisten-Vorlage mit ID ";
+    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
+    private static final String TEMPLATE_WITH_ID = "Checklisten-Vorlage mit ID ";
 
     private final ChecklistTemplateRepository checklistTemplateRepository;
 
@@ -32,7 +32,7 @@ public class ChecklistTemplateService {
     // GET /api/checklist-templates/{id} - liefert genau eine Vorlage.
     public ChecklistTemplateDto getTemplateById(String id) {
         ChecklistTemplate result = checklistTemplateRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(VORLAGE_MIT_ID + id + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_WITH_ID + id + RESOURCE_NOT_FOUND));
         return ChecklistTemplateMapper.toDto(result);
     }
 
@@ -43,9 +43,9 @@ public class ChecklistTemplateService {
     // damit niemand sich selbst eine unlöschbare Vorlage anlegen kann.
     // Nur mein ChecklistTemplateSeeder setzt beim Start standard=true.
     public ChecklistTemplateDto createTemplate(ChecklistTemplateDto templateDto) {
-        ChecklistTemplate neueTemplate = new ChecklistTemplate(
-                null, templateDto.name(), templateDto.itemBeschreibungen(), false);
-        ChecklistTemplate result = checklistTemplateRepository.save(neueTemplate);
+        ChecklistTemplate newTemplate = new ChecklistTemplate(
+                null, templateDto.name(), templateDto.itemDescriptions(), false);
+        ChecklistTemplate result = checklistTemplateRepository.save(newTemplate);
         return ChecklistTemplateMapper.toDto(result);
     }
 
@@ -57,17 +57,17 @@ public class ChecklistTemplateService {
     // würde, und umgekehrt kann niemand eine eigene Vorlage per Edit
     // nachträglich zur Standard-Vorlage machen.
     public ChecklistTemplateDto updateTemplate(String id, ChecklistTemplateDto templateDto) {
-        ChecklistTemplate bestehendeTemplate = checklistTemplateRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(VORLAGE_MIT_ID + id + NICHT_GEFUNDEN));
+        ChecklistTemplate existingTemplate = checklistTemplateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_WITH_ID + id + RESOURCE_NOT_FOUND));
 
-        ChecklistTemplate aktualisierteTemplate = new ChecklistTemplate(
-                bestehendeTemplate.getId(),
+        ChecklistTemplate updatedTemplate = new ChecklistTemplate(
+                existingTemplate.getId(),
                 templateDto.name(),
-                templateDto.itemBeschreibungen(),
-                bestehendeTemplate.isStandard()
+                templateDto.itemDescriptions(),
+                existingTemplate.isBuiltIn()
         );
 
-        ChecklistTemplate result = checklistTemplateRepository.save(aktualisierteTemplate);
+        ChecklistTemplate result = checklistTemplateRepository.save(updatedTemplate);
         return ChecklistTemplateMapper.toDto(result);
     }
 
@@ -78,9 +78,9 @@ public class ChecklistTemplateService {
     // damit ich den standard-Wert überhaupt prüfen kann.
     public void deleteTemplate(String id) {
         ChecklistTemplate template = checklistTemplateRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(VORLAGE_MIT_ID + id + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_WITH_ID + id + RESOURCE_NOT_FOUND));
 
-        if (template.isStandard()) {
+        if (template.isBuiltIn()) {
             throw new IllegalStateException(
                     "Die Standard-Vorlage \"" + template.getName() + "\" kann nicht gelöscht werden");
         }

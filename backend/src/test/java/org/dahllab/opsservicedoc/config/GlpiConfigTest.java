@@ -31,7 +31,7 @@ class GlpiConfigTest {
 
     @Test
     @DisplayName("GIVEN gestzte glpi.*-Properties WHEN die Anwendung startet THEN werden sie korrekt in GlpiConfig gebunden")
-    void glpiProperties_werdenKorrektGebunden() {
+    void glpiProperties_areBoundCorrectly() {
 
         // GIVEN: die Properties sind über @TestPropertySource oben bereits gesetzt.
 
@@ -47,13 +47,13 @@ class GlpiConfigTest {
 
     @Test
     @DisplayName("GIVEN keine glpi.web-url WHEN resolveWebUrl THEN wird sie aus der API-URL abgeleitet")
-    void resolveWebUrl_leitetAusApiUrlAb() {
+    void resolveWebUrl_derivesFromApiUrl() {
         assertEquals("http://test-glpi", glpiConfig.resolveWebUrl());
     }
 
     @Test
     @DisplayName("GIVEN explizite web-url WHEN resolveWebUrl THEN hat sie Vorrang")
-    void resolveWebUrl_bevorzugtExpliziteWebUrl() {
+    void resolveWebUrl_prefersExplicitWebUrl() {
         GlpiConfig config = new GlpiConfig();
         config.setApiUrl("http://x/api.php/v1");
         config.setWebUrl("http://glpi.example");
@@ -62,7 +62,7 @@ class GlpiConfigTest {
 
     @Test
     @DisplayName("GIVEN keine URLs WHEN resolveWebUrl THEN leerer String; apirest.php und reine URL werden unterstützt")
-    void resolveWebUrl_randfaelle() {
+    void resolveWebUrl_edgeCases() {
         GlpiConfig config = new GlpiConfig();
         assertEquals("", config.resolveWebUrl());
         config.setApiUrl("http://h/glpi/apirest.php");

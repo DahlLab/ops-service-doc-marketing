@@ -16,13 +16,13 @@ public class Checklist {
 
     private String id;
     private String ticketId;
-    private String titel;
+    private String title;
     private List<ChecklistItem> items;
-    private LocalDateTime erstelltAm;
+    private LocalDateTime createdAt;
 
     // Wird automatisch vom Service gesetzt, sobald alle Items erledigt
     // sind (siehe ChecklistService.setzeAbschlussdatumWennAlleErledigt).
     // Bleibt null, solange die Checkliste noch offene Punkte hat.
-    private LocalDateTime abgeschlossenAm;
+    private LocalDateTime completedAt;
 
 }

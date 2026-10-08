@@ -49,7 +49,7 @@ class TaskControllerTest {
     // Prüfe den Fall, dass noch kein Task angelegt wurde: der Endpunkt
     // muss dann eine leere Liste liefern, keinen Fehler.
     @Test
-    void getAllTasks_gibtLeereListeZurueck_wennKeineTasksVorhanden() throws Exception {
+    void getAllTasks_returnsEmptyList_whenNoTasksExist() throws Exception {
         mockMvc.perform(get("/api/tasks").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -61,14 +61,14 @@ class TaskControllerTest {
     // mit, damit ich sicher bin, dass diese Automatik auch über den
     // echten HTTP-Weg funktioniert und nicht nur im Unit-Test.
     @Test
-    void postTask_legtNeuenTaskAn_undGibt201Zurueck() throws Exception {
+    void postTask_createsNewTask_andReturns201() throws Exception {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "thema": "Backup prüfen",
-                    "naechsteSchritte": "Logs checken",
-                    "zieldatum": "2026-10-01",
-                    "status": "OFFEN"
+                    "topic": "Backup prüfen",
+                    "nextSteps": "Logs checken",
+                    "dueDate": "2026-10-01",
+                    "status": "OPEN"
                 }
                 """;
 
@@ -78,8 +78,8 @@ class TaskControllerTest {
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.thema").value("Backup prüfen"))
-                .andExpect(jsonPath("$.erfasstAm").exists());
+                .andExpect(jsonPath("$.topic").value("Backup prüfen"))
+                .andExpect(jsonPath("$.recordedAt").exists());
     }
 
     // Prüfe die Validierung: ein leeres thema muss vom Controller mit
@@ -87,12 +87,12 @@ class TaskControllerTest {
     // angelegt wird (greift über @NotBlank im TaskDto + @Valid im
     // Controller).
     @Test
-    void postTask_gibt400Zurueck_wennThemaLeerIst() throws Exception {
+    void postTask_returns400_whenTopicIsEmpty() throws Exception {
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "thema": "",
-                    "status": "OFFEN"
+                    "topic": "",
+                    "status": "OPEN"
                 }
                 """;
 
@@ -108,20 +108,20 @@ class TaskControllerTest {
     // direkt über das Repository einen Task an, um den Controller
     // unabhängig vom POST-Endpunkt zu testen.
     @Test
-    void getTaskById_gibtTaskZurueck_wennIdExistiert() throws Exception {
-        Task gespeicherterTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OFFEN));
+    void getTaskById_returnsTask_whenIdExists() throws Exception {
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
+                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
 
-        mockMvc.perform(get("/api/tasks/" + gespeicherterTask.getId()).with(oauth2Login()))
+        mockMvc.perform(get("/api/tasks/" + savedTask.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.thema").value("Backup prüfen"));
+                .andExpect(jsonPath("$.topic").value("Backup prüfen"));
     }
 
     // Prüfe den Fehlerfall von GET /api/tasks/{id}: eine unbekannte ID
     // muss zu einem 4xx-Fehler führen (die NoSuchElementException aus
     // dem Service).
     @Test
-    void getTaskById_gibt404_wennIdNichtExistiert() throws Exception {
+    void getTaskById_returns404_whenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/tasks/unbekannt").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
@@ -131,38 +131,38 @@ class TaskControllerTest {
     // auf ERLEDIGT, muss die Antwort ein gesetztes erledigtAm enthalten,
     // ohne dass ich es im Request-Body mitschicken muss.
     @Test
-    void putTask_aktualisiertTask_undSetztErledigtAm() throws Exception {
-        Task gespeicherterTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.IN_BEARBEITUNG));
+    void putTask_updatesTask_andSetsDoneAt() throws Exception {
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
+                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.IN_PROGRESS));
 
         String requestBody = """
                 {
                     "ticketId": "ticket-1",
-                    "thema": "Backup prüfen",
-                    "naechsteSchritte": "fertig",
-                    "zieldatum": "2026-10-01",
-                    "status": "ERLEDIGT"
+                    "topic": "Backup prüfen",
+                    "nextSteps": "fertig",
+                    "dueDate": "2026-10-01",
+                    "status": "DONE"
                 }
                 """;
 
-        mockMvc.perform(put("/api/tasks/" + gespeicherterTask.getId())
+        mockMvc.perform(put("/api/tasks/" + savedTask.getId())
                         .with(oauth2Login())
                         .with(csrf())
                         .contentType("application/json")
                         .content(requestBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ERLEDIGT"))
-                .andExpect(jsonPath("$.erledigtAm").exists());
+                .andExpect(jsonPath("$.status").value("DONE"))
+                .andExpect(jsonPath("$.doneAt").exists());
     }
 
     // Prüfe DELETE /api/tasks/{id}: erfolgreiches Löschen muss 204 No
     // Content liefern (kein Response-Body).
     @Test
-    void deleteTask_entferntTask_undGibt204Zurueck() throws Exception {
-        Task gespeicherterTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
-                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OFFEN));
+    void deleteTask_removesTask_andReturns204() throws Exception {
+        Task savedTask = taskRepository.save(new Task(null, "ticket-1", "Backup prüfen",
+                "Logs checken", LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN));
 
-        mockMvc.perform(delete("/api/tasks/" + gespeicherterTask.getId()).with(oauth2Login()).with(csrf()))
+        mockMvc.perform(delete("/api/tasks/" + savedTask.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());
     }
 }

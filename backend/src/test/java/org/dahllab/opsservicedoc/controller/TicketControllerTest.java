@@ -1,7 +1,7 @@
 package org.dahllab.opsservicedoc.controller;
 
 import org.dahllab.opsservicedoc.dto.TicketDto;
-import org.dahllab.opsservicedoc.model.SzenarioTyp;
+import org.dahllab.opsservicedoc.model.ScenarioType;
 import org.dahllab.opsservicedoc.model.TicketStatus;
 import org.dahllab.opsservicedoc.service.TicketService;
 import org.junit.jupiter.api.DisplayName;
@@ -46,13 +46,13 @@ class TicketControllerTest {
 
     @Test
     @DisplayName("GIVEN ein eingeloggter User WHEN GET /api/tickets aufgerufen wird THEN werden die Tickets als JSON zurückgegeben")
-    void getAllTickets_gibtTicketsZurueck_wennEingeloggt() throws Exception {
+    void getAllTickets_returnsTickets_whenLoggedIn() throws Exception {
 
         // GIVEN: Ich bereite vor, was der (gemockte) Service zurückgeben soll,
         // wenn seine Methode aufgerufen wird, unabhängig von der echten Logik.
         TicketDto ticketDto = new TicketDto(
                 "1", "Server-Wartung", "Beschreibung",
-                TicketStatus.NEU, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now()
+                TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now()
         );
         when(ticketService.getAllTickets()).thenReturn(List.of(ticketDto));
 
@@ -65,12 +65,12 @@ class TicketControllerTest {
         // (jsonPAth prüft gezielt einen Wert innerhalb der JSON-Antwort).
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].titel").value("Server-Wartung"));
+                .andExpect(jsonPath("$[0].title").value("Server-Wartung"));
     }
 
     @Test
     @DisplayName("GIVEN kein eingeloggter User WHEN GET /api/tickets aufgerufen wird THEN kommt 401 Unauthorized")
-    void getAllTickets_gibt401Zurueck_wennNichtEingeloggt() throws Exception {
+    void getAllTickets_returns401_whenNotLoggedIn() throws Exception {
 
         // WHEN: Request OHNE simulierten Login.
         var result = mockMvc.perform(get("/api/tickets"));
@@ -83,11 +83,11 @@ class TicketControllerTest {
 
     @Test
     @DisplayName("GIVEN ein eingeloggter User WHEN GET /api/tickets/{id} aufgerufen wird THEN wird das Ticket zurückgegeben")
-    void getTicketById_gibtTicketZurueck_wennEingeloggt() throws Exception {
+    void getTicketById_returnsTicket_whenLoggedIn() throws Exception {
 
         // GIVEN:
         TicketDto ticketDto = new TicketDto("1", "Server-Wartung", "Beschreibung",
-                TicketStatus.NEU, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now());
+                TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
         when(ticketService.getTicketById("1")).thenReturn(ticketDto);
 
         // WHEN:
@@ -98,21 +98,21 @@ class TicketControllerTest {
         // THEN:
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.titel").value("Server-Wartung"));
+                .andExpect(jsonPath("$.title").value("Server-Wartung"));
     }
 
     @Test
     @DisplayName("GIVEN ein eingeloggter User WHEN POST /api/tickets mit gültigen Daten aufgerufen wird THEN wird das Ticket angelegt")
-    void createTicket_legtTicketAn_wennDatenGueltigSind() throws Exception {
+    void createTicket_createsTicket_whenDataIsValid() throws Exception {
 
         // GIVEN:
-        TicketDto neuesTicket = new TicketDto(null, "Neues Ticket", "Beschreibung",
-                TicketStatus.NEU, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now());
-        TicketDto gespeichertesTicket = new TicketDto("1", "Neues Ticket", "Beschreibung",
-                TicketStatus.NEU, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now());
+        TicketDto newTicket = new TicketDto(null, "Neues Ticket", "Beschreibung",
+                TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
+        TicketDto savedTicket = new TicketDto("1", "Neues Ticket", "Beschreibung",
+                TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
 
         when(ticketService.createTicket(org.mockito.ArgumentMatchers.any(TicketDto.class)))
-                .thenReturn(gespeichertesTicket);
+                .thenReturn(savedTicket);
 
         // WHEN:
         // objectMapper ist die von Spring Boot bereits fertig konfigurierte
@@ -123,7 +123,7 @@ class TicketControllerTest {
                         .with(oauth2Login())
                         .with(csrf())
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(neuesTicket))
+                        .content(objectMapper.writeValueAsString(newTicket))
         );
 
         // THEN:
@@ -135,14 +135,14 @@ class TicketControllerTest {
 
     @Test
     @DisplayName("GIVEN ein eingeloggter User WHEN PUT /api/tickets/{id} aufgerufen wird THEN wird das Ticket aktualisiert")
-    void updateTicket_aktualisiertTicket_wennEingeloggt() throws Exception {
+    void updateTicket_updatesTicket_whenLoggedIn() throws Exception {
 
         // GIVEN:
-        TicketDto aktualisiertesTicket = new TicketDto("1", "Geänderter Titel", "Beschreibung",
-                TicketStatus.GELOEST, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now());
+        TicketDto updatedTicket = new TicketDto("1", "Geänderter Titel", "Beschreibung",
+                TicketStatus.SOLVED, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now());
 
         when(ticketService.updateTicket(org.mockito.ArgumentMatchers.eq("1"), org.mockito.ArgumentMatchers.any(TicketDto.class)))
-                .thenReturn(aktualisiertesTicket);
+                .thenReturn(updatedTicket);
 
         // WHEN:
         var result = mockMvc.perform(
@@ -150,12 +150,12 @@ class TicketControllerTest {
                         .with(oauth2Login())
                         .with(csrf())
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(aktualisiertesTicket))
+                        .content(objectMapper.writeValueAsString(updatedTicket))
         );
 
         // THEN:
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.titel").value("Geänderter Titel"));
+                .andExpect(jsonPath("$.title").value("Geänderter Titel"));
     }
 }

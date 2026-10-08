@@ -38,7 +38,7 @@ class ChecklistServiceTest {
     // Prüft, dass getAllChecklists() alle gefundenen Checklisten als
     // DTOs zurückgibt.
     @Test
-    void getAllChecklists_gibtAlleChecklistenZurueck() {
+    void getAllChecklists_returnsAllChecklists() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
         Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
                 List.of(item), LocalDateTime.now(), null);
@@ -47,13 +47,13 @@ class ChecklistServiceTest {
         List<ChecklistDto> result = checklistService.getAllChecklists();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).titel()).isEqualTo("Server-Wartung");
+        assertThat(result.get(0).title()).isEqualTo("Server-Wartung");
     }
 
     // Prüft, dass getChecklistsByTicketId() die passende
     // Repository-Methode nutzt und deren Ergebnis mappt.
     @Test
-    void getChecklistsByTicketId_gibtGefilterteListeZurueck() {
+    void getChecklistsByTicketId_returnsFilteredList() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
         Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
                 List.of(item), LocalDateTime.now(), null);
@@ -67,7 +67,7 @@ class ChecklistServiceTest {
 
     // Prüft den Erfolgsfall von getChecklistById().
     @Test
-    void getChecklistById_gibtChecklisteZurueck_wennIdExistiert() {
+    void getChecklistById_returnsChecklist_whenIdExists() {
         ChecklistItem item = new ChecklistItem("item-1", "USV geprüft", false);
         Checklist checklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
                 List.of(item), LocalDateTime.now(), null);
@@ -75,13 +75,13 @@ class ChecklistServiceTest {
 
         ChecklistDto result = checklistService.getChecklistById("checklist-1");
 
-        assertThat(result.titel()).isEqualTo("Server-Wartung");
+        assertThat(result.title()).isEqualTo("Server-Wartung");
     }
 
     // Prüft, dass eine unbekannte ID bei getChecklistById() zu einer
     // NoSuchElementException führt.
     @Test
-    void getChecklistById_wirftException_wennIdNichtExistiert() {
+    void getChecklistById_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> checklistService.getChecklistById("unbekannt"))
@@ -92,7 +92,7 @@ class ChecklistServiceTest {
     // vergibt (das Frontend schickt beim Anlegen typischerweise noch
     // keine Item-IDs mit) und erstelltAm setzt.
     @Test
-    void createChecklist_vergibtItemIds_wennNochKeineVorhanden() {
+    void createChecklist_assignsItemIds_whenNoneExist() {
         ChecklistItemDto itemDto = new ChecklistItemDto(null, "USV geprüft", false);
         ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
                 List.of(itemDto), null, null);
@@ -101,13 +101,13 @@ class ChecklistServiceTest {
         ChecklistDto result = checklistService.createChecklist(checklistDto);
 
         assertThat(result.items().get(0).id()).isNotNull();
-        assertThat(result.erstelltAm()).isNotNull();
+        assertThat(result.createdAt()).isNotNull();
     }
 
     // Prüft, dass abgeschlossenAm automatisch gesetzt wird, wenn schon
     // beim Anlegen alle Items erledigt sind.
     @Test
-    void createChecklist_setztAbgeschlossenAm_wennAlleItemsErledigt() {
+    void createChecklist_setsCompletedAt_whenAllItemsDone() {
         ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "USV geprüft", true);
         ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
                 List.of(itemDto), null, null);
@@ -115,52 +115,52 @@ class ChecklistServiceTest {
 
         ChecklistDto result = checklistService.createChecklist(checklistDto);
 
-        assertThat(result.abgeschlossenAm()).isNotNull();
+        assertThat(result.completedAt()).isNotNull();
     }
 
     // Prüft, dass updateChecklist() abgeschlossenAm setzt, sobald durch
     // das Update alle Items erledigt sind.
     @Test
-    void updateChecklist_setztAbgeschlossenAm_wennAlleItemsErledigt() {
-        ChecklistItem bestehendesItem = new ChecklistItem("item-1", "USV geprüft", false);
-        Checklist bestehendeChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
-                List.of(bestehendesItem), LocalDateTime.now(), null);
-        when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(bestehendeChecklist));
+    void updateChecklist_setsCompletedAt_whenAllItemsDone() {
+        ChecklistItem existingItem = new ChecklistItem("item-1", "USV geprüft", false);
+        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+                List.of(existingItem), LocalDateTime.now(), null);
+        when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(existingChecklist));
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ChecklistItemDto aktualisiertesItem = new ChecklistItemDto("item-1", "USV geprüft", true);
+        ChecklistItemDto updatedItem = new ChecklistItemDto("item-1", "USV geprüft", true);
         ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
-                List.of(aktualisiertesItem), null, null);
+                List.of(updatedItem), null, null);
 
         ChecklistDto result = checklistService.updateChecklist("checklist-1", checklistDto);
 
-        assertThat(result.abgeschlossenAm()).isNotNull();
+        assertThat(result.completedAt()).isNotNull();
     }
 
     // Prüft die Rücksetz-Logik: wird ein bereits abgeschlossenes Item
     // wieder auf "nicht erledigt" gesetzt, muss abgeschlossenAm wieder
     // null werden (analog zu Task).
     @Test
-    void updateChecklist_setztAbgeschlossenAmZurueck_wennItemWiederOffenIst() {
-        ChecklistItem erledigtesItem = new ChecklistItem("item-1", "USV geprüft", true);
-        Checklist bestehendeChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
-                List.of(erledigtesItem), LocalDateTime.now(), LocalDateTime.now());
-        when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(bestehendeChecklist));
+    void updateChecklist_resetsCompletedAt_whenItemIsReopened() {
+        ChecklistItem doneItem = new ChecklistItem("item-1", "USV geprüft", true);
+        Checklist existingChecklist = new Checklist("checklist-1", "ticket-1", "Server-Wartung",
+                List.of(doneItem), LocalDateTime.now(), LocalDateTime.now());
+        when(checklistRepository.findById("checklist-1")).thenReturn(Optional.of(existingChecklist));
         when(checklistRepository.save(any(Checklist.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ChecklistItemDto wiederOffenesItem = new ChecklistItemDto("item-1", "USV geprüft", false);
+        ChecklistItemDto reopenedItem = new ChecklistItemDto("item-1", "USV geprüft", false);
         ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
-                List.of(wiederOffenesItem), null, null);
+                List.of(reopenedItem), null, null);
 
         ChecklistDto result = checklistService.updateChecklist("checklist-1", checklistDto);
 
-        assertThat(result.abgeschlossenAm()).isNull();
+        assertThat(result.completedAt()).isNull();
     }
 
     // Prüft, dass ein Update auf eine unbekannte ID eine
     // NoSuchElementException wirft.
     @Test
-    void updateChecklist_wirftException_wennIdNichtExistiert() {
+    void updateChecklist_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.findById("unbekannt")).thenReturn(Optional.empty());
         ChecklistItemDto itemDto = new ChecklistItemDto("item-1", "USV geprüft", false);
         ChecklistDto checklistDto = new ChecklistDto(null, "ticket-1", "Server-Wartung",
@@ -172,7 +172,7 @@ class ChecklistServiceTest {
 
     // Prüft den Erfolgsfall von deleteChecklist().
     @Test
-    void deleteChecklist_loeschtChecklist_wennIdExistiert() {
+    void deleteChecklist_deletesChecklist_whenIdExists() {
         when(checklistRepository.existsById("checklist-1")).thenReturn(true);
 
         checklistService.deleteChecklist("checklist-1");
@@ -184,7 +184,7 @@ class ChecklistServiceTest {
     // NoSuchElementException wirft, statt dass die Repository-Methode
     // still nichts tut.
     @Test
-    void deleteChecklist_wirftException_wennIdNichtExistiert() {
+    void deleteChecklist_throwsException_whenIdDoesNotExist() {
         when(checklistRepository.existsById("unbekannt")).thenReturn(false);
 
         assertThatThrownBy(() -> checklistService.deleteChecklist("unbekannt"))

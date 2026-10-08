@@ -2,7 +2,7 @@ package org.dahllab.opsservicedoc.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import org.dahllab.opsservicedoc.model.IpdDocumentStatus;
-import org.dahllab.opsservicedoc.model.SzenarioTyp;
+import org.dahllab.opsservicedoc.model.ScenarioType;
 
 import java.time.LocalDateTime;
 
@@ -16,26 +16,26 @@ public record IpdDocumentDto(
         String ticketId,
         IpdDocumentStatus status,
         @NotBlank(message = "Titel darf nicht leer sein")
-        String titel,
-        String techniker,
-        SzenarioTyp szenarioTyp,
-        String kunde,
-        String ansprechpartnerKunde,
-        String zeitraum,
-        String ausgangslage,
-        String anforderungen,
-        String infrastrukturUebersicht,
-        String serverUndVms,
-        String netzwerk,
-        String rollenUndVerantwortlichkeiten,
-        String backupKonzept,
-        String securityUeberlegungen,
-        String durchgefuehrteSchritte,
-        String entscheidungen,
-        String risikenUndAnnahmen,
+        String title,
+        String technician,
+        ScenarioType scenarioType,
+        String customer,
+        String customerContact,
+        String period,
+        String initialSituation,
+        String requirements,
+        String infrastructureOverview,
+        String serversAndVms,
+        String network,
+        String rolesAndResponsibilities,
+        String backupPlan,
+        String securityConsiderations,
+        String performedSteps,
+        String decisions,
+        String risksAndAssumptions,
         String rollbackPlan,
-        boolean qualitaetssicherungAbgeschlossen,
-        LocalDateTime erstelltAm,
-        LocalDateTime aktualisiertAm
+        boolean qualityAssuranceCompleted,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

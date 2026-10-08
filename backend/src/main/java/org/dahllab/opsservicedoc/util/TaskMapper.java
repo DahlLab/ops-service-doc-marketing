@@ -17,11 +17,11 @@ public class TaskMapper {
         return new TaskDto(
                 task.getId(),
                 task.getTicketId(),
-                task.getThema(),
-                task.getNaechsteSchritte(),
-                task.getErfasstAm(),
-                task.getZieldatum(),
-                task.getErledigtAm(),
+                task.getTopic(),
+                task.getNextSteps(),
+                task.getRecordedAt(),
+                task.getDueDate(),
+                task.getDoneAt(),
                 task.getStatus()
         );
     }

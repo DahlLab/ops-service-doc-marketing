@@ -66,8 +66,8 @@ public class TicketController {
     @ApiResponse(responseCode = "400", description = "Request-Body ist ungültig (z.B. titel fehlt)", content = @Content)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TicketDto createTicket(@Valid @RequestBody TicketDto neuesTicket) {
-        return ticketService.createTicket(neuesTicket);
+    public TicketDto createTicket(@Valid @RequestBody TicketDto newTicket) {
+        return ticketService.createTicket(newTicket);
     }
 
     // PUT /api/tickets/{id} - aktualisiert ein bestehendes Ticket vollständig
@@ -82,8 +82,8 @@ public class TicketController {
     @PutMapping("/{id}")
     public TicketDto updateTicket(
             @Parameter(description = "ID des zu aktualisierenden Tickets") @PathVariable String id,
-            @Valid @RequestBody TicketDto aktualisiertesTicket) {
-        return ticketService.updateTicket(id, aktualisiertesTicket);
+            @Valid @RequestBody TicketDto updatedTicket) {
+        return ticketService.updateTicket(id, updatedTicket);
     }
 
     // POST /api/tickets/sync-glpi - stößt den manuellen Import aus GLPI an.

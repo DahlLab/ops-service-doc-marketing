@@ -17,6 +17,6 @@ public class ChecklistItem {
     // damit ich ein einzelnes Item beim Aktualisieren gezielt
     // wiedererkennen kann.
     private String id;
-    private String beschreibung;
-    private boolean erledigt;
+    private String description;
+    private boolean done;
 }

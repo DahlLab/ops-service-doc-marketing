@@ -45,42 +45,42 @@ public class IpdDocument {
 
     // Automatisch aus dem Ticket übernommene Felder, nicht vom
     // Cleint überschreibbar (siehe IpdDocumentService)
-    private String titel;
-    private String techniker;
-    private SzenarioTyp szenarioTyp;
+    private String title;
+    private String technician;
+    private ScenarioType scenarioType;
 
     // Vom Techniker manuell einzutragende Projektinfos
-    private String kunde;
-    private String ansprechpartnerKunde;
-    private String zeitraum;
+    private String customer;
+    private String customerContact;
+    private String period;
 
     // Die eigentliche IPD-Fachabschnitte, manuell von mir
     // gepflegt
-    private String ausgangslage;
-    private String anforderungen;
-    private String infrastrukturUebersicht;
-    private String serverUndVms;
-    private String netzwerk;
-    private String rollenUndVerantwortlichkeiten;
-    private String backupKonzept;
-    private String securityUeberlegungen;
+    private String initialSituation;
+    private String requirements;
+    private String infrastructureOverview;
+    private String serversAndVms;
+    private String network;
+    private String rolesAndResponsibilities;
+    private String backupPlan;
+    private String securityConsiderations;
 
     // Automatisch aus den erledigten Tasks des Tickets
     // zusammengesetzter Text (siehe
     // IpdDocumentService.baueDurchgefuehrteSchritteText).
-    private String durchgefuehrteSchritte;
+    private String performedSteps;
 
-    private String entscheidungen;
-    private String risikenUndAnnahmen;
+    private String decisions;
+    private String risksAndAssumptions;
     private String rollbackPlan;
 
     // Automatisch ermittelt: true, sobald zu diesem Ticket mindestens
     // eome Checkliste existiert UND alle zugehörigen Checklisten
     // abgeschlossen sind (siehe
     // IpdDocumentService.ermitteltQualitaetssicherungAbgeschlossen).
-    private boolean qualitaetssicherungAbgeschlossen;
+    private boolean qualityAssuranceCompleted;
 
-    private LocalDateTime erstelltAm;
-    private LocalDateTime aktualisiertAm;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

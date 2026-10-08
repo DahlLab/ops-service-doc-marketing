@@ -21,14 +21,14 @@ class ConfigControllerTest {
     // In der Test-Konfiguration ist glpi.api-url=http://localhost/api.php/v1
     // gesetzt, daraus wird die Web-Adresse http://localhost abgeleitet.
     @Test
-    void getGlpiUrl_liefertAbgeleiteteWebUrl() throws Exception {
+    void getGlpiUrl_returnsDerivedWebUrl() throws Exception {
         mockMvc.perform(get("/api/config/glpi-url").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.url").value("http://localhost"));
     }
 
     @Test
-    void getGlpiUrl_gibt401_wennNichtEingeloggt() throws Exception {
+    void getGlpiUrl_returns401_whenNotLoggedIn() throws Exception {
         mockMvc.perform(get("/api/config/glpi-url"))
                 .andExpect(status().isUnauthorized());
     }

@@ -4,7 +4,7 @@ package org.dahllab.opsservicedoc.model;
 //
 //
 public enum TaskStatus {
-    OFFEN,
-    IN_BEARBEITUNG,
-    ERLEDIGT
+    OPEN,
+    IN_PROGRESS,
+    DONE
 }

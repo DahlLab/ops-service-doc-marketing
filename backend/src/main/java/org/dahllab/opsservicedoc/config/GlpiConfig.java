@@ -65,10 +65,10 @@ public class GlpiConfig {
     // Text stehen - der würde im Frontend als relativer Link enden.
     // Dann gebe ich lieber "" zurück, und das Frontend blendet den Link aus.
     public String resolveWebUrl() {
-        if (istEchteUrl(webUrl)) {
+        if (isRealUrl(webUrl)) {
             return webUrl;
         }
-        if (!istEchteUrl(apiUrl)) {
+        if (!isRealUrl(apiUrl)) {
             return "";
         }
         int index = apiUrl.indexOf("/api.php");
@@ -78,8 +78,8 @@ public class GlpiConfig {
         return index > 0 ? apiUrl.substring(0, index) : apiUrl;
     }
 
-    private static boolean istEchteUrl(String wert) {
-        return wert != null && (wert.startsWith("http://") || wert.startsWith("https://"));
+    private static boolean isRealUrl(String value) {
+        return value != null && (value.startsWith("http://") || value.startsWith("https://"));
     }
 
     // Stellt den fertig konfigurierten RestClient als Spring-Bean bereit.

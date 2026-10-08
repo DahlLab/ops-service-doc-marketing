@@ -14,11 +14,11 @@ public record TaskDto(
     String id,
     String ticketId,
     @NotBlank(message = "Thema darf nicht leer sein")
-    String thema,
-    String naechsteSchritte,
-    LocalDateTime erfasstAm,
-    LocalDate zieldatum,
-    LocalDateTime erledigtAm,
+    String topic,
+    String nextSteps,
+    LocalDateTime recordedAt,
+    LocalDate dueDate,
+    LocalDateTime doneAt,
     TaskStatus status
 ) {
 }

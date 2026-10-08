@@ -40,7 +40,7 @@ class ChecklistTemplateControllerTest {
     }
 
     @Test
-    void getAllTemplates_gibtLeereListeZurueck_wennKeineVorlagenVorhanden() throws Exception {
+    void getAllTemplates_returnsEmptyList_whenNoTemplatesExist() throws Exception {
         mockMvc.perform(get("/api/checklist-templates").with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -49,11 +49,11 @@ class ChecklistTemplateControllerTest {
     // Prüft das Anlegen einer Vorlage über POST: erwarte 201 sowie die
     // mitgeschickten Werte in der Antwort.
     @Test
-    void postTemplate_legtNeueVorlageAn_undGibt201Zurueck() throws Exception {
+    void postTemplate_createsNewTemplate_andReturns201() throws Exception {
         String requestBody = """
                 {
                     "name": "Server-Wartung Standard",
-                    "itemBeschreibungen": ["USV geprüft", "Backup getestet"]
+                    "itemDescriptions": ["USV geprüft", "Backup getestet"]
                 }
                 """;
 
@@ -64,17 +64,17 @@ class ChecklistTemplateControllerTest {
                         .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Server-Wartung Standard"))
-                .andExpect(jsonPath("$.itemBeschreibungen.length()").value(2));
+                .andExpect(jsonPath("$.itemDescriptions.length()").value(2));
     }
 
     // Prüft die Validierung: ein leerer Name muss mit 400 abgelehnt
     // werden.
     @Test
-    void postTemplate_gibt400Zurueck_wennNameLeerIst() throws Exception {
+    void postTemplate_returns400_whenNameIsEmpty() throws Exception {
         String requestBody = """
                 {
                     "name": "",
-                    "itemBeschreibungen": ["USV geprüft"]
+                    "itemDescriptions": ["USV geprüft"]
                 }
                 """;
 
@@ -90,11 +90,11 @@ class ChecklistTemplateControllerTest {
     // lege die Vorlage vorher direkt über das Repository an, um den
     // Controller unabhängig vom POST-Endpunkt zu testen.
     @Test
-    void getTemplateById_gibtVorlageZurueck_wennIdExistiert() throws Exception {
-        ChecklistTemplate gespeicherteTemplate = checklistTemplateRepository.save(
+    void getTemplateById_returnsTemplate_whenIdExists() throws Exception {
+        ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
                 new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
 
-        mockMvc.perform(get("/api/checklist-templates/" + gespeicherteTemplate.getId()).with(oauth2Login()))
+        mockMvc.perform(get("/api/checklist-templates/" + savedTemplate.getId()).with(oauth2Login()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Server-Wartung Standard"));
     }
@@ -102,7 +102,7 @@ class ChecklistTemplateControllerTest {
     // Prüft den Fehlerfall: eine unbekannte ID muss zu einem
     // 4xx-Fehler führen.
     @Test
-    void getTemplateById_gibt404_wennIdNichtExistiert() throws Exception {
+    void getTemplateById_returns404_whenIdDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/checklist-templates/unbekannt").with(oauth2Login()))
                 .andExpect(status().is4xxClientError());
     }
@@ -110,18 +110,18 @@ class ChecklistTemplateControllerTest {
     // Prüft PUT /api/checklist-templates/{id}: die Vorlage muss mit
     // den neuen Werten aktualisiert werden.
     @Test
-    void putTemplate_aktualisiertVorlage() throws Exception {
-        ChecklistTemplate gespeicherteTemplate = checklistTemplateRepository.save(
+    void putTemplate_updatesTemplate() throws Exception {
+        ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
                 new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
 
         String requestBody = """
                 {
                     "name": "Server-Wartung Erweitert",
-                    "itemBeschreibungen": ["USV geprüft", "Backup getestet"]
+                    "itemDescriptions": ["USV geprüft", "Backup getestet"]
                 }
                 """;
 
-        mockMvc.perform(put("/api/checklist-templates/" + gespeicherteTemplate.getId())
+        mockMvc.perform(put("/api/checklist-templates/" + savedTemplate.getId())
                         .with(oauth2Login())
                         .with(csrf())
                         .contentType("application/json")
@@ -133,11 +133,11 @@ class ChecklistTemplateControllerTest {
     // Prüft DELETE /api/checklist-templates/{id}: erfolgreiches
     // Löschen muss 204 No Content liefern.
     @Test
-    void deleteTemplate_entferntVorlage_undGibt204Zurueck() throws Exception {
-        ChecklistTemplate gespeicherteTemplate = checklistTemplateRepository.save(
+    void deleteTemplate_removesTemplate_andReturns204() throws Exception {
+        ChecklistTemplate savedTemplate = checklistTemplateRepository.save(
                 new ChecklistTemplate(null, "Server-Wartung Standard", List.of("USV geprüft"), false));
 
-        mockMvc.perform(delete("/api/checklist-templates/" + gespeicherteTemplate.getId()).with(oauth2Login()).with(csrf()))
+        mockMvc.perform(delete("/api/checklist-templates/" + savedTemplate.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
@@ -147,21 +147,21 @@ class ChecklistTemplateControllerTest {
     // als 409 Conflict ausliefern, und die Vorlage muss danach noch
     // existieren.
     @Test
-    void deleteTemplate_gibt409_beiStandardVorlage() throws Exception {
-        ChecklistTemplate standardTemplate = checklistTemplateRepository.save(
+    void deleteTemplate_returns409_forBuiltInTemplate() throws Exception {
+        ChecklistTemplate builtInTemplate = checklistTemplateRepository.save(
                 new ChecklistTemplate(null, "Server", List.of("[Vorbereitung] Backup prüfen"), true));
 
-        mockMvc.perform(delete("/api/checklist-templates/" + standardTemplate.getId()).with(oauth2Login()).with(csrf()))
+        mockMvc.perform(delete("/api/checklist-templates/" + builtInTemplate.getId()).with(oauth2Login()).with(csrf()))
                 .andExpect(status().isConflict());
 
-        assertThat(checklistTemplateRepository.existsById(standardTemplate.getId())).isTrue();
+        assertThat(checklistTemplateRepository.existsById(builtInTemplate.getId())).isTrue();
     }
 
     // Prüft, dass der Endpunkt ohne Login geschützt ist - die SecurityConfig
     // sichert alle Pfade unter /api/ ab. Ohne diesen Test würde es nicht
     // auffallen, wenn ein neuer Controller versehentlich offen bliebe.
     @Test
-    void getAllTemplates_gibt401_wennNichtEingeloggt() throws Exception {
+    void getAllTemplates_returns401_whenNotLoggedIn() throws Exception {
         mockMvc.perform(get("/api/checklist-templates"))
                 .andExpect(status().isUnauthorized());
     }

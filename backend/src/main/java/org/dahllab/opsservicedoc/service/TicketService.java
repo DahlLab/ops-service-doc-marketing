@@ -1,7 +1,7 @@
 package org.dahllab.opsservicedoc.service;
 
 import org.dahllab.opsservicedoc.dto.TicketDto;
-import org.dahllab.opsservicedoc.model.SzenarioTyp;
+import org.dahllab.opsservicedoc.model.ScenarioType;
 import org.dahllab.opsservicedoc.model.Ticket;
 import org.dahllab.opsservicedoc.model.TicketStatus;
 import org.dahllab.opsservicedoc.repository.TicketRepository;
@@ -41,7 +41,7 @@ public class TicketService {
     // eigene Testdaten von Hand einfügen zu müssen.
     public List<TicketDto> getAllTickets() {
         if (ticketRepository.count() == 0) {
-            ticketRepository.saveAll(erzeugeMockTickets());
+            ticketRepository.saveAll(createMockTickets());
         }
 
         return ticketRepository.findAll()
@@ -65,20 +65,20 @@ public class TicketService {
     // keine ID (die generiert MongoDB automatisch) und kein erstelltAm
     // (das setze ich hier zentral auf "jetzt") - der Aufrufer muss sich
     // also nicht selbst um diese technischen Details kümmern.
-    public TicketDto createTicket(TicketDto neuesTicket) {
+    public TicketDto createTicket(TicketDto newTicket) {
         Ticket ticket = new Ticket(
                 null,              // MongoDB generiert die ID
                 null,              // glpiTicketId: beim manuellen Anlegen noch unbekannt
-                neuesTicket.titel(),
-                neuesTicket.beschreibung(),
-                neuesTicket.status(),
-                neuesTicket.techniker(),
-                neuesTicket.szenarioTyp(),
+                newTicket.title(),
+                newTicket.description(),
+                newTicket.status(),
+                newTicket.technician(),
+                newTicket.scenarioType(),
                 LocalDateTime.now(ZoneId.systemDefault())
         );
 
-        Ticket gespeichertesTicket = ticketRepository.save(ticket);
-        return TicketMapper.toDto(gespeichertesTicket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        return TicketMapper.toDto(savedTicket);
     }
 
     // Aktualisiert ein bestehendes Ticket. Prüfe zuerst, ob die ID existiert
@@ -91,7 +91,7 @@ public class TicketService {
     // geht damit bei jedem manuellen Update verloren. Betrifft nur den
     // Fall, dass ein per Sync importiertes Ticket danach manuell über
     // PUT bearbeitet wird - für den jetzigen Projekt-Scope unkritisch.
-    public TicketDto updateTicket(String id, TicketDto aktualisiertesTicket) {
+    public TicketDto updateTicket(String id, TicketDto updatedTicket) {
         if (!ticketRepository.existsById(id)) {
             throw new NoSuchElementException("Ticket mit ID " + id + " nicht gefunden");
         }
@@ -99,16 +99,16 @@ public class TicketService {
         Ticket ticket = new Ticket(
                 id,
                 null,
-                aktualisiertesTicket.titel(),
-                aktualisiertesTicket.beschreibung(),
-                aktualisiertesTicket.status(),
-                aktualisiertesTicket.techniker(),
-                aktualisiertesTicket.szenarioTyp(),
-                aktualisiertesTicket.erstelltAm()
+                updatedTicket.title(),
+                updatedTicket.description(),
+                updatedTicket.status(),
+                updatedTicket.technician(),
+                updatedTicket.scenarioType(),
+                updatedTicket.createdAt()
         );
 
-        Ticket gespeichertesTicket = ticketRepository.save(ticket);
-        return TicketMapper.toDto(gespeichertesTicket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        return TicketMapper.toDto(savedTicket);
     }
 
     // Holt alle Tickets von GLPI, wandle sie über den GlpiTicketMapper in
@@ -123,11 +123,11 @@ public class TicketService {
     public List<TicketDto> syncFromGlpi() {
         List<Map<String, Object>> glpiTickets = glpiClient.getAllGlpiTickets();
 
-        List<Ticket> gespeicherteTickets = glpiTickets.stream()
+        List<Ticket> savedTickets = glpiTickets.stream()
                 .map(this::upsertGlpiTicket)
                 .toList();
 
-        return gespeicherteTickets.stream()
+        return savedTickets.stream()
                 .map(TicketMapper::toDto)
                 .toList();
     }
@@ -136,17 +136,17 @@ public class TicketService {
     // entweder als Update eines bestehenden Tickets (gleiche glpiTicketId)
     // oder als komplett neues Ticket.
     private Ticket upsertGlpiTicket(Map<String, Object> glpiTicket) {
-        Ticket neuesTicket = GlpiTicketMapper.toTicket(glpiTicket);
+        Ticket newTicket = GlpiTicketMapper.toTicket(glpiTicket);
 
-        return ticketRepository.findByGlpiTicketId(neuesTicket.getGlpiTicketId())
-                .map(bestehendesTicket -> {
+        return ticketRepository.findByGlpiTicketId(newTicket.getGlpiTicketId())
+                .map(existingTicket -> {
                     // Bestehendes Ticket gefunden: MongoDB-ID des bestehenden
                     // Dokuments übernehmen, damit save() es AKTUALISIERT statt
                     // ein neues Dokument anzulegen.
-                    neuesTicket.setId(bestehendesTicket.getId());
-                    return ticketRepository.save(neuesTicket);
+                    newTicket.setId(existingTicket.getId());
+                    return ticketRepository.save(newTicket);
                 })
-                .orElseGet(() -> ticketRepository.save(neuesTicket));
+                .orElseGet(() -> ticketRepository.save(newTicket));
     }
 
     // Erzeugt ein paar Beispiel-Tickets mit Star-Trek-Testdaten,
@@ -154,14 +154,14 @@ public class TicketService {
     // Bewusst als private Hilfsmethode innerhalb des Service gehalten,
     // da sie aktuell nur hier gebraucht wird (KISS: keine unnötige
     // eigene Klasse für einen einzigen Verwendungszweck).
-    private List<Ticket> erzeugeMockTickets() {
+    private List<Ticket> createMockTickets() {
         return List.of(
                 new Ticket(null, "GLPI-1001", "Server Enterprise-01 Wartung",
                         "Geplantes Patching des vSphere-Clusters außerhalb der Betriebszeiten.",
-                        TicketStatus.NEU, "M. Scott", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now(ZoneId.systemDefault())),
+                        TicketStatus.NEW, "M. Scott", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now(ZoneId.systemDefault())),
                 new Ticket(null, "GLPI-1002", "Backup-Check Enterprise-02",
                         "Wöchentliche Kontrolle der Backup-Jobs.",
-                        TicketStatus.IN_BEARBEITUNG, "N. Uhura", SzenarioTyp.SERVER_WARTUNG, LocalDateTime.now(ZoneId.systemDefault()))
+                        TicketStatus.IN_PROGRESS, "N. Uhura", ScenarioType.SERVER_MAINTENANCE, LocalDateTime.now(ZoneId.systemDefault()))
         );
     }
 }

@@ -21,16 +21,16 @@ public class ChecklistMapper {
         return new ChecklistDto(
                 checklist.getId(),
                 checklist.getTicketId(),
-                checklist.getTitel(),
+                checklist.getTitle(),
                 toItemDtoList(checklist.getItems()),
-                checklist.getErstelltAm(),
-                checklist.getAbgeschlossenAm()
+                checklist.getCreatedAt(),
+                checklist.getCompletedAt()
         );
     }
 
     private static List<ChecklistItemDto> toItemDtoList(List<ChecklistItem> items) {
         return items.stream()
-                .map(item -> new ChecklistItemDto(item.getId(), item.getBeschreibung(), item.isErledigt()))
+                .map(item -> new ChecklistItemDto(item.getId(), item.getDescription(), item.isDone()))
                 .toList();
     }
 }

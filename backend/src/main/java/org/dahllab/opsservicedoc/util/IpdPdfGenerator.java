@@ -41,52 +41,52 @@ public class IpdPdfGenerator {
     private static final Color NAVY = new Color(10, 25, 49);
     // Dunkles Blau für die (unterstrichenen) Überschriften - ruhiger als
     // Cyan und auf Papier gut lesbar.
-    private static final Color DUNKELBLAU = new Color(23, 48, 92);
-    private static final Color HELLGRAU = new Color(240, 240, 240);
+    private static final Color DARK_BLUE = new Color(23, 48, 92);
+    private static final Color PALE_GRAY = new Color(240, 240, 240);
 
     private IpdPdfGenerator() {
         // Utility-Klasse, keine Instanzen nötig.
     }
 
-    public static byte[] erzeugePdf(IpdDocumentDto dokument) {
-        Document pdfDokument = new Document(PageSize.A4, 40, 40, 40, 50);
-        ByteArrayOutputStream ausgabe = new ByteArrayOutputStream();
+    public static byte[] createPdf(IpdDocumentDto ipdDocument) {
+        Document pdfDocument = new Document(PageSize.A4, 40, 40, 40, 50);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
 
         try {
-            PdfWriter writer = PdfWriter.getInstance(pdfDokument, ausgabe);
+            PdfWriter writer = PdfWriter.getInstance(pdfDocument, output);
             // Zeichnet auf jeder Seite automatisch die Fußzeile mit
             // Seitenzahl ein, siehe FusszeilenEvent weiter unten.
-            writer.setPageEvent(new FusszeilenEvent());
-            pdfDokument.open();
+            writer.setPageEvent(new FooterEvent());
+            pdfDocument.open();
 
-            Font titelFont = FontFactory.getFont(FontFactory.HELVETICA, 20, Font.BOLD, Color.WHITE);
-            Font untertitelFont = FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, Color.WHITE);
-            Font abschnittFont = FontFactory.getFont(FontFactory.HELVETICA, 13, Font.BOLD | Font.UNDERLINE, DUNKELBLAU);
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA, 20, Font.BOLD, Color.WHITE);
+            Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, Color.WHITE);
+            Font sectionFont = FontFactory.getFont(FontFactory.HELVETICA, 13, Font.BOLD | Font.UNDERLINE, DARK_BLUE);
             Font textFont = FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, Color.BLACK);
             Font labelFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD, NAVY);
-            Font wertFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL, Color.BLACK);
+            Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL, Color.BLACK);
 
-            pdfDokument.add(baueKopfbereich(dokument, titelFont, untertitelFont));
-            pdfDokument.add(neueLeerzeile());
-            pdfDokument.add(baueMetadatenTabelle(dokument, labelFont, wertFont));
-            pdfDokument.add(neueLeerzeile());
+            pdfDocument.add(buildHeader(ipdDocument, titleFont, subtitleFont));
+            pdfDocument.add(newBlankLine());
+            pdfDocument.add(buildMetadataTable(ipdDocument, labelFont, valueFont));
+            pdfDocument.add(newBlankLine());
 
-            fuegeAbschnittHinzu(pdfDokument, "Ausgangslage", dokument.ausgangslage(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Anforderungen", dokument.anforderungen(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Infrastruktur-Übersicht", dokument.infrastrukturUebersicht(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Server und VMs", dokument.serverUndVms(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Netzwerk", dokument.netzwerk(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Rollen und Verantwortlichkeiten", dokument.rollenUndVerantwortlichkeiten(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Backup-Konzept", dokument.backupKonzept(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Security-Überlegungen", dokument.securityUeberlegungen(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Durchgeführte Schritte", dokument.durchgefuehrteSchritte(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Entscheidungen", dokument.entscheidungen(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Risiken und Annahmen", dokument.risikenUndAnnahmen(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Rollback-Plan", dokument.rollbackPlan(), abschnittFont, textFont);
-            fuegeAbschnittHinzu(pdfDokument, "Qualitätssicherung durchgeführt",
-                    dokument.qualitaetssicherungAbgeschlossen() ? "Ja" : "Nein", abschnittFont, textFont);
+            addSection(pdfDocument, "Ausgangslage", ipdDocument.initialSituation(), sectionFont, textFont);
+            addSection(pdfDocument, "Anforderungen", ipdDocument.requirements(), sectionFont, textFont);
+            addSection(pdfDocument, "Infrastruktur-Übersicht", ipdDocument.infrastructureOverview(), sectionFont, textFont);
+            addSection(pdfDocument, "Server und VMs", ipdDocument.serversAndVms(), sectionFont, textFont);
+            addSection(pdfDocument, "Netzwerk", ipdDocument.network(), sectionFont, textFont);
+            addSection(pdfDocument, "Rollen und Verantwortlichkeiten", ipdDocument.rolesAndResponsibilities(), sectionFont, textFont);
+            addSection(pdfDocument, "Backup-Konzept", ipdDocument.backupPlan(), sectionFont, textFont);
+            addSection(pdfDocument, "Security-Überlegungen", ipdDocument.securityConsiderations(), sectionFont, textFont);
+            addSection(pdfDocument, "Durchgeführte Schritte", ipdDocument.performedSteps(), sectionFont, textFont);
+            addSection(pdfDocument, "Entscheidungen", ipdDocument.decisions(), sectionFont, textFont);
+            addSection(pdfDocument, "Risiken und Annahmen", ipdDocument.risksAndAssumptions(), sectionFont, textFont);
+            addSection(pdfDocument, "Rollback-Plan", ipdDocument.rollbackPlan(), sectionFont, textFont);
+            addSection(pdfDocument, "Qualitätssicherung durchgeführt",
+                    ipdDocument.qualityAssuranceCompleted() ? "Ja" : "Nein", sectionFont, textFont);
 
-            pdfDokument.close();
+            pdfDocument.close();
         } catch (DocumentException exception) {
             // Laufzeit-Exception statt geprüfter Exception, damit ich
             // sie nicht bis in den Controller durchreichen muss - ein
@@ -95,75 +95,75 @@ public class IpdPdfGenerator {
             throw new IllegalStateException("PDF konnte nicht erzeugt werden", exception);
         }
 
-        return ausgabe.toByteArray();
+        return output.toByteArray();
     }
 
     // Baut den dunklen Navy-Kopfbereich mit Titel und Untertitel -
     // technisch eine 1x1-Tabelle mit farbigem Zellenhintergrund, weil
     // OpenPDF keinen direkten "farbigen Absatz" kennt, wohl aber
     // farbige Tabellenzellen.
-    private static PdfPTable baueKopfbereich(IpdDocumentDto dokument, Font titelFont, Font untertitelFont) {
-        PdfPTable kopfbereich = new PdfPTable(1);
-        kopfbereich.setWidthPercentage(100);
+    private static PdfPTable buildHeader(IpdDocumentDto ipdDocument, Font titleFont, Font subtitleFont) {
+        PdfPTable header = new PdfPTable(1);
+        header.setWidthPercentage(100);
 
-        PdfPCell zelle = new PdfPCell();
-        zelle.setBackgroundColor(NAVY);
-        zelle.setBorder(Rectangle.NO_BORDER);
-        zelle.setPadding(16);
+        PdfPCell cell = new PdfPCell();
+        cell.setBackgroundColor(NAVY);
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(16);
 
-        Paragraph titel = new Paragraph(dokument.titel() != null ? dokument.titel() : "IPD-Dokument", titelFont);
-        Paragraph untertitel = new Paragraph("IPD-Dokument – OpsServiceDoc", untertitelFont);
-        untertitel.setSpacingBefore(4);
+        Paragraph title = new Paragraph(ipdDocument.title() != null ? ipdDocument.title() : "IPD-Dokument", titleFont);
+        Paragraph subtitle = new Paragraph("IPD-Dokument – OpsServiceDoc", subtitleFont);
+        subtitle.setSpacingBefore(4);
 
-        zelle.addElement(titel);
-        zelle.addElement(untertitel);
-        kopfbereich.addCell(zelle);
+        cell.addElement(title);
+        cell.addElement(subtitle);
+        header.addCell(cell);
 
-        return kopfbereich;
+        return header;
     }
 
     // Stellt die wichtigsten Projektinfos (Kunde, Ansprechpartner,
     // Techniker, Szenario, Zeitraum, Status) als zweispaltige Tabelle
     // dar, statt als Fließtext untereinander - wirkt dadurch
     // strukturierter, wie ein echtes Formular-Deckblatt.
-    private static PdfPTable baueMetadatenTabelle(IpdDocumentDto dokument, Font labelFont, Font wertFont)
+    private static PdfPTable buildMetadataTable(IpdDocumentDto ipdDocument, Font labelFont, Font valueFont)
             throws DocumentException {
-        PdfPTable tabelle = new PdfPTable(2);
-        tabelle.setWidthPercentage(100);
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
         // setWidths wirft eine DocumentException, falls die Anzahl der
         // Breitenangaben nicht zur Spaltenzahl passt - hier bewusst
         // 1:2, damit die Werte-Spalte doppelt so breit ist wie die
         // Label-Spalte.
-        tabelle.setWidths(new float[]{1f, 2f});
+        table.setWidths(new float[]{1f, 2f});
 
-        fuegeMetadatenZeileHinzu(tabelle, "Kunde", dokument.kunde(), labelFont, wertFont);
-        fuegeMetadatenZeileHinzu(tabelle, "Ansprechpartner", dokument.ansprechpartnerKunde(), labelFont, wertFont);
-        fuegeMetadatenZeileHinzu(tabelle, "Techniker", dokument.techniker(), labelFont, wertFont);
-        fuegeMetadatenZeileHinzu(tabelle, "Szenario",
-                dokument.szenarioTyp() != null ? dokument.szenarioTyp().toString() : null, labelFont, wertFont);
-        fuegeMetadatenZeileHinzu(tabelle, "Zeitraum", dokument.zeitraum(), labelFont, wertFont);
-        fuegeMetadatenZeileHinzu(tabelle, "Status",
-                dokument.status() != null ? dokument.status().toString() : null, labelFont, wertFont);
+        addMetadataRow(table, "Kunde", ipdDocument.customer(), labelFont, valueFont);
+        addMetadataRow(table, "Ansprechpartner", ipdDocument.customerContact(), labelFont, valueFont);
+        addMetadataRow(table, "Techniker", ipdDocument.technician(), labelFont, valueFont);
+        addMetadataRow(table, "Szenario",
+                ipdDocument.scenarioType() != null ? ipdDocument.scenarioType().toString() : null, labelFont, valueFont);
+        addMetadataRow(table, "Zeitraum", ipdDocument.period(), labelFont, valueFont);
+        addMetadataRow(table, "Status",
+                ipdDocument.status() != null ? ipdDocument.status().toString() : null, labelFont, valueFont);
 
-        return tabelle;
+        return table;
     }
 
     // Fügt eine einzelne Label/Wert-Zeile zur Metadaten-Tabelle hinzu,
     // mit grau hinterlegter Label-Spalte. Leere Werte zeige ich als
     // "-" an, damit keine Zelle einfach leer bleibt.
-    private static void fuegeMetadatenZeileHinzu(PdfPTable tabelle, String label, String wert,
-                                                 Font labelFont, Font wertFont) {
-        PdfPCell labelZelle = new PdfPCell(new Phrase(label, labelFont));
-        labelZelle.setBackgroundColor(HELLGRAU);
-        labelZelle.setBorderColor(Color.LIGHT_GRAY);
-        labelZelle.setPadding(6);
+    private static void addMetadataRow(PdfPTable table, String label, String value,
+                                                 Font labelFont, Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBackgroundColor(PALE_GRAY);
+        labelCell.setBorderColor(Color.LIGHT_GRAY);
+        labelCell.setPadding(6);
 
-        PdfPCell wertZelle = new PdfPCell(new Phrase(wert != null && !wert.isBlank() ? wert : "-", wertFont));
-        wertZelle.setBorderColor(Color.LIGHT_GRAY);
-        wertZelle.setPadding(6);
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null && !value.isBlank() ? value : "-", valueFont));
+        valueCell.setBorderColor(Color.LIGHT_GRAY);
+        valueCell.setPadding(6);
 
-        tabelle.addCell(labelZelle);
-        tabelle.addCell(wertZelle);
+        table.addCell(labelCell);
+        table.addCell(valueCell);
     }
 
     // Fügt einen einzelnen Fachabschnitt hinzu: dunkelblaue, unterstrichene
@@ -171,22 +171,22 @@ public class IpdPdfGenerator {
     // noch nicht ausgefüllte Abschnitte lasse ich komplett weg, damit
     // der Kunde kein halbfertiges Dokument mit leeren Überschriften
     // bekommt.
-    private static void fuegeAbschnittHinzu(Document pdfDokument, String ueberschrift, String inhalt,
-                                            Font abschnittFont, Font textFont) throws DocumentException {
-        if (inhalt == null || inhalt.isBlank()) {
+    private static void addSection(Document pdfDocument, String heading, String content,
+                                            Font sectionFont, Font textFont) throws DocumentException {
+        if (content == null || content.isBlank()) {
             return;
         }
 
-        Paragraph ueberschriftAbsatz = new Paragraph(ueberschrift, abschnittFont);
-        ueberschriftAbsatz.setSpacingBefore(10);
-        pdfDokument.add(ueberschriftAbsatz);
+        Paragraph headingParagraph = new Paragraph(heading, sectionFont);
+        headingParagraph.setSpacingBefore(10);
+        pdfDocument.add(headingParagraph);
 
-        Paragraph textAbsatz = new Paragraph(inhalt, textFont);
-        textAbsatz.setSpacingBefore(4);
-        pdfDokument.add(textAbsatz);
+        Paragraph textParagraph = new Paragraph(content, textFont);
+        textParagraph.setSpacingBefore(4);
+        pdfDocument.add(textParagraph);
     }
 
-    private static Paragraph neueLeerzeile() {
+    private static Paragraph newBlankLine() {
         return new Paragraph(" ");
     }
 
@@ -195,14 +195,14 @@ public class IpdPdfGenerator {
     // fertiggestellte Seite auf - ich muss mich also um nichts manuell
     // kümmern, sobald der Writer dieses Event kennt (siehe
     // writer.setPageEvent(...) weiter oben in erzeugePdf()).
-    private static class FusszeilenEvent extends PdfPageEventHelper {
+    private static class FooterEvent extends PdfPageEventHelper {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
-            Font fussFont = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL, Color.GRAY);
-            Phrase fusszeile = new Phrase("OpsServiceDoc – Seite " + writer.getPageNumber(), fussFont);
+            Font footerFont = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL, Color.GRAY);
+            Phrase footer = new Phrase("OpsServiceDoc – Seite " + writer.getPageNumber(), footerFont);
 
-            float mitteX = (document.left() + document.right()) / 2;
-            ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_CENTER, fusszeile, mitteX,
+            float centerX = (document.left() + document.right()) / 2;
+            ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_CENTER, footer, centerX,
                     document.bottom() - 20, 0);
         }
     }

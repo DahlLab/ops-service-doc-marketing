@@ -49,20 +49,20 @@ public class TaskService {
     // Legt einen neuen Task an. erfasstAm setze ich zentral auf "jetzt",
     // erledigtAm bleibt null, und falls kein Status mitgegeben wurde,
     // starte ich standardmäßig mit OFFEN.
-    public TaskDto createTask(TaskDto neuerTask) {
+    public TaskDto createTask(TaskDto newTask) {
         Task task = new Task(
                 null,
-                neuerTask.ticketId(),
-                neuerTask.thema(),
-                neuerTask.naechsteSchritte(),
+                newTask.ticketId(),
+                newTask.topic(),
+                newTask.nextSteps(),
                 LocalDateTime.now(ZoneId.systemDefault()),
-                neuerTask.zieldatum(),
+                newTask.dueDate(),
                 null,
-                neuerTask.status() != null ? neuerTask.status() : TaskStatus.OFFEN
+                newTask.status() != null ? newTask.status() : TaskStatus.OPEN
         );
 
-        Task gespeicherterTask = taskRepository.save(task);
-        return TaskMapper.toDto(gespeicherterTask);
+        Task savedTask = taskRepository.save(task);
+        return TaskMapper.toDto(savedTask);
     }
 
     // Aktualisiert einen bestehenden Task. erfasstAm bleibt unverändert
@@ -74,32 +74,32 @@ public class TaskService {
     // (z.B. versehentlich zu früh abgehakt), setze ich erledigtAm zurück
     // auf null - so bleibt der Zustand immer konsistent, ohne dass ich
     // das Datum manuell im Frontend pflegen muss.
-    public TaskDto updateTask(String id, TaskDto aktualisierterTask) {
-        Task bestehenderTask = taskRepository.findById(id)
+    public TaskDto updateTask(String id, TaskDto updatedTask) {
+        Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Task mit ID " + id + " nicht gefunden"));
 
-        LocalDateTime erledigtAm;
-        if (aktualisierterTask.status() == TaskStatus.ERLEDIGT) {
-            erledigtAm = bestehenderTask.getErledigtAm() != null
-                    ? bestehenderTask.getErledigtAm()
+        LocalDateTime doneAt;
+        if (updatedTask.status() == TaskStatus.DONE) {
+            doneAt = existingTask.getDoneAt() != null
+                    ? existingTask.getDoneAt()
                     : LocalDateTime.now(ZoneId.systemDefault());
         } else {
-            erledigtAm = null;
+            doneAt = null;
         }
 
         Task task = new Task(
                 id,
-                aktualisierterTask.ticketId(),
-                aktualisierterTask.thema(),
-                aktualisierterTask.naechsteSchritte(),
-                bestehenderTask.getErfasstAm(),
-                aktualisierterTask.zieldatum(),
-                erledigtAm,
-                aktualisierterTask.status()
+                updatedTask.ticketId(),
+                updatedTask.topic(),
+                updatedTask.nextSteps(),
+                existingTask.getRecordedAt(),
+                updatedTask.dueDate(),
+                doneAt,
+                updatedTask.status()
         );
 
-        Task gespeicherterTask = taskRepository.save(task);
-        return TaskMapper.toDto(gespeicherterTask);
+        Task savedTask = taskRepository.save(task);
+        return TaskMapper.toDto(savedTask);
     }
 
     public void deleteTask(String id) {

@@ -39,8 +39,8 @@ class LoginControllerTest {
         // nach einem echten Login zurückliefern würde (z.B. "login" = Username).
         // Das entspricht genau dem, was user.getAttributes().get("login")
         // im echten LoginController später ausliest.
-        String erwarteterUsername = "testuser";
-        Map<String, Object> fakeGithubAttribute = Map.of("login", erwarteterUsername);
+        String expectedUsername = "testuser";
+        Map<String, Object> fakeGithubAttribute = Map.of("login", expectedUsername);
 
         // WHEN:
         // Ich simuliere einen GET-Request auf /api/auth/me.
@@ -59,7 +59,7 @@ class LoginControllerTest {
         // 2. Der zurückgegebene Text muss exakt unserem erwarteten Usernamen entsprechen
         result
                 .andExpect(status().isOk())
-                .andExpect(content().string(erwarteterUsername));
+                .andExpect(content().string(expectedUsername));
     }
 
     @Test

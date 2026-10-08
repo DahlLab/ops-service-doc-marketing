@@ -14,32 +14,32 @@ public class IpdDocumentMapper {
         // Utility-Klasse, keine Instanzen nötig.
     }
 
-    public static IpdDocumentDto toDto(IpdDocument dokument) {
+    public static IpdDocumentDto toDto(IpdDocument ipdDocument) {
         return new IpdDocumentDto(
-                dokument.getId(),
-                dokument.getTicketId(),
-                dokument.getStatus(),
-                dokument.getTitel(),
-                dokument.getTechniker(),
-                dokument.getSzenarioTyp(),
-                dokument.getKunde(),
-                dokument.getAnsprechpartnerKunde(),
-                dokument.getZeitraum(),
-                dokument.getAusgangslage(),
-                dokument.getAnforderungen(),
-                dokument.getInfrastrukturUebersicht(),
-                dokument.getServerUndVms(),
-                dokument.getNetzwerk(),
-                dokument.getRollenUndVerantwortlichkeiten(),
-                dokument.getBackupKonzept(),
-                dokument.getSecurityUeberlegungen(),
-                dokument.getDurchgefuehrteSchritte(),
-                dokument.getEntscheidungen(),
-                dokument.getRisikenUndAnnahmen(),
-                dokument.getRollbackPlan(),
-                dokument.isQualitaetssicherungAbgeschlossen(),
-                dokument.getErstelltAm(),
-                dokument.getAktualisiertAm()
+                ipdDocument.getId(),
+                ipdDocument.getTicketId(),
+                ipdDocument.getStatus(),
+                ipdDocument.getTitle(),
+                ipdDocument.getTechnician(),
+                ipdDocument.getScenarioType(),
+                ipdDocument.getCustomer(),
+                ipdDocument.getCustomerContact(),
+                ipdDocument.getPeriod(),
+                ipdDocument.getInitialSituation(),
+                ipdDocument.getRequirements(),
+                ipdDocument.getInfrastructureOverview(),
+                ipdDocument.getServersAndVms(),
+                ipdDocument.getNetwork(),
+                ipdDocument.getRolesAndResponsibilities(),
+                ipdDocument.getBackupPlan(),
+                ipdDocument.getSecurityConsiderations(),
+                ipdDocument.getPerformedSteps(),
+                ipdDocument.getDecisions(),
+                ipdDocument.getRisksAndAssumptions(),
+                ipdDocument.getRollbackPlan(),
+                ipdDocument.isQualityAssuranceCompleted(),
+                ipdDocument.getCreatedAt(),
+                ipdDocument.getUpdatedAt()
         );
     }
 }

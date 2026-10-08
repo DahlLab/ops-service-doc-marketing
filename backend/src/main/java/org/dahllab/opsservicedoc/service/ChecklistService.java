@@ -20,7 +20,7 @@ import java.util.UUID;
 public class ChecklistService {
 
     // Gemeinsamer Teil der "nicht gefunden"-Fehlermeldungen: ein Literal statt vieler Kopien
-    private static final String NICHT_GEFUNDEN = " nicht gefunden";
+    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
 
     private final ChecklistRepository checklistRepository;
     private final ChecklistTemplateRepository checklistTemplateRepository;
@@ -49,27 +49,27 @@ public class ChecklistService {
     // GET /api/checklists/{id} - liefert genau eine Checkliste.
     public ChecklistDto getChecklistById(String id) {
         Checklist result = checklistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND));
         return ChecklistMapper.toDto(result);
     }
 
     // POST /api/checklists - legt eine neue Checkliste mit manuell
     // mitgeschickten Items an.
     public ChecklistDto createChecklist(ChecklistDto checklistDto) {
-        List<ChecklistItem> items = erzeugeItemsMitId(checklistDto.items());
+        List<ChecklistItem> items = createItemsWithId(checklistDto.items());
 
-        Checklist neueChecklist = new Checklist(
+        Checklist newChecklist = new Checklist(
                 null,
                 checklistDto.ticketId(),
-                checklistDto.titel(),
+                checklistDto.title(),
                 items,
                 LocalDateTime.now(ZoneId.systemDefault()),
                 null
         );
 
-        setzeAbschlussdatumWennAlleErledigt(neueChecklist);
+        setCompletionDateIfAllDone(newChecklist);
 
-        Checklist result = checklistRepository.save(neueChecklist);
+        Checklist result = checklistRepository.save(newChecklist);
         return ChecklistMapper.toDto(result);
     }
 
@@ -82,13 +82,13 @@ public class ChecklistService {
     // GlobalExceptionHandler in 404 übersetzt.
     public ChecklistDto createChecklistFromTemplate(String ticketId, String templateId) {
         ChecklistTemplate template = checklistTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Checklisten-Vorlage mit ID " + templateId + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException("Checklisten-Vorlage mit ID " + templateId + RESOURCE_NOT_FOUND));
 
-        List<ChecklistItem> items = template.getItemBeschreibungen().stream()
-                .map(beschreibung -> new ChecklistItem(UUID.randomUUID().toString(), beschreibung, false))
+        List<ChecklistItem> items = template.getItemDescriptions().stream()
+                .map(description -> new ChecklistItem(UUID.randomUUID().toString(), description, false))
                 .toList();
 
-        Checklist neueChecklist = new Checklist(
+        Checklist newChecklist = new Checklist(
                 null,
                 ticketId,
                 template.getName(),
@@ -97,7 +97,7 @@ public class ChecklistService {
                 null
         );
 
-        Checklist result = checklistRepository.save(neueChecklist);
+        Checklist result = checklistRepository.save(newChecklist);
         return ChecklistMapper.toDto(result);
     }
 
@@ -105,30 +105,30 @@ public class ChecklistService {
     // bestehenden Checkliste (z.B. um Items abzuhaken). erstelltAm
     // bleibt unverändert, abgeschlossenAm wird jedes Mal neu bewertet.
     public ChecklistDto updateChecklist(String id, ChecklistDto checklistDto) {
-        Checklist bestehendeChecklist = checklistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + NICHT_GEFUNDEN));
+        Checklist existingChecklist = checklistRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND));
 
-        List<ChecklistItem> items = erzeugeItemsMitId(checklistDto.items());
+        List<ChecklistItem> items = createItemsWithId(checklistDto.items());
 
-        Checklist aktualisierteChecklist = new Checklist(
-                bestehendeChecklist.getId(),
+        Checklist updatedChecklist = new Checklist(
+                existingChecklist.getId(),
                 checklistDto.ticketId(),
-                checklistDto.titel(),
+                checklistDto.title(),
                 items,
-                bestehendeChecklist.getErstelltAm(),
+                existingChecklist.getCreatedAt(),
                 null
         );
 
-        setzeAbschlussdatumWennAlleErledigt(aktualisierteChecklist);
+        setCompletionDateIfAllDone(updatedChecklist);
 
-        Checklist result = checklistRepository.save(aktualisierteChecklist);
+        Checklist result = checklistRepository.save(updatedChecklist);
         return ChecklistMapper.toDto(result);
     }
 
     // DELETE /api/checklists/{id} - löscht eine Checkliste.
     public void deleteChecklist(String id) {
         if (!checklistRepository.existsById(id)) {
-            throw new NoSuchElementException("Checkliste mit ID " + id + NICHT_GEFUNDEN);
+            throw new NoSuchElementException("Checkliste mit ID " + id + RESOURCE_NOT_FOUND);
         }
         checklistRepository.deleteById(id);
     }
@@ -136,22 +136,22 @@ public class ChecklistService {
     // Erzeugt aus den ChecklistItemDtos echte ChecklistItem-Objekte und
     // vergibt dabei eine neue UUID für jedes Item, das noch keine ID
     // hat.
-    private List<ChecklistItem> erzeugeItemsMitId(List<ChecklistItemDto> itemDtos) {
+    private List<ChecklistItem> createItemsWithId(List<ChecklistItemDto> itemDtos) {
         return itemDtos.stream()
                 .map(itemDto -> new ChecklistItem(
                         itemDto.id() != null ? itemDto.id() : UUID.randomUUID().toString(),
-                        itemDto.beschreibung(),
-                        itemDto.erledigt()
+                        itemDto.description(),
+                        itemDto.done()
                 ))
                 .toList();
     }
 
     // Setzt abgeschlossenAm auf jetzt, wenn wirklich alle Items der
     // Checkliste erledigt sind - sonst bleibt es null.
-    private void setzeAbschlussdatumWennAlleErledigt(Checklist checklist) {
-        boolean alleErledigt = checklist.getItems().stream().allMatch(ChecklistItem::isErledigt);
-        if (alleErledigt) {
-            checklist.setAbgeschlossenAm(LocalDateTime.now(ZoneId.systemDefault()));
+    private void setCompletionDateIfAllDone(Checklist checklist) {
+        boolean allDone = checklist.getItems().stream().allMatch(ChecklistItem::isDone);
+        if (allDone) {
+            checklist.setCompletedAt(LocalDateTime.now(ZoneId.systemDefault()));
         }
     }
 }

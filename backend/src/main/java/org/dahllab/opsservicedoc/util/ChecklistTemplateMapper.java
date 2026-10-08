@@ -13,8 +13,8 @@ public class ChecklistTemplateMapper {
         return new ChecklistTemplateDto(
                 template.getId(),
                 template.getName(),
-                template.getItemBeschreibungen(),
-                template.isStandard()
+                template.getItemDescriptions(),
+                template.isBuiltIn()
         );
     }
 }

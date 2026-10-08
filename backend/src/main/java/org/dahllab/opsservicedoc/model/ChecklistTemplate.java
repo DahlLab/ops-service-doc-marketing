@@ -19,11 +19,11 @@ import java.util.List;
 public class ChecklistTemplate {
     private String id;
     private String name;
-    private List<String> itemBeschreibungen;
+    private List<String> itemDescriptions;
     // true nur bei den zehn vom ChecklistTemplateSeeder beim Start
     // angelegten Standard-Vorlagen (Server, Netzwerk, ...). Eine
     // Standard-Vorlage darf nicht gelöscht werden (siehe
     // ChecklistTemplateService.deleteTemplate) - selbst angelegte
     // Vorlagen haben standard=false und bleiben jederzeit löschbar.
-    private boolean standard;
+    private boolean builtIn;
 }

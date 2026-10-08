@@ -39,10 +39,10 @@ class TaskServiceTest {
     // Prüfe, dass getAllTasks() alle vom Repository gelieferten Tasks
     // korrekt in TaskDto umwandelt und zurück gibt.
     @Test
-    void getAllTasks_gibtAlleTasksAlsDtoZurueck() {
+    void getAllTasks_returnsAllTasksAsDto() {
         // GIVEN: das Repository liefert genau einen Task zurück
         Task task = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
-                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OFFEN);
+                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN);
         when(taskRepository.findAll()).thenReturn(List.of(task));
 
         // WHEN: ich rufe getAllTasks() auf
@@ -50,16 +50,16 @@ class TaskServiceTest {
 
         // THEN: ich erwarte genau ein DTO mit den gleichen Werten wie der Task
         assertEquals(1, result.size());
-        assertEquals("Backup prüfen", result.get(0).thema());
+        assertEquals("Backup prüfen", result.get(0).topic());
     }
 
     // Prüfe, dass getTasksByTicketId() nur Tasks liefert, die zu
     // genau diesem Ticket gehören, wichtig für die Ticket-Detailansicht.
     @Test
-    void getTasksByTicketId_gibtNurTasksZuDiesemTicketZurueck() {
+    void getTasksByTicketId_returnsOnlyTasksForThisTicket() {
         // GIVEN: das Repository liefert eine Task zu "ticket-1"
         Task task = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
-                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OFFEN);
+                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN);
         when(taskRepository.findByTicketId("ticket-1")).thenReturn(List.of(task));
 
         // WHEN: ich frage gezielt nach Tasks zu "ticket-1"
@@ -73,10 +73,10 @@ class TaskServiceTest {
     // Prüfe den Erfolgsfall von getTaskById(): existiert die ID, bekomme
     // ich das passende DTO zurück.
     @Test
-    void getTaskById_gibtTasks_wennIdExistiert() {
+    void getTaskById_returnsTask_whenIdExists() {
         // GIVEN:
         Task task = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
-                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OFFEN);
+                LocalDateTime.now(), LocalDate.now(), null, TaskStatus.OPEN);
         when(taskRepository.findById("1")).thenReturn(Optional.of(task));
 
         // WHEN:
@@ -90,7 +90,7 @@ class TaskServiceTest {
     // muss eine NoSuchElementException geworfen werden statt z.B. null
     // zurückzugeben, so kann der Controller sauber mit 404 reagieren.
     @Test
-    void getTaskById_wirftException_wennIdNichtExistiert() {
+    void getTaskById_throwsException_whenIdDoesNotExist() {
         // GIVEN: das Repository kennt die ID "unbekannt" nicht
         when(taskRepository.findById("unbekannt")).thenReturn(Optional.empty());
 
@@ -102,51 +102,51 @@ class TaskServiceTest {
     // und falls kein Status mitgegeben wurde, auf OFFEN zurückfällt,
     // ohne dass der Aufrufer sich darum kümmern muss.
     @Test
-    void createTask_setztErfasstAmUndStandardStatus() {
+    void createTask_setsRecordedAtAndDefaultStatus() {
         // GIVEN: ein neuer TaskDto ohne erfasstAm und ohne Status
-        TaskDto neuerTask = new TaskDto(null, "ticket-1", "Backup prüfen", "Logs checken",
+        TaskDto newTask = new TaskDto(null, "ticket-1", "Backup prüfen", "Logs checken",
                 null, LocalDate.now(), null, null);
         // Ich simuliere das Speichern: das Repository gibt den übergebenen
         // Task zurück, nachdem ich ihm eine ID vergeben habe (wie es
         // MongoDB in echt auch tun würde).
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
-            Task uebergeben = invocation.getArgument(0);
-            uebergeben.setId("1");
-            return uebergeben;
+            Task passed = invocation.getArgument(0);
+            passed.setId("1");
+            return passed;
         });
 
         // WHEN: ich lege die Task an
-        TaskDto result = taskService.createTask(neuerTask);
+        TaskDto result = taskService.createTask(newTask);
 
         // THEN: ID ist gesetzt, erfasstAm wurde automatisch befüllt,
         // Status ist auf OFFEN gefallen, erledigtAm bleibt leer
         assertEquals("1", result.id());
-        assertNotNull(result.erfasstAm());
-        assertEquals(TaskStatus.OFFEN, result.status());
-        assertNull(result.erledigtAm());
+        assertNotNull(result.recordedAt());
+        assertEquals(TaskStatus.OPEN, result.status());
+        assertNull(result.doneAt());
     }
 
     // Prüfe die automatische Pflege von erledigtAm: wechselt der Status
     // auf ERLEDIGT, muss erledigtAm automatisch auf "jetzt" gesetzt
     // werden, ohne dass ich das Datum manuell im Frontend eingeben muss.
     @Test
-    void updateTask_setztErledigtAm_wennStatusAufErledigtWechselt() {
+    void updateTask_setsDoneAt_whenStatusChangesToDone() {
         // GIVEN: ein bestehender Task, der noch IN_BEARBEITUNG ist
-        Task bestehenderTask = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
-                LocalDateTime.now().minusDays(1), LocalDate.now(), null, TaskStatus.IN_BEARBEITUNG);
+        Task existingTask = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
+                LocalDateTime.now().minusDays(1), LocalDate.now(), null, TaskStatus.IN_PROGRESS);
         // und ein Update, das den Status auf ERLEDIGT setzt
-        TaskDto aktualisierterTask = new TaskDto("1", "ticket-1", "Backup prüfen", "erledigt",
-                null, LocalDate.now(), null, TaskStatus.ERLEDIGT);
+        TaskDto updatedTask = new TaskDto("1", "ticket-1", "Backup prüfen", "erledigt",
+                null, LocalDate.now(), null, TaskStatus.DONE);
 
-        when(taskRepository.findById("1")).thenReturn(Optional.of(bestehenderTask));
+        when(taskRepository.findById("1")).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // WHEN: ich führe das Update aus
-        TaskDto result = taskService.updateTask("1", aktualisierterTask);
+        TaskDto result = taskService.updateTask("1", updatedTask);
 
         // THEN: der Status ist ERLEDIGT und erledigtAm wurde automatisch gesetzt
-        assertEquals(TaskStatus.ERLEDIGT, result.status());
-        assertNotNull(result.erledigtAm());
+        assertEquals(TaskStatus.DONE, result.status());
+        assertNotNull(result.doneAt());
     }
 
     // Prüfe den Gegenfall: wechselt ein bereits erledigter Task wieder
@@ -154,44 +154,44 @@ class TaskServiceTest {
     // abgehakt), muss erledigtAm wieder auf null gesetzt werden,
     // sonst stünde ein Erledigungsdatum bei einem offenen Task.
     @Test
-    void updateTask_setztErledigtAmZurueck_wennStatusWiederOffenWird() {
+    void updateTask_resetsDoneAt_whenStatusBecomesOpenAgain() {
         // GIVEN: ein bereits erledigter Task mit gesetztem erledigtAm
-        Task bestehenderTask = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
-                LocalDateTime.now().minusDays(1), LocalDate.now(), LocalDateTime.now(), TaskStatus.ERLEDIGT);
+        Task existingTask = new Task("1", "ticket-1", "Backup prüfen", "Logs checken",
+                LocalDateTime.now().minusDays(1), LocalDate.now(), LocalDateTime.now(), TaskStatus.DONE);
         // und ein Update, das ihn wieder auf OFFEN zurücksetzt
-        TaskDto aktualisierterTask = new TaskDto("1", "ticket-1", "Backup prüfen", "doch noch offen",
-                null, LocalDate.now(), null, TaskStatus.OFFEN);
+        TaskDto updatedTask = new TaskDto("1", "ticket-1", "Backup prüfen", "doch noch offen",
+                null, LocalDate.now(), null, TaskStatus.OPEN);
 
-        when(taskRepository.findById("1")).thenReturn(Optional.of(bestehenderTask));
+        when(taskRepository.findById("1")).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // WHEN: ich führe das Update aus
-        TaskDto result = taskService.updateTask("1", aktualisierterTask);
+        TaskDto result = taskService.updateTask("1", updatedTask);
 
         // THEN: Status ist wieder OFFEN und erledigtAm wurde zurückgesetzt
-        assertEquals(TaskStatus.OFFEN, result.status());
-        assertNull(result.erledigtAm());
+        assertEquals(TaskStatus.OPEN, result.status());
+        assertNull(result.doneAt());
     }
 
     // Prüfe den Fehlerfall von updateTask(): existiert die ID nicht,
     // darf kein Update stattfinden, sondern es muss eine
     // NoSuchElementException fliegen.
     @Test
-    void updateTask_wirftException_wennIdNichtExistiert() {
+    void updateTask_throwsException_whenIdDoesNotExist() {
         // GIVEN: das Repository kennt die ID "unbekannt" nicht
         when(taskRepository.findById("unbekannt")).thenReturn(Optional.empty());
-        TaskDto aktualisierterTask = new TaskDto("unbekannt", "ticket-1", "Backup prüfen", "x",
-                null, LocalDate.now(), null, TaskStatus.OFFEN);
+        TaskDto updatedTask = new TaskDto("unbekannt", "ticket-1", "Backup prüfen", "x",
+                null, LocalDate.now(), null, TaskStatus.OPEN);
 
         // WHEN + THEN: der Aufruf muss die erwartete Exception werfen
-        assertThrows(NoSuchElementException.class, () -> taskService.updateTask("unbekannt", aktualisierterTask));
+        assertThrows(NoSuchElementException.class, () -> taskService.updateTask("unbekannt", updatedTask));
     }
 
     // Prüfe den Erfolgsfall von deleteTask(): existiert die ID, wird
     // taskRepository.deleteById() tatsächlich mit der richtigen ID
     // aufgerufen.
     @Test
-    void deleteTask_loeschtTask_wennIdExistiert() {
+    void deleteTask_deletesTask_whenIdExists() {
         // GIVEN: die ID "1" existiert laut Repository
         when(taskRepository.existsById("1")).thenReturn(true);
 
@@ -206,7 +206,7 @@ class TaskServiceTest {
     // darf gar nicht erst gelöscht werden - stattdessen muss eine
     // NoSuchElementException fliegen.
     @Test
-    void deleteTask_wirftException_wennIdNichtExistiert() {
+    void deleteTask_throwsException_whenIdDoesNotExist() {
         // GIVEN: die ID "unbekannt" existiert laut Repository nicht
         when(taskRepository.existsById("unbekannt")).thenReturn(false);
 

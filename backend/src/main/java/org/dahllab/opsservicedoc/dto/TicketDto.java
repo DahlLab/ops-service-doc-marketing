@@ -1,6 +1,6 @@
 package org.dahllab.opsservicedoc.dto;
 
-import org.dahllab.opsservicedoc.model.SzenarioTyp;
+import org.dahllab.opsservicedoc.model.ScenarioType;
 import org.dahllab.opsservicedoc.model.TicketStatus;
 
 import java.time.LocalDateTime;
@@ -16,12 +16,12 @@ import java.time.LocalDateTime;
 // und toString(), ohne das ich das per Hand oder mit Lombok schreiben muss (DRY & KISS).
 public record TicketDto(
     String id,
-    String titel,
-    String beschreibung,
+    String title,
+    String description,
     TicketStatus status,
-    String techniker,
-    SzenarioTyp szenarioTyp,
-    LocalDateTime erstelltAm
+    String technician,
+    ScenarioType scenarioType,
+    LocalDateTime createdAt
 ) {
     // Kein zusätzlicher Code nötig - der Record deckt alles ab, was ich
 }   // aktuell brauche ( YAGNI: keine ungenutzen Felder/Methoden vorbauen).

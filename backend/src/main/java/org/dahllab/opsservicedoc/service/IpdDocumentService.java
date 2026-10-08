@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class IpdDocumentService {
 
     // Gemeinsamer Teil der "nicht gefunden"-Fehlermeldungen: ein Literal statt vieler Kopien
-    private static final String NICHT_GEFUNDEN = " nicht gefunden";
+    private static final String RESOURCE_NOT_FOUND = " nicht gefunden";
 
     private final IpdDocumentRepository ipdDocumentRepository;
     private final TicketRepository ticketRepository;
@@ -66,7 +66,7 @@ public class IpdDocumentService {
     // GET /api/ipd/{id} - liefert genau ein IPD-Dokument.
     public IpdDocumentDto getIpdDocumentById(String id) {
         IpdDocument result = ipdDocumentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND));
         return IpdDocumentMapper.toDto(result);
     }
 
@@ -80,15 +80,15 @@ public class IpdDocumentService {
     // zunächst leer und müssen von mir per PUT ergänzt werden.
     public IpdDocumentDto createIpdDocumentFromTicket(String ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new NoSuchElementException("Ticket mit ID " + ticketId + NICHT_GEFUNDEN));
+                .orElseThrow(() -> new NoSuchElementException("Ticket mit ID " + ticketId + RESOURCE_NOT_FOUND));
 
-        IpdDocument neuesDokument = new IpdDocument(
+        IpdDocument newDocument = new IpdDocument(
                 null,                                                  // id
                 ticketId,                                              // ticketId
-                IpdDocumentStatus.ENTWURF,                             // status
-                ticket.getTitel(),                                     // titel
-                ticket.getTechniker(),                                 // techniker
-                ticket.getSzenarioTyp(),                               // szenarioTyp
+                IpdDocumentStatus.DRAFT,                             // status
+                ticket.getTitle(),                                     // titel
+                ticket.getTechnician(),                                 // techniker
+                ticket.getScenarioType(),                               // szenarioTyp
                 null,                                                  // kunde
                 null,                                                  // ansprechpartnerKunde
                 null,                                                  // zeitraum
@@ -100,16 +100,16 @@ public class IpdDocumentService {
                 null,                                                  // rollenUndVerantwortlichkeiten
                 null,                                                  // backupKonzept
                 null,                                                  // securityUeberlegungen
-                baueDurchgefuehrteSchritteText(ticketId),             // durchgefuehrteSchritte
+                buildPerformedStepsText(ticketId),             // durchgefuehrteSchritte
                 null,                                                  // entscheidungen
                 null,                                                  // risikenUndAnnahmen
                 null,                                                  // rollbackPlan
-                ermittleQualitaetssicherungAbgeschlossen(ticketId),   // qualitaetssicherungAbgeschlossen
+                determineQualityAssuranceCompleted(ticketId),   // qualitaetssicherungAbgeschlossen
                 LocalDateTime.now(ZoneId.systemDefault()),                                   // erstelltAm
                 LocalDateTime.now(ZoneId.systemDefault())                                    // aktualisiertAm
         );
 
-        IpdDocument result = ipdDocumentRepository.save(neuesDokument);
+        IpdDocument result = ipdDocumentRepository.save(newDocument);
         return IpdDocumentMapper.toDto(result);
     }
 
@@ -124,44 +124,44 @@ public class IpdDocumentService {
     // wenn inzwischen weitere Tasks erledigt oder Checklisten
     // abgeschlossen wurden.
     public IpdDocumentDto updateIpdDocument(String id, IpdDocumentDto ipdDocumentDto) {
-        IpdDocument bestehendesDokument = ipdDocumentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + NICHT_GEFUNDEN));
+        IpdDocument existingDocument = ipdDocumentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND));
 
-        IpdDocument aktualisiertesDokument = new IpdDocument(
+        IpdDocument updatedDocument = new IpdDocument(
                 id,                                                                            // id
-                bestehendesDokument.getTicketId(),                                            // ticketId
-                ipdDocumentDto.status() != null ? ipdDocumentDto.status() : bestehendesDokument.getStatus(), // status
-                ipdDocumentDto.titel(),                                                        // titel
-                bestehendesDokument.getTechniker(),                                            // techniker
-                bestehendesDokument.getSzenarioTyp(),                                          // szenarioTyp
-                ipdDocumentDto.kunde(),                                                        // kunde
-                ipdDocumentDto.ansprechpartnerKunde(),                                         // ansprechpartnerKunde
-                ipdDocumentDto.zeitraum(),                                                     // zeitraum
-                ipdDocumentDto.ausgangslage(),                                                 // ausgangslage
-                ipdDocumentDto.anforderungen(),                                                // anforderungen
-                ipdDocumentDto.infrastrukturUebersicht(),                                      // infrastrukturUebersicht
-                ipdDocumentDto.serverUndVms(),                                                 // serverUndVms
-                ipdDocumentDto.netzwerk(),                                                     // netzwerk
-                ipdDocumentDto.rollenUndVerantwortlichkeiten(),                                // rollenUndVerantwortlichkeiten
-                ipdDocumentDto.backupKonzept(),                                                // backupKonzept
-                ipdDocumentDto.securityUeberlegungen(),                                        // securityUeberlegungen
-                baueDurchgefuehrteSchritteText(bestehendesDokument.getTicketId()),            // durchgefuehrteSchritte
-                ipdDocumentDto.entscheidungen(),                                               // entscheidungen
-                ipdDocumentDto.risikenUndAnnahmen(),                                           // risikenUndAnnahmen
+                existingDocument.getTicketId(),                                            // ticketId
+                ipdDocumentDto.status() != null ? ipdDocumentDto.status() : existingDocument.getStatus(), // status
+                ipdDocumentDto.title(),                                                        // titel
+                existingDocument.getTechnician(),                                            // techniker
+                existingDocument.getScenarioType(),                                          // szenarioTyp
+                ipdDocumentDto.customer(),                                                        // kunde
+                ipdDocumentDto.customerContact(),                                         // ansprechpartnerKunde
+                ipdDocumentDto.period(),                                                     // zeitraum
+                ipdDocumentDto.initialSituation(),                                                 // ausgangslage
+                ipdDocumentDto.requirements(),                                                // anforderungen
+                ipdDocumentDto.infrastructureOverview(),                                      // infrastrukturUebersicht
+                ipdDocumentDto.serversAndVms(),                                                 // serverUndVms
+                ipdDocumentDto.network(),                                                     // netzwerk
+                ipdDocumentDto.rolesAndResponsibilities(),                                // rollenUndVerantwortlichkeiten
+                ipdDocumentDto.backupPlan(),                                                // backupKonzept
+                ipdDocumentDto.securityConsiderations(),                                        // securityUeberlegungen
+                buildPerformedStepsText(existingDocument.getTicketId()),            // durchgefuehrteSchritte
+                ipdDocumentDto.decisions(),                                               // entscheidungen
+                ipdDocumentDto.risksAndAssumptions(),                                           // risikenUndAnnahmen
                 ipdDocumentDto.rollbackPlan(),                                                 // rollbackPlan
-                ermittleQualitaetssicherungAbgeschlossen(bestehendesDokument.getTicketId()),  // qualitaetssicherungAbgeschlossen
-                bestehendesDokument.getErstelltAm(),                                           // erstelltAm bleibt unverändert
+                determineQualityAssuranceCompleted(existingDocument.getTicketId()),  // qualitaetssicherungAbgeschlossen
+                existingDocument.getCreatedAt(),                                           // erstelltAm bleibt unverändert
                 LocalDateTime.now(ZoneId.systemDefault())                                                            // aktualisiertAm
         );
 
-        IpdDocument result = ipdDocumentRepository.save(aktualisiertesDokument);
+        IpdDocument result = ipdDocumentRepository.save(updatedDocument);
         return IpdDocumentMapper.toDto(result);
     }
 
     // DELETE /api/ipd/{id} - löscht ein IPD-Dokument.
     public void deleteIpdDocument(String id) {
         if (!ipdDocumentRepository.existsById(id)) {
-            throw new NoSuchElementException("IPD-Dokument mit ID " + id + NICHT_GEFUNDEN);
+            throw new NoSuchElementException("IPD-Dokument mit ID " + id + RESOURCE_NOT_FOUND);
         }
         ipdDocumentRepository.deleteById(id);
     }
@@ -169,22 +169,22 @@ public class IpdDocumentService {
     // GET /api/ipd/{id}/pdf - lädt das Dokument und lässt daraus das
     // fertige PDF erzeugen (siehe IpdPdfGenerator).
     public byte[] generatePdf(String id) {
-        IpdDocumentDto dokument = getIpdDocumentById(id);
-        return IpdPdfGenerator.erzeugePdf(dokument);
+        IpdDocumentDto ipdDocument = getIpdDocumentById(id);
+        return IpdPdfGenerator.createPdf(ipdDocument);
     }
 
     // GET /api/ipd/{id}/checklist-pdf - interne Technikerversion der
     // Checklisten zu diesem Dokument (druckbar / am Tablet ausfüllbar).
     // Ohne Checkliste gibt es nichts zu exportieren -> 404.
     public byte[] generateChecklistPdf(String id) {
-        IpdDocumentDto dokument = getIpdDocumentById(id);
-        List<ChecklistDto> checklisten = checklistRepository.findByTicketId(dokument.ticketId()).stream()
+        IpdDocumentDto ipdDocument = getIpdDocumentById(id);
+        List<ChecklistDto> checklists = checklistRepository.findByTicketId(ipdDocument.ticketId()).stream()
                 .map(ChecklistMapper::toDto)
                 .toList();
-        if (checklisten.isEmpty()) {
+        if (checklists.isEmpty()) {
             throw new NoSuchElementException("Zu diesem IPD-Dokument gibt es keine Checkliste");
         }
-        return ChecklistPdfGenerator.erzeugePdf(dokument, checklisten);
+        return ChecklistPdfGenerator.createPdf(ipdDocument, checklists);
     }
 
     // Ermittelt automatisch, ob die interne Qualitätssicherung für
@@ -194,9 +194,9 @@ public class IpdDocumentService {
     // Checklisten bleibt es false, auch wenn es "nichts zu erledigen
     // gab" - sonst würde ein Ticket ohne jede Checkliste fälschlich so
     // aussehen, als wäre die QS schon durchgeführt.
-    private boolean ermittleQualitaetssicherungAbgeschlossen(String ticketId) {
-        List<Checklist> checklisten = checklistRepository.findByTicketId(ticketId);
-        return !checklisten.isEmpty() && checklisten.stream().allMatch(checklist -> checklist.getAbgeschlossenAm() != null);
+    private boolean determineQualityAssuranceCompleted(String ticketId) {
+        List<Checklist> checklists = checklistRepository.findByTicketId(ticketId);
+        return !checklists.isEmpty() && checklists.stream().allMatch(checklist -> checklist.getCompletedAt() != null);
     }
 
     // Baut aus allen ERLEDIGTEN Tasks des Tickets einen lesbaren
@@ -205,19 +205,19 @@ public class IpdDocumentService {
     // den nächsten Schritten/Kommentar. So muss ich die bereits in
     // TaskPlanner erfassten Arbeitsschritte nicht ein zweites Mal von
     // Hand eintippen.
-    private String baueDurchgefuehrteSchritteText(String ticketId) {
-        List<Task> erledigteTasks = taskRepository.findByTicketId(ticketId).stream()
-                .filter(task -> task.getStatus() == TaskStatus.ERLEDIGT)
+    private String buildPerformedStepsText(String ticketId) {
+        List<Task> doneTasks = taskRepository.findByTicketId(ticketId).stream()
+                .filter(task -> task.getStatus() == TaskStatus.DONE)
                 .toList();
 
-        if (erledigteTasks.isEmpty()) {
+        if (doneTasks.isEmpty()) {
             return "";
         }
 
-        return erledigteTasks.stream()
-                .map(task -> "- " + task.getThema()
-                        + (task.getNaechsteSchritte() != null && !task.getNaechsteSchritte().isBlank()
-                        ? ": " + task.getNaechsteSchritte()
+        return doneTasks.stream()
+                .map(task -> "- " + task.getTopic()
+                        + (task.getNextSteps() != null && !task.getNextSteps().isBlank()
+                        ? ": " + task.getNextSteps()
                         : ""))
                 .collect(Collectors.joining("\n"));
     }
