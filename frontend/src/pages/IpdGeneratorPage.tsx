@@ -3,7 +3,7 @@ import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
-import { formatDate, ipdStatusBadgeVariante } from '../utils/formatting';
+import { formatDate, ipdStatusBadgeVariant } from '../utils/formatting';
 import { IPD_DOCUMENT_STATUS_LABELS, type IpdDocumentDto, type TicketDto } from '../api/types';
 
 export function IpdGeneratorPage() {
@@ -169,7 +169,7 @@ export function IpdGeneratorPage() {
                             <td>{ipdDocument.title}</td>
                             <td>{ticketTitle(ipdDocument.ticketId)}</td>
                             <td>
-                                <Badge bg={ipdStatusBadgeVariante(ipdDocument.status)}>
+                                <Badge bg={ipdStatusBadgeVariant(ipdDocument.status)}>
                                     {IPD_DOCUMENT_STATUS_LABELS[ipdDocument.status]}
                                 </Badge>
                             </td>

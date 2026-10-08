@@ -230,3 +230,24 @@
   border: 1px solid var(--hud-line);
   background: var(--hud-bg-raised);
 }
+
+.language-switcher {
+  display: flex;
+  border: 1px solid var(--hud-line);
+}
+
+.language-switcher__option {
+  background: transparent;
+  border: 0;
+  color: var(--hud-text-muted);
+  font-family: var(--hud-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+
+.language-switcher__option.is-active {
+  background: var(--hud-gold);
+  color: #0b1220;
+}

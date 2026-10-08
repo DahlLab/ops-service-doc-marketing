@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
-import { formatDate, formatDueDate, taskStatusBadgeVariante } from '../utils/formatting';
+import { formatDate, formatDueDate, taskStatusBadgeVariant } from '../utils/formatting';
 import {
     TASK_STATUS_LABELS,
     type TaskDto,
@@ -218,7 +218,7 @@ export function TaskPlannerPage() {
                             <td>{task.nextSteps}</td>
                             <td>{formatDueDate(task.dueDate)}</td>
                             <td>
-                                <Badge bg={taskStatusBadgeVariante(task.status)}>{TASK_STATUS_LABELS[task.status]}</Badge>
+                                <Badge bg={taskStatusBadgeVariant(task.status)}>{TASK_STATUS_LABELS[task.status]}</Badge>
                             </td>
                             <td>{formatDate(task.recordedAt)}</td>
                             <td>{formatDate(task.doneAt)}</td>

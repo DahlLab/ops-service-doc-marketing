@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import {
     FaBars,
@@ -15,17 +16,19 @@ import { useGlpiUrl } from '../hooks/useGlpiUrl'
 import { OsdLogo } from './OsdLogo'
 import { HudClock } from './HudClock'
 import { UserMenu } from './UserMenu'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import '../hud-layout.css'
 
 const MENU = [
-    { to: '/', label: 'Dashboard', icon: <FaTachometerAlt />, end: true },
-    { to: '/tickets', label: 'Tickets', icon: <FaTicketAlt />, end: false },
-    { to: '/tasks', label: 'TaskPlanner', icon: <FaTasks />, end: false },
-    { to: '/checklists', label: 'Checklisten', icon: <FaClipboardCheck />, end: false },
-    { to: '/ipd', label: 'IPD-Generator', icon: <FaFileAlt />, end: false },
+    { to: '/', labelKey: 'nav.dashboard', icon: <FaTachometerAlt />, end: true },
+    { to: '/tickets', labelKey: 'nav.tickets', icon: <FaTicketAlt />, end: false },
+    { to: '/tasks', labelKey: 'nav.tasks', icon: <FaTasks />, end: false },
+    { to: '/checklists', labelKey: 'nav.checklists', icon: <FaClipboardCheck />, end: false },
+    { to: '/ipd', labelKey: 'nav.ipd', icon: <FaFileAlt />, end: false },
 ]
 
 export function Layout() {
+    const { t } = useTranslation()
     const { username, loading, logout } = useAuth()
     const glpiUrl = useGlpiUrl(Boolean(username))
 
@@ -47,11 +50,11 @@ export function Layout() {
 
             {loggedIn && (
                 <aside className="hud-sidebar">
-                    <Link to="/" className="hud-sidebar__logo" aria-label="Zur Startseite">
+                    <Link to="/" className="hud-sidebar__logo" aria-label={t('nav.home')}>
                         <OsdLogo />
                     </Link>
 
-                    <nav className="hud-nav" aria-label="Hauptnavigation">
+                    <nav className="hud-nav" aria-label={t('nav.main')}>
                         {MENU.map((entry) => (
                             <NavLink
                                 key={entry.to}
@@ -60,7 +63,7 @@ export function Layout() {
                                 className={({ isActive }) => `hud-nav__item ${isActive ? 'is-active' : ''}`}
                             >
                                 {entry.icon}
-                                <span>{entry.label}</span>
+                                <span>{t(entry.labelKey)}</span>
                             </NavLink>
                         ))}
 
@@ -87,17 +90,18 @@ export function Layout() {
                         <button
                             type="button"
                             className="hud-topbar__burger"
-                            aria-label="Menü öffnen"
+                            aria-label={t('nav.openMenu')}
                             onClick={() => setMenuOpen(true)}
                         >
                             <FaBars />
                         </button>
                     )}
 
-                    <Link to="/" className="hud-topbar__logo" aria-label="Zur Startseite">
+                    <Link to="/" className="hud-topbar__logo" aria-label={t('nav.home')}>
                         <OsdLogo />
                     </Link>
                     <div className="hud-topbar__spacer" />
+                    <LanguageSwitcher />
                     <HudClock />
 
                     {loggedIn && username && (
@@ -114,7 +118,7 @@ export function Layout() {
                 <footer className="hud-statusbar">
                     <span>OpsServiceDoc v1.0</span>
                     <span className="hud-statusbar__center">
-                        {loggedIn ? 'Gesicherte Verbindung · Session aktiv' : 'Nicht angemeldet'}
+                        {loggedIn ? t('statusbar.secure') : t('statusbar.notSignedIn')}
                     </span>
                     <span>{loggedIn ? username : ''}</span>
                 </footer>
@@ -124,7 +128,7 @@ export function Layout() {
                 <dialog
                     ref={dialogRef}
                     className="hud-overlay"
-                    aria-label="Menü"
+                    aria-label={t('nav.menu')}
 
                     onClose={() => setMenuOpen(false)}
                 >
@@ -133,7 +137,7 @@ export function Layout() {
                         <button
                             type="button"
                             className="hud-topbar__burger"
-                            aria-label="Menü schließen"
+                            aria-label={t('nav.closeMenu')}
                             onClick={() => setMenuOpen(false)}
                         >
                             <FaTimes />
@@ -150,7 +154,7 @@ export function Layout() {
                                 onClick={() => setMenuOpen(false)}
                             >
                                 {entry.icon}
-                                <span>{entry.label}</span>
+                                <span>{t(entry.labelKey)}</span>
                             </NavLink>
                         ))}
                         {glpiUrl && (

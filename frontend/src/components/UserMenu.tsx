@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dropdown } from 'react-bootstrap'
 import { FaGithub, FaSignOutAlt } from 'react-icons/fa'
 
@@ -10,12 +11,13 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMenuProps>) {
+    const { t } = useTranslation()
     const [avatarError, setAvatarError] = useState(false)
 
     return (
         <Dropdown drop={drop} align="end" className="user-menu">
 
-            <Dropdown.Toggle as="button" className="user-menu__toggle" aria-label="Benutzermenü">
+            <Dropdown.Toggle as="button" className="user-menu__toggle" aria-label={t('user.menu')}>
                 {avatarError ? (
                     <span className="user-menu__avatar user-menu__avatar--fallback">
                         <FaGithub />
@@ -30,14 +32,14 @@ export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMen
                 )}
                 <span className="user-menu__text">
                     <span className="user-menu__name">{username}</span>
-                    <span className="user-menu__role">Angemeldet</span>
+                    <span className="user-menu__role">{t('user.signedIn')}</span>
                 </span>
             </Dropdown.Toggle>
 
             <Dropdown.Menu variant="dark">
                 <Dropdown.Item as="button" onClick={onLogout}>
                     <FaSignOutAlt className="me-2" />
-                    Abmelden
+                    {t('user.signOut')}
                 </Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>

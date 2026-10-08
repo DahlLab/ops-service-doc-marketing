@@ -1,16 +1,17 @@
+import { currentLocale } from '../i18n';
 import type { IpdDocumentStatus, TaskStatus, TicketStatus } from '../api/types';
 
 export function formatDate(isoDate: string | null): string {
     if (!isoDate) return '–';
-    return new Date(isoDate).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+    return new Date(isoDate).toLocaleString(currentLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export function formatDueDate(date: string | null): string {
     if (!date) return '–';
-    return new Date(date).toLocaleDateString('de-DE', { dateStyle: 'medium' });
+    return new Date(date).toLocaleDateString(currentLocale(), { dateStyle: 'medium' });
 }
 
-export function ticketStatusBadgeVariante(status: TicketStatus): string {
+export function ticketStatusBadgeVariant(status: TicketStatus): string {
     switch (status) {
         case 'NEW':
             return 'secondary';
@@ -25,7 +26,7 @@ export function ticketStatusBadgeVariante(status: TicketStatus): string {
     }
 }
 
-export function taskStatusBadgeVariante(status: TaskStatus): string {
+export function taskStatusBadgeVariant(status: TaskStatus): string {
     switch (status) {
         case 'OPEN':
             return 'secondary';
@@ -36,6 +37,6 @@ export function taskStatusBadgeVariante(status: TaskStatus): string {
     }
 }
 
-export function ipdStatusBadgeVariante(status: IpdDocumentStatus): string {
+export function ipdStatusBadgeVariant(status: IpdDocumentStatus): string {
     return status === 'COMPLETED' ? 'success' : 'secondary';
 }

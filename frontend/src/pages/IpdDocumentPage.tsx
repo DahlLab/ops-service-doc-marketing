@@ -4,7 +4,7 @@ import HudPanel from '../components/HudPanel';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/api';
 import { downloadFile } from '../utils/download';
-import { formatDate, ipdStatusBadgeVariante } from '../utils/formatting';
+import { formatDate, ipdStatusBadgeVariant } from '../utils/formatting';
 import {
     IPD_DOCUMENT_STATUS_LABELS,
     SCENARIO_TYPE_LABELS,
@@ -168,7 +168,7 @@ export function IpdDocumentPage() {
             <div className="d-flex justify-content-between align-items-start mb-4">
                 <div>
                     <h1 className="mb-1">{ipdDocument.title}</h1>
-                    <Badge bg={ipdStatusBadgeVariante(ipdDocument.status)}>
+                    <Badge bg={ipdStatusBadgeVariant(ipdDocument.status)}>
                         {IPD_DOCUMENT_STATUS_LABELS[ipdDocument.status]}
                     </Badge>
                 </div>

@@ -17,7 +17,7 @@ import {
     IPD_DOCUMENT_STATUS_LABELS,
     TASK_STATUS_LABELS,
 } from '../api/types'
-import { formatDate, formatDueDate, ipdStatusBadgeVariante, taskStatusBadgeVariante } from '../utils/formatting'
+import { formatDate, formatDueDate, ipdStatusBadgeVariant, taskStatusBadgeVariant } from '../utils/formatting'
 import HudPanel from '../components/HudPanel'
 import { OsdLogo } from '../components/OsdLogo'
 import { ProgressRing } from '../components/ProgressRing'
@@ -163,7 +163,7 @@ export function Home() {
                                 <li key={task.id}>
                                     <div>
                                         <div className="dash__listtitle">{task.topic}</div>
-                                        <Badge bg={taskStatusBadgeVariante(task.status)}>
+                                        <Badge bg={taskStatusBadgeVariant(task.status)}>
                                             {TASK_STATUS_LABELS[task.status]}
                                         </Badge>
                                     </div>
@@ -185,7 +185,7 @@ export function Home() {
                                 <li key={doc.id}>
                                     <div>
                                         <Link to={`/ipd/${doc.id}`} className="dash__listtitle">{doc.title}</Link>
-                                        <Badge bg={ipdStatusBadgeVariante(doc.status)}>
+                                        <Badge bg={ipdStatusBadgeVariant(doc.status)}>
                                             {IPD_DOCUMENT_STATUS_LABELS[doc.status]}
                                         </Badge>
                                     </div>

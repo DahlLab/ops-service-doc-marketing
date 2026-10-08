@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
-import { formatDate, ticketStatusBadgeVariante } from '../utils/formatting';
+import { formatDate, ticketStatusBadgeVariant } from '../utils/formatting';
 import {
     SCENARIO_TYPE_LABELS,
     TICKET_STATUS_LABELS,
@@ -176,7 +176,7 @@ export function TicketsPage() {
                             <td>{ticket.technician}</td>
                             <td>{SCENARIO_TYPE_LABELS[ticket.scenarioType]}</td>
                             <td>
-                                <Badge bg={ticketStatusBadgeVariante(ticket.status)}>
+                                <Badge bg={ticketStatusBadgeVariant(ticket.status)}>
                                     {TICKET_STATUS_LABELS[ticket.status]}
                                 </Badge>
                             </td>

@@ -1,0 +1,47 @@
+{
+  "language": {
+    "label": "Language"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "tasks": "Task planner",
+    "checklists": "Checklists",
+    "ipd": "IPD generator",
+    "main": "Main navigation",
+    "home": "Go to start page",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menu": "Menu"
+  },
+  "statusbar": {
+    "secure": "Secure connection · Session active",
+    "notSignedIn": "Not signed in"
+  },
+  "status": {
+    "ticket": {
+      "NEW": "New",
+      "IN_PROGRESS": "In progress",
+      "PENDING": "Pending",
+      "SOLVED": "Solved",
+      "CLOSED": "Closed"
+    },
+    "task": {
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "DONE": "Done"
+    },
+    "ipd": {
+      "DRAFT": "Draft",
+      "COMPLETED": "Completed"
+    }
+  },
+  "user": {
+    "menu": "User menu",
+    "signedIn": "Signed in",
+    "signOut": "Sign out"
+  },
+  "clock": {
+    "label": "Current time and date"
+  }
+}
