@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
+import i18n from '../i18n';
 import { formatDate, formatDueDate, taskStatusBadgeVariant } from '../utils/formatting';
 import {
-    TASK_STATUS_LABELS,
+    TASK_STATUSES,
     type TaskDto,
     type TaskFormData,
     type TaskStatus,
@@ -20,6 +22,7 @@ const EMPTY_FORM: TaskFormData = {
 };
 
 export function TaskPlannerPage() {
+    const { t } = useTranslation('tasks');
     const [tasks, setTasks] = useState<TaskDto[]>([]);
 
     const [tickets, setTickets] = useState<TicketDto[]>([]);
@@ -41,7 +44,7 @@ export function TaskPlannerPage() {
             setTasks(loadedTasks);
             setErrorMessage(null);
         } catch (error) {
-            setErrorMessage('Tasks konnten nicht geladen werden.');
+            setErrorMessage(t('errors.load'));
             console.error(error);
         } finally {
             setLoading(false);
@@ -59,7 +62,7 @@ export function TaskPlannerPage() {
             })
             .catch((error) => {
                 if (aborted) return;
-                setErrorMessage('Tasks konnten nicht geladen werden.');
+                setErrorMessage(i18n.t('tasks:errors.load'));
                 console.error(error);
             })
             .finally(() => {
@@ -77,7 +80,7 @@ export function TaskPlannerPage() {
     }
 
     function ticketTitle(ticketId: string): string {
-        return tickets.find((t) => t.id === ticketId)?.title ?? '(unbekanntes Ticket)';
+        return tickets.find((ticket) => ticket.id === ticketId)?.title ?? t('unknownTicket');
     }
 
     function handleNewTask(ticketIdPreselection?: string) {
@@ -115,9 +118,9 @@ export function TaskPlannerPage() {
             await loadTasks(ticketFilter);
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setErrorMessage('Bitte Ticket und Thema ausfüllen.');
+                setErrorMessage(t('errors.validation'));
             } else {
-                setErrorMessage('Task konnte nicht gespeichert werden.');
+                setErrorMessage(t('errors.save'));
             }
             console.error(error);
         } finally {
@@ -126,14 +129,14 @@ export function TaskPlannerPage() {
     }
 
     async function handleDelete(task: TaskDto) {
-        if (!window.confirm(`Task "${task.topic}" wirklich löschen?`)) {
+        if (!window.confirm(t('confirmDelete', { topic: task.topic }))) {
             return;
         }
         try {
             await api.delete(`/api/tasks/${task.id}`);
             await loadTasks(ticketFilter);
         } catch (error) {
-            setErrorMessage('Task konnte nicht gelöscht werden.');
+            setErrorMessage(t('errors.delete'));
             console.error(error);
         }
     }
@@ -149,23 +152,23 @@ export function TaskPlannerPage() {
     return (
         <div className="py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="mb-0">TaskPlanner</h1>
+                <h1 className="mb-0">{t('title')}</h1>
 
                 <Button variant="primary" onClick={() => handleNewTask()} disabled={tickets.length === 0}>
-                    Neuer Task
+                    {t('newTask')}
                 </Button>
             </div>
 
             {tickets.length === 0 && (
                 <Alert variant="info">
-                    Es existiert noch kein Ticket - lege zuerst ein Ticket an, bevor du Tasks erfassen kannst.
+                    {t('noTicketsHint')}
                 </Alert>
             )}
 
             <Form.Group className="mb-3" style={{ maxWidth: 320 }}>
-                <Form.Label>Nach Ticket filtern</Form.Label>
+                <Form.Label>{t('filter.label')}</Form.Label>
                 <Form.Select value={ticketFilter} onChange={(e) => handleFilterChange(e.target.value)}>
-                    <option value="">Alle Tickets</option>
+                    <option value="">{t('filter.all')}</option>
                     {tickets.map((ticket) => (
                         <option key={ticket.id} value={ticket.id}>
                             {ticket.title}
@@ -176,17 +179,17 @@ export function TaskPlannerPage() {
 
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
-            <HudPanel title="Aufgaben">
+            <HudPanel title={t('panelTitle')}>
 <Table hover responsive className="hud-table">
                 <thead>
                 <tr>
-                    <th>Thema</th>
-                    <th>Ticket</th>
-                    <th>Nächste Schritte</th>
-                    <th>Zieldatum</th>
-                    <th>Status</th>
-                    <th>Erfasst am</th>
-                    <th>Erledigt am</th>
+                    <th>{t('table.topic')}</th>
+                    <th>{t('table.ticket')}</th>
+                    <th>{t('table.nextSteps')}</th>
+                    <th>{t('table.dueDate')}</th>
+                    <th>{t('table.status')}</th>
+                    <th>{t('table.recordedAt')}</th>
+                    <th>{t('table.doneAt')}</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -196,8 +199,8 @@ export function TaskPlannerPage() {
                         <td colSpan={8} className="text-center text-muted py-4">
                             <div className="mb-2">
                                 {ticketFilter
-                                    ? `Für "${ticketTitle(ticketFilter)}" sind noch keine Tasks erfasst.`
-                                    : 'Keine Tasks vorhanden.'}
+                                    ? t('empty.forTicket', { ticket: ticketTitle(ticketFilter) })
+                                    : t('empty.none')}
                             </div>
 
                             <Button
@@ -206,7 +209,7 @@ export function TaskPlannerPage() {
                                 onClick={() => handleNewTask(ticketFilter)}
                                 disabled={tickets.length === 0}
                             >
-                                + Task {ticketFilter ? 'für dieses Ticket' : ''} anlegen
+                                {ticketFilter ? t('empty.createForTicket') : t('empty.create')}
                             </Button>
                         </td>
                     </tr>
@@ -218,7 +221,7 @@ export function TaskPlannerPage() {
                             <td>{task.nextSteps}</td>
                             <td>{formatDueDate(task.dueDate)}</td>
                             <td>
-                                <Badge bg={taskStatusBadgeVariant(task.status)}>{TASK_STATUS_LABELS[task.status]}</Badge>
+                                <Badge bg={taskStatusBadgeVariant(task.status)}>{t(`status.task.${task.status}`, { ns: 'common' })}</Badge>
                             </td>
                             <td>{formatDate(task.recordedAt)}</td>
                             <td>{formatDate(task.doneAt)}</td>
@@ -226,10 +229,10 @@ export function TaskPlannerPage() {
 
                                 <div className="d-flex gap-2">
                                     <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(task)}>
-                                        Bearbeiten
+                                        {t('actions.edit')}
                                     </Button>
                                     <Button variant="outline-danger" size="sm" onClick={() => handleDelete(task)}>
-                                        Löschen
+                                        {t('actions.delete')}
                                     </Button>
                                 </div>
                             </td>
@@ -242,12 +245,12 @@ export function TaskPlannerPage() {
 
             <Modal show={modalOpen} onHide={() => setModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editedTask ? 'Task bearbeiten' : 'Neuer Task'}</Modal.Title>
+                    <Modal.Title>{editedTask ? t('editTask') : t('newTask')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Ticket</Form.Label>
+                            <Form.Label>{t('form.ticket')}</Form.Label>
                             <Form.Select
                                 value={form.ticketId}
                                 onChange={(e) => setForm({ ...form, ticketId: e.target.value })}
@@ -261,7 +264,7 @@ export function TaskPlannerPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Thema</Form.Label>
+                            <Form.Label>{t('form.topic')}</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={form.topic}
@@ -271,7 +274,7 @@ export function TaskPlannerPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Nächste Schritte</Form.Label>
+                            <Form.Label>{t('form.nextSteps')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -281,7 +284,7 @@ export function TaskPlannerPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Zieldatum</Form.Label>
+                            <Form.Label>{t('form.dueDate')}</Form.Label>
                             <Form.Control
                                 type="date"
 
@@ -292,14 +295,14 @@ export function TaskPlannerPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Status</Form.Label>
+                            <Form.Label>{t('form.status')}</Form.Label>
                             <Form.Select
                                 value={form.status}
                                 onChange={(e) => setForm({ ...form, status: e.target.value as TaskStatus })}
                             >
-                                {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
+                                {TASK_STATUSES.map((value) => (
                                     <option key={value} value={value}>
-                                        {label}
+                                        {t(`status.task.${value}`, { ns: 'common' })}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -308,14 +311,14 @@ export function TaskPlannerPage() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setModalOpen(false)}>
-                        Abbrechen
+                        {t('actions.cancel')}
                     </Button>
                     <Button
                         variant="primary"
                         onClick={handleSave}
                         disabled={saving || !form.topic || !form.ticketId}
                     >
-                        {saving ? 'Speichere…' : 'Speichern'}
+                        {saving ? t('actions.saving') : t('actions.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>

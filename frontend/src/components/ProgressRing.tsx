@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface ProgressRingProps {
     percent: number
 
@@ -11,13 +13,15 @@ const RADIUS = 42
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function ProgressRing({ percent, label, tone = 'cyan' }: Readonly<ProgressRingProps>) {
+    const { t } = useTranslation('home')
+
     const value = Math.max(0, Math.min(100, Math.round(percent)))
 
     const filled = (value / 100) * CIRCUMFERENCE
 
     return (
         <div className="progress-ring" data-tone={tone}>
-            <svg viewBox="0 0 100 100" role="img" aria-label={`${label}: ${value} Prozent`}>
+            <svg viewBox="0 0 100 100" role="img" aria-label={t('progressRing.ariaLabel', { label, value })}>
 
                 <circle className="progress-ring__bg" cx="50" cy="50" r={RADIUS} />
 

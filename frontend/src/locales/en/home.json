@@ -1,0 +1,47 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Welcome back, {{name}}",
+  "error": {
+    "loadFailed": "Dashboard data could not be loaded."
+  },
+  "welcome": {
+    "title": "Welcome",
+    "description": "Support workflow and IPD document generator for maintenance jobs: GLPI tickets, task planning, checklists and finished documentation as PDF.",
+    "login": "Sign in with GitHub"
+  },
+  "tickets": {
+    "title": "Open Tickets",
+    "viewAll": "View all"
+  },
+  "checklists": {
+    "title": "Checklist Progress",
+    "details": "Details",
+    "empty": "No checklists in progress."
+  },
+  "tasks": {
+    "title": "Tasks Due",
+    "viewAll": "All tasks",
+    "overdue_one": "{{count}} overdue",
+    "overdue_other": "{{count}} overdue",
+    "empty": "No open tasks."
+  },
+  "ipd": {
+    "title": "Latest IPD Documents",
+    "viewAll": "All documents",
+    "empty": "No documents yet."
+  },
+  "actions": {
+    "title": "Quick Actions",
+    "ticketSync": "Ticket sync",
+    "createTask": "Create task",
+    "checklistFromTemplate": "Checklist from template",
+    "createIpd": "Create IPD",
+    "openGlpi": "Open GLPI"
+  },
+  "progressRing": {
+    "ariaLabel": "{{label}}: {{value}} percent"
+  },
+  "logo": {
+    "tagline": "IT Service Documentation"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "document": {
+    "loadError": "Could not load IPD document.",
+    "saved": "Saved.",
+    "validationError": "Please check your input - for example, the title must not be empty.",
+    "saveError": "Could not save IPD document.",
+    "pdfError": "Could not generate PDF.",
+    "checklistMissing": "This document does not have a checklist yet.",
+    "checklistError": "Could not generate checklist.",
+    "deleteConfirm": "Really delete IPD document \"{{title}}\"?",
+    "deleteError": "Could not delete IPD document.",
+    "back": "← Back to overview",
+    "pdfRunning": "Generating PDF…",
+    "pdfDownload": "Download PDF",
+    "checklistRunning": "Generating checklist…",
+    "checklistDownload": "Download checklist",
+    "delete": "Delete",
+    "scenario": {
+      "SERVER_MAINTENANCE": "Server maintenance"
+    },
+    "overview": {
+      "title": "Overview",
+      "technician": "Technician:",
+      "scenario": "Scenario:",
+      "qualityAssurance": "Quality assurance:",
+      "qaDone": "Completed",
+      "qaOpen": "Still open",
+      "createdAt": "Created:",
+      "updatedAt": "Updated:",
+      "performedSteps": "Steps performed (imported from TaskPlanner):"
+    },
+    "sections": {
+      "basics": "General information",
+      "situation": "Initial situation & requirements",
+      "technical": "Technical details",
+      "followUp": "Follow-up",
+      "status": "Status"
+    },
+    "fields": {
+      "title": "Title",
+      "customer": "Customer",
+      "customerContact": "Customer contact",
+      "period": "Period",
+      "periodPlaceholder": "e.g. 01/10/2026 - 03/10/2026",
+      "initialSituation": "Initial situation",
+      "requirements": "Requirements",
+      "infrastructureOverview": "Infrastructure overview",
+      "serversAndVms": "Servers and VMs",
+      "network": "Network",
+      "rolesAndResponsibilities": "Roles and responsibilities",
+      "backupPlan": "Backup plan",
+      "securityConsiderations": "Security considerations",
+      "decisions": "Decisions",
+      "risksAndAssumptions": "Risks and assumptions",
+      "rollbackPlan": "Rollback plan",
+      "status": "Status"
+    },
+    "saving": "Saving…",
+    "save": "Save"
+  },
+  "generator": {
+    "title": "IPD Generator",
+    "loadError": "Could not load data.",
+    "unknownTicket": "(unknown ticket)",
+    "duplicateDraftConfirm": "A draft (\"{{draft}}\") already exists for \"{{ticket}}\". Create another one anyway?",
+    "createError": "Could not create draft.",
+    "deleteConfirm": "Really delete IPD document \"{{title}}\"?",
+    "deleteError": "Could not delete IPD document.",
+    "noTickets": "There are no tickets yet - create a ticket first before you can generate an IPD draft.",
+    "newDraft": "Create new draft",
+    "ticket": "Ticket",
+    "creating": "Creating…",
+    "createFromTicket": "Create draft from ticket",
+    "empty": "No IPD documents yet.",
+    "existing": "Existing IPD documents",
+    "columns": {
+      "title": "Title",
+      "ticket": "Ticket",
+      "status": "Status",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
+    },
+    "open": "Open",
+    "delete": "Delete"
+  }
+}

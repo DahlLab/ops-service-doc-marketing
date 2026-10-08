@@ -1,0 +1,40 @@
+{
+  "title": "Tickets",
+  "panelTitle": "Ticketliste",
+  "empty": "Noch keine Tickets vorhanden.",
+  "newTicket": "Neues Ticket",
+  "editTicket": "Ticket bearbeiten",
+  "sync": {
+    "idle": "Aus GLPI synchronisieren",
+    "running": "Synchronisiere…"
+  },
+  "table": {
+    "title": "Titel",
+    "technician": "Techniker",
+    "scenario": "Szenario",
+    "status": "Status",
+    "createdAt": "Erstellt am"
+  },
+  "scenario": {
+    "SERVER_MAINTENANCE": "Server-Wartung"
+  },
+  "actions": {
+    "edit": "Bearbeiten",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Speichere…"
+  },
+  "form": {
+    "title": "Titel",
+    "description": "Beschreibung",
+    "technician": "Techniker",
+    "status": "Status",
+    "scenario": "Szenario"
+  },
+  "errors": {
+    "load": "Tickets konnten nicht geladen werden.",
+    "sync": "GLPI-Synchronisierung ist fehlgeschlagen.",
+    "validation": "Bitte alle Pflichtfelder ausfüllen (mindestens der Titel).",
+    "save": "Ticket konnte nicht gespeichert werden."
+  }
+}

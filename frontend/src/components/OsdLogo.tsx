@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next'
+
 interface OsdLogoProps {
     compact?: boolean
 }
 
 export function OsdLogo({ compact = false }: Readonly<OsdLogoProps>) {
+    const { t } = useTranslation('home')
+
     return (
         <div className="osd-logo">
 
@@ -39,7 +43,7 @@ export function OsdLogo({ compact = false }: Readonly<OsdLogoProps>) {
             {!compact && (
                 <div className="osd-logo__text">
                     <span className="osd-logo__name">OpsServiceDoc</span>
-                    <span className="osd-logo__sub">IT Service Documentation</span>
+                    <span className="osd-logo__sub">{t('logo.tagline')}</span>
                 </div>
             )}
         </div>

@@ -1,0 +1,48 @@
+{
+  "title": "Task Planner",
+  "panelTitle": "Tasks",
+  "newTask": "New task",
+  "editTask": "Edit task",
+  "noTicketsHint": "There are no tickets yet - create a ticket first before you can add tasks.",
+  "unknownTicket": "(unknown ticket)",
+  "filter": {
+    "label": "Filter by ticket",
+    "all": "All tickets"
+  },
+  "table": {
+    "topic": "Topic",
+    "ticket": "Ticket",
+    "nextSteps": "Next steps",
+    "dueDate": "Due date",
+    "status": "Status",
+    "recordedAt": "Recorded on",
+    "doneAt": "Completed on"
+  },
+  "empty": {
+    "forTicket": "No tasks have been recorded for \"{{ticket}}\" yet.",
+    "none": "No tasks found.",
+    "create": "+ Create task",
+    "createForTicket": "+ Create task for this ticket"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "form": {
+    "ticket": "Ticket",
+    "topic": "Topic",
+    "nextSteps": "Next steps",
+    "dueDate": "Due date",
+    "status": "Status"
+  },
+  "confirmDelete": "Really delete task \"{{topic}}\"?",
+  "errors": {
+    "load": "Tasks could not be loaded.",
+    "validation": "Please fill in the ticket and topic.",
+    "save": "Task could not be saved.",
+    "delete": "Task could not be deleted."
+  }
+}

@@ -5,19 +5,11 @@ export type TicketStatus =
     | 'SOLVED'
     | 'CLOSED';
 
-export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
-    NEW: 'Neu',
-    IN_PROGRESS: 'In Bearbeitung',
-    PENDING: 'Ausstehend',
-    SOLVED: 'Gelöst',
-    CLOSED: 'Geschlossen',
-};
+export const TICKET_STATUSES: TicketStatus[] = ['NEW', 'IN_PROGRESS', 'PENDING', 'SOLVED', 'CLOSED'];
 
 export type ScenarioType = 'SERVER_MAINTENANCE';
 
-export const SCENARIO_TYPE_LABELS: Record<ScenarioType, string> = {
-    SERVER_MAINTENANCE: 'Server-Wartung',
-};
+export const SCENARIO_TYPES: ScenarioType[] = ['SERVER_MAINTENANCE'];
 
 export interface TicketDto {
     id: string;
@@ -34,11 +26,7 @@ export type TicketFormData = Omit<TicketDto, 'id' | 'createdAt'>;
 
 export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
 
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-    OPEN: 'Offen',
-    IN_PROGRESS: 'In Bearbeitung',
-    DONE: 'Erledigt',
-};
+export const TASK_STATUSES: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'DONE'];
 
 export interface TaskDto {
     id: string;
@@ -86,10 +74,7 @@ export interface ChecklistTemplateDto {
 export type ChecklistTemplateFormData = Omit<ChecklistTemplateDto, 'id' | 'builtIn'>;
 
 export type IpdDocumentStatus = 'DRAFT' | 'COMPLETED';
-export const IPD_DOCUMENT_STATUS_LABELS: Record<IpdDocumentStatus, string> = {
-    DRAFT: 'Entwurf',
-    COMPLETED: 'Abgeschlossen',
-};
+export const IPD_DOCUMENT_STATUSES: IpdDocumentStatus[] = ['DRAFT', 'COMPLETED'];
 
 export interface IpdDocumentDto {
     id: string;

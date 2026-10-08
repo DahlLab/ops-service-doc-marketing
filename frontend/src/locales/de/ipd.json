@@ -1,0 +1,86 @@
+{
+  "document": {
+    "loadError": "IPD-Dokument konnte nicht geladen werden.",
+    "saved": "Gespeichert.",
+    "validationError": "Bitte prüfe deine Eingaben - der Titel darf z.B. nicht leer sein.",
+    "saveError": "IPD-Dokument konnte nicht gespeichert werden.",
+    "pdfError": "PDF konnte nicht erzeugt werden.",
+    "checklistMissing": "Zu diesem Dokument gibt es noch keine Checkliste.",
+    "checklistError": "Checkliste konnte nicht erzeugt werden.",
+    "deleteConfirm": "IPD-Dokument \"{{title}}\" wirklich löschen?",
+    "deleteError": "IPD-Dokument konnte nicht gelöscht werden.",
+    "back": "← Zurück zur Übersicht",
+    "pdfRunning": "Erzeuge PDF…",
+    "pdfDownload": "PDF herunterladen",
+    "checklistRunning": "Erzeuge Checkliste…",
+    "checklistDownload": "Checkliste herunterladen",
+    "delete": "Löschen",
+    "scenario": {
+      "SERVER_MAINTENANCE": "Server-Wartung"
+    },
+    "overview": {
+      "title": "Übersicht",
+      "technician": "Techniker:",
+      "scenario": "Szenario:",
+      "qualityAssurance": "Qualitätssicherung:",
+      "qaDone": "Durchgeführt",
+      "qaOpen": "Noch offen",
+      "createdAt": "Erstellt am:",
+      "updatedAt": "Aktualisiert am:",
+      "performedSteps": "Durchgeführte Schritte (aus TaskPlanner übernommen):"
+    },
+    "sections": {
+      "basics": "Rahmendaten",
+      "situation": "Ausgangslage & Anforderungen",
+      "technical": "Technische Details",
+      "followUp": "Nachbereitung",
+      "status": "Status"
+    },
+    "fields": {
+      "title": "Titel",
+      "customer": "Kunde",
+      "customerContact": "Ansprechpartner Kunde",
+      "period": "Zeitraum",
+      "periodPlaceholder": "z.B. 01.10.2026 - 03.10.2026",
+      "initialSituation": "Ausgangslage",
+      "requirements": "Anforderungen",
+      "infrastructureOverview": "Infrastruktur-Übersicht",
+      "serversAndVms": "Server und VMs",
+      "network": "Netzwerk",
+      "rolesAndResponsibilities": "Rollen und Verantwortlichkeiten",
+      "backupPlan": "Backup-Konzept",
+      "securityConsiderations": "Security-Überlegungen",
+      "decisions": "Entscheidungen",
+      "risksAndAssumptions": "Risiken und Annahmen",
+      "rollbackPlan": "Rollback-Plan",
+      "status": "Status"
+    },
+    "saving": "Speichere…",
+    "save": "Speichern"
+  },
+  "generator": {
+    "title": "IPD-Generator",
+    "loadError": "Daten konnten nicht geladen werden.",
+    "unknownTicket": "(unbekanntes Ticket)",
+    "duplicateDraftConfirm": "Für \"{{ticket}}\" existiert bereits ein Entwurf (\"{{draft}}\"). Trotzdem einen weiteren erzeugen?",
+    "createError": "Entwurf konnte nicht erzeugt werden.",
+    "deleteConfirm": "IPD-Dokument \"{{title}}\" wirklich löschen?",
+    "deleteError": "IPD-Dokument konnte nicht gelöscht werden.",
+    "noTickets": "Es existiert noch kein Ticket - lege zuerst ein Ticket an, bevor du einen IPD-Entwurf erzeugen kannst.",
+    "newDraft": "Neuen Entwurf erzeugen",
+    "ticket": "Ticket",
+    "creating": "Erzeuge…",
+    "createFromTicket": "Entwurf aus Ticket erzeugen",
+    "empty": "Noch keine IPD-Dokumente vorhanden.",
+    "existing": "Vorhandene IPD-Dokumente",
+    "columns": {
+      "title": "Titel",
+      "ticket": "Ticket",
+      "status": "Status",
+      "createdAt": "Erstellt am",
+      "updatedAt": "Aktualisiert am"
+    },
+    "open": "Öffnen",
+    "delete": "Löschen"
+  }
+}

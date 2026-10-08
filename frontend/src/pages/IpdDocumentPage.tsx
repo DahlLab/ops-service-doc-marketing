@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Badge, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,8 +7,7 @@ import { api, ApiError } from '../api/api';
 import { downloadFile } from '../utils/download';
 import { formatDate, ipdStatusBadgeVariant } from '../utils/formatting';
 import {
-    IPD_DOCUMENT_STATUS_LABELS,
-    SCENARIO_TYPE_LABELS,
+    IPD_DOCUMENT_STATUSES,
     type IpdDocumentDto,
     type IpdDocumentFormData,
     type IpdDocumentStatus,
@@ -35,6 +35,7 @@ function formFromDocument(ipdDocument: IpdDocumentDto): IpdDocumentFormData {
 }
 
 export function IpdDocumentPage() {
+    const { t } = useTranslation('ipd');
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -60,7 +61,7 @@ export function IpdDocumentPage() {
             })
             .catch((error) => {
                 if (aborted) return;
-                setErrorMessage('IPD-Dokument konnte nicht geladen werden.');
+                setErrorMessage(t('document.loadError'));
                 console.error(error);
             })
             .finally(() => {
@@ -69,7 +70,7 @@ export function IpdDocumentPage() {
         return () => {
             aborted = true;
         };
-    }, [id]);
+    }, [id, t]);
 
     function handleFieldChange(field: keyof IpdDocumentFormData, value: string) {
         if (!form) return;
@@ -88,12 +89,12 @@ export function IpdDocumentPage() {
             });
             setDocument(updatedDocument);
             setForm(formFromDocument(updatedDocument));
-            setSuccess('Gespeichert.');
+            setSuccess(t('document.saved'));
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setErrorMessage('Bitte prüfe deine Eingaben - der Titel darf z.B. nicht leer sein.');
+                setErrorMessage(t('document.validationError'));
             } else {
-                setErrorMessage('IPD-Dokument konnte nicht gespeichert werden.');
+                setErrorMessage(t('document.saveError'));
             }
             console.error(error);
         } finally {
@@ -108,7 +109,7 @@ export function IpdDocumentPage() {
         try {
             await downloadFile(`/api/ipd/${ipdDocument.id}/pdf`, `ipd-${ipdDocument.id}.pdf`);
         } catch (error) {
-            setErrorMessage('PDF konnte nicht erzeugt werden.');
+            setErrorMessage(t('document.pdfError'));
             console.error(error);
         } finally {
             setPdfRunning(false);
@@ -123,9 +124,9 @@ export function IpdDocumentPage() {
             await downloadFile(`/api/ipd/${ipdDocument.id}/checklist-pdf`, `checkliste-${ipdDocument.id}.pdf`);
         } catch (error) {
             if (error instanceof ApiError && error.status === 404) {
-                setErrorMessage('Zu diesem Dokument gibt es noch keine Checkliste.');
+                setErrorMessage(t('document.checklistMissing'));
             } else {
-                setErrorMessage('Checkliste konnte nicht erzeugt werden.');
+                setErrorMessage(t('document.checklistError'));
             }
             console.error(error);
         } finally {
@@ -135,14 +136,14 @@ export function IpdDocumentPage() {
 
     async function handleDelete() {
         if (!ipdDocument) return;
-        if (!window.confirm(`IPD-Dokument "${ipdDocument.title}" wirklich löschen?`)) {
+        if (!window.confirm(t('document.deleteConfirm', { title: ipdDocument.title }))) {
             return;
         }
         try {
             await api.delete(`/api/ipd/${ipdDocument.id}`);
             void navigate('/ipd');
         } catch (error) {
-            setErrorMessage('IPD-Dokument konnte nicht gelöscht werden.');
+            setErrorMessage(t('document.deleteError'));
             console.error(error);
         }
     }
@@ -156,35 +157,35 @@ export function IpdDocumentPage() {
     }
 
     if (!ipdDocument || !form) {
-        return <Alert variant="danger">IPD-Dokument konnte nicht geladen werden.</Alert>;
+        return <Alert variant="danger">{t('document.loadError')}</Alert>;
     }
 
     return (
         <div className="py-4">
             <Button variant="link" className="ps-0 mb-2" onClick={() => navigate('/ipd')}>
-                ← Zurück zur Übersicht
+                {t('document.back')}
             </Button>
 
             <div className="d-flex justify-content-between align-items-start mb-4">
                 <div>
                     <h1 className="mb-1">{ipdDocument.title}</h1>
                     <Badge bg={ipdStatusBadgeVariant(ipdDocument.status)}>
-                        {IPD_DOCUMENT_STATUS_LABELS[ipdDocument.status]}
+                        {t(`status.ipd.${ipdDocument.status}`, { ns: 'common' })}
                     </Badge>
                 </div>
                 <div className="d-flex gap-2">
                     <Button variant="primary" onClick={handlePdfDownload} disabled={pdfRunning}>
-                        {pdfRunning ? 'Erzeuge PDF…' : 'PDF herunterladen'}
+                        {pdfRunning ? t('document.pdfRunning') : t('document.pdfDownload')}
                     </Button>
                     <Button
                         variant="outline-secondary"
                         onClick={handleChecklistDownload}
                         disabled={checklistRunning}
                     >
-                        {checklistRunning ? 'Erzeuge Checkliste…' : 'Checkliste herunterladen'}
+                        {checklistRunning ? t('document.checklistRunning') : t('document.checklistDownload')}
                     </Button>
                     <Button variant="outline-danger" onClick={handleDelete}>
-                        Löschen
+                        {t('document.delete')}
                     </Button>
                 </div>
             </div>
@@ -192,38 +193,38 @@ export function IpdDocumentPage() {
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {success && <Alert variant="success">{success}</Alert>}
 
-            <HudPanel title="Übersicht" className="mb-4">
+            <HudPanel title={t('document.overview.title')} className="mb-4">
                 <div>
                     <Row>
                         <Col md={4}>
-                            <strong>Techniker:</strong> {ipdDocument.technician}
+                            <strong>{t('document.overview.technician')}</strong> {ipdDocument.technician}
                         </Col>
                         <Col md={4}>
-                            <strong>Szenario:</strong> {SCENARIO_TYPE_LABELS[ipdDocument.scenarioType]}
+                            <strong>{t('document.overview.scenario')}</strong> {t(`document.scenario.${ipdDocument.scenarioType}`)}
                         </Col>
                         <Col md={4}>
-                            <strong>Qualitätssicherung:</strong>{' '}
+                            <strong>{t('document.overview.qualityAssurance')}</strong>{' '}
                             {ipdDocument.qualityAssuranceCompleted ? (
-                                <Badge bg="success">Durchgeführt</Badge>
+                                <Badge bg="success">{t('document.overview.qaDone')}</Badge>
                             ) : (
                                 <Badge bg="warning">
-                                    Noch offen
+                                    {t('document.overview.qaOpen')}
                                 </Badge>
                             )}
                         </Col>
                     </Row>
                     <Row className="mt-2">
                         <Col md={4}>
-                            <strong>Erstellt am:</strong> {formatDate(ipdDocument.createdAt)}
+                            <strong>{t('document.overview.createdAt')}</strong> {formatDate(ipdDocument.createdAt)}
                         </Col>
                         <Col md={4}>
-                            <strong>Aktualisiert am:</strong> {formatDate(ipdDocument.updatedAt)}
+                            <strong>{t('document.overview.updatedAt')}</strong> {formatDate(ipdDocument.updatedAt)}
                         </Col>
                     </Row>
                     {ipdDocument.performedSteps && (
                         <Row className="mt-2">
                             <Col>
-                                <strong>Durchgeführte Schritte (aus TaskPlanner übernommen):</strong>
+                                <strong>{t('document.overview.performedSteps')}</strong>
 
                                 <div style={{ whiteSpace: 'pre-line' }}>{ipdDocument.performedSteps}</div>
                             </Col>
@@ -233,11 +234,11 @@ export function IpdDocumentPage() {
             </HudPanel>
 
             <Form>
-                <HudPanel title="Rahmendaten" className="mb-3">
+                <HudPanel title={t('document.sections.basics')} className="mb-3">
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Titel</Form.Label>
+                                    <Form.Label>{t('document.fields.title')}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={form.title}
@@ -248,7 +249,7 @@ export function IpdDocumentPage() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Kunde</Form.Label>
+                                    <Form.Label>{t('document.fields.customer')}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={form.customer ?? ''}
@@ -260,7 +261,7 @@ export function IpdDocumentPage() {
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Ansprechpartner Kunde</Form.Label>
+                                    <Form.Label>{t('document.fields.customerContact')}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={form.customerContact ?? ''}
@@ -270,10 +271,10 @@ export function IpdDocumentPage() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Zeitraum</Form.Label>
+                                    <Form.Label>{t('document.fields.period')}</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="z.B. 01.10.2026 - 03.10.2026"
+                                        placeholder={t('document.fields.periodPlaceholder')}
                                         value={form.period ?? ''}
                                         onChange={(e) => handleFieldChange('period', e.target.value)}
                                     />
@@ -282,9 +283,9 @@ export function IpdDocumentPage() {
                         </Row>
                     </HudPanel>
 
-                <HudPanel title="Ausgangslage &amp; Anforderungen" className="mb-3">
+                <HudPanel title={t('document.sections.situation')} className="mb-3">
                         <Form.Group className="mb-3">
-                            <Form.Label>Ausgangslage</Form.Label>
+                            <Form.Label>{t('document.fields.initialSituation')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -293,7 +294,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Anforderungen</Form.Label>
+                            <Form.Label>{t('document.fields.requirements')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -303,9 +304,9 @@ export function IpdDocumentPage() {
                         </Form.Group>
                     </HudPanel>
 
-                <HudPanel title="Technische Details" className="mb-3">
+                <HudPanel title={t('document.sections.technical')} className="mb-3">
                         <Form.Group className="mb-3">
-                            <Form.Label>Infrastruktur-Übersicht</Form.Label>
+                            <Form.Label>{t('document.fields.infrastructureOverview')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -314,7 +315,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Server und VMs</Form.Label>
+                            <Form.Label>{t('document.fields.serversAndVms')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -323,7 +324,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Netzwerk</Form.Label>
+                            <Form.Label>{t('document.fields.network')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -332,7 +333,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Rollen und Verantwortlichkeiten</Form.Label>
+                            <Form.Label>{t('document.fields.rolesAndResponsibilities')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -341,7 +342,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Backup-Konzept</Form.Label>
+                            <Form.Label>{t('document.fields.backupPlan')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -350,7 +351,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Security-Überlegungen</Form.Label>
+                            <Form.Label>{t('document.fields.securityConsiderations')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -360,9 +361,9 @@ export function IpdDocumentPage() {
                         </Form.Group>
                     </HudPanel>
 
-                <HudPanel title="Nachbereitung" className="mb-3">
+                <HudPanel title={t('document.sections.followUp')} className="mb-3">
                         <Form.Group className="mb-3">
-                            <Form.Label>Entscheidungen</Form.Label>
+                            <Form.Label>{t('document.fields.decisions')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -371,7 +372,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Risiken und Annahmen</Form.Label>
+                            <Form.Label>{t('document.fields.risksAndAssumptions')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -380,7 +381,7 @@ export function IpdDocumentPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Rollback-Plan</Form.Label>
+                            <Form.Label>{t('document.fields.rollbackPlan')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -390,18 +391,18 @@ export function IpdDocumentPage() {
                         </Form.Group>
                     </HudPanel>
 
-                <HudPanel title="Status" className="mb-4">
+                <HudPanel title={t('document.sections.status')} className="mb-4">
                         <Form.Group style={{ maxWidth: 320 }}>
-                            <Form.Label>Status</Form.Label>
+                            <Form.Label>{t('document.fields.status')}</Form.Label>
                             <Form.Select
                                 value={form.status}
                                 onChange={(e) =>
                                     setForm({ ...form, status: e.target.value as IpdDocumentStatus })
                                 }
                             >
-                                {Object.entries(IPD_DOCUMENT_STATUS_LABELS).map(([value, label]) => (
+                                {IPD_DOCUMENT_STATUSES.map((value) => (
                                     <option key={value} value={value}>
-                                        {label}
+                                        {t(`status.ipd.${value}`, { ns: 'common' })}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -409,7 +410,7 @@ export function IpdDocumentPage() {
                     </HudPanel>
 
                 <Button variant="primary" onClick={handleSave} disabled={saving || !form.title}>
-                    {saving ? 'Speichere…' : 'Speichern'}
+                    {saving ? t('document.saving') : t('document.save')}
                 </Button>
             </Form>
         </div>

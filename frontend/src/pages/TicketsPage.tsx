@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
+import i18n from '../i18n';
 import { formatDate, ticketStatusBadgeVariant } from '../utils/formatting';
 import {
-    SCENARIO_TYPE_LABELS,
-    TICKET_STATUS_LABELS,
+    SCENARIO_TYPES,
+    TICKET_STATUSES,
     type TicketDto,
     type TicketFormData,
     type TicketStatus,
@@ -21,6 +23,7 @@ const EMPTY_FORM: TicketFormData = {
 };
 
 export function TicketsPage() {
+    const { t } = useTranslation('tickets');
     const [tickets, setTickets] = useState<TicketDto[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ export function TicketsPage() {
 
             setErrorMessage(null);
         } catch (error) {
-            setErrorMessage('Tickets konnten nicht geladen werden.');
+            setErrorMessage(t('errors.load'));
 
             console.error(error);
         } finally {
@@ -61,7 +64,7 @@ export function TicketsPage() {
             })
             .catch((error) => {
                 if (aborted) return;
-                setErrorMessage('Tickets konnten nicht geladen werden.');
+                setErrorMessage(i18n.t('tickets:errors.load'));
                 console.error(error);
             })
             .finally(() => {
@@ -79,7 +82,7 @@ export function TicketsPage() {
             await api.post<TicketDto[]>('/api/tickets/sync-glpi');
             await loadTickets();
         } catch (error) {
-            setErrorMessage('GLPI-Synchronisierung ist fehlgeschlagen.');
+            setErrorMessage(t('errors.sync'));
             console.error(error);
         } finally {
             setSyncing(false);
@@ -118,9 +121,9 @@ export function TicketsPage() {
             await loadTickets();
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setErrorMessage('Bitte alle Pflichtfelder ausfüllen (mindestens der Titel).');
+                setErrorMessage(t('errors.validation'));
             } else {
-                setErrorMessage('Ticket konnte nicht gespeichert werden.');
+                setErrorMessage(t('errors.save'));
             }
             console.error(error);
         } finally {
@@ -140,13 +143,13 @@ export function TicketsPage() {
         <div className="py-4">
 
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="mb-0">Tickets</h1>
+                <h1 className="mb-0">{t('title')}</h1>
                 <div className="d-flex gap-2">
                     <Button variant="outline-primary" onClick={handleGlpiSync} disabled={syncing}>
-                        {syncing ? 'Synchronisiere…' : 'Aus GLPI synchronisieren'}
+                        {syncing ? t('sync.running') : t('sync.idle')}
                     </Button>
                     <Button variant="primary" onClick={handleNewTicket}>
-                        Neues Ticket
+                        {t('newTicket')}
                     </Button>
                 </div>
             </div>
@@ -154,17 +157,17 @@ export function TicketsPage() {
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
             {tickets.length === 0 ? (
-                <p className="text-muted">Noch keine Tickets vorhanden.</p>
+                <p className="text-muted">{t('empty')}</p>
             ) : (
-                <HudPanel title="Ticketliste">
+                <HudPanel title={t('panelTitle')}>
 <Table hover responsive className="hud-table">
                     <thead>
                     <tr>
-                        <th>Titel</th>
-                        <th>Techniker</th>
-                        <th>Szenario</th>
-                        <th>Status</th>
-                        <th>Erstellt am</th>
+                        <th>{t('table.title')}</th>
+                        <th>{t('table.technician')}</th>
+                        <th>{t('table.scenario')}</th>
+                        <th>{t('table.status')}</th>
+                        <th>{t('table.createdAt')}</th>
 
                         <th></th>
                     </tr>
@@ -174,16 +177,16 @@ export function TicketsPage() {
                         <tr key={ticket.id}>
                             <td>{ticket.title}</td>
                             <td>{ticket.technician}</td>
-                            <td>{SCENARIO_TYPE_LABELS[ticket.scenarioType]}</td>
+                            <td>{t(`scenario.${ticket.scenarioType}`)}</td>
                             <td>
                                 <Badge bg={ticketStatusBadgeVariant(ticket.status)}>
-                                    {TICKET_STATUS_LABELS[ticket.status]}
+                                    {t(`status.ticket.${ticket.status}`, { ns: 'common' })}
                                 </Badge>
                             </td>
                             <td>{formatDate(ticket.createdAt)}</td>
                             <td>
                                 <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(ticket)}>
-                                    Bearbeiten
+                                    {t('actions.edit')}
                                 </Button>
                             </td>
                         </tr>
@@ -195,12 +198,12 @@ export function TicketsPage() {
 
             <Modal show={modalOpen} onHide={() => setModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editedTicket ? 'Ticket bearbeiten' : 'Neues Ticket'}</Modal.Title>
+                    <Modal.Title>{editedTicket ? t('editTicket') : t('newTicket')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Titel</Form.Label>
+                            <Form.Label>{t('form.title')}</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={form.title}
@@ -211,7 +214,7 @@ export function TicketsPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Beschreibung</Form.Label>
+                            <Form.Label>{t('form.description')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}
@@ -221,7 +224,7 @@ export function TicketsPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Techniker</Form.Label>
+                            <Form.Label>{t('form.technician')}</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={form.technician}
@@ -230,30 +233,30 @@ export function TicketsPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Status</Form.Label>
+                            <Form.Label>{t('form.status')}</Form.Label>
                             <Form.Select
                                 value={form.status}
 
                                 onChange={(e) => setForm({ ...form, status: e.target.value as TicketStatus })}
                             >
 
-                                {Object.entries(TICKET_STATUS_LABELS).map(([value, label]) => (
+                                {TICKET_STATUSES.map((value) => (
                                     <option key={value} value={value}>
-                                        {label}
+                                        {t(`status.ticket.${value}`, { ns: 'common' })}
                                     </option>
                                 ))}
                             </Form.Select>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Szenario</Form.Label>
+                            <Form.Label>{t('form.scenario')}</Form.Label>
                             <Form.Select
                                 value={form.scenarioType}
                                 onChange={(e) => setForm({ ...form, scenarioType: e.target.value as ScenarioType })}
                             >
-                                {Object.entries(SCENARIO_TYPE_LABELS).map(([value, label]) => (
+                                {SCENARIO_TYPES.map((value) => (
                                     <option key={value} value={value}>
-                                        {label}
+                                        {t(`scenario.${value}`)}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -262,11 +265,11 @@ export function TicketsPage() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setModalOpen(false)}>
-                        Abbrechen
+                        {t('actions.cancel')}
                     </Button>
 
                     <Button variant="primary" onClick={handleSave} disabled={saving || !form.title}>
-                        {saving ? 'Speichere…' : 'Speichern'}
+                        {saving ? t('actions.saving') : t('actions.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>

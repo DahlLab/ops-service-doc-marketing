@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Alert, Badge, Spinner } from 'react-bootstrap'
 import {
     FaClipboardCheck,
@@ -13,10 +14,6 @@ import { useAuth } from '../auth/useAuth'
 import { useGlpiUrl } from '../hooks/useGlpiUrl'
 import { api } from '../api/api'
 import type { ChecklistDto, IpdDocumentDto, TaskDto, TicketDto } from '../api/types'
-import {
-    IPD_DOCUMENT_STATUS_LABELS,
-    TASK_STATUS_LABELS,
-} from '../api/types'
 import { formatDate, formatDueDate, ipdStatusBadgeVariant, taskStatusBadgeVariant } from '../utils/formatting'
 import HudPanel from '../components/HudPanel'
 import { OsdLogo } from '../components/OsdLogo'
@@ -37,11 +34,12 @@ function checklistProgress(checklist: ChecklistDto): number {
 }
 
 export function Home() {
+    const { t } = useTranslation('home')
     const { username, loginUrl } = useAuth()
 
     const glpiUrl = useGlpiUrl(Boolean(username))
     const [data, setData] = useState<DashboardData | null>(null)
-    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [hasError, setHasError] = useState(false)
 
     useEffect(() => {
         if (!username) return
@@ -57,7 +55,7 @@ export function Home() {
             })
             .catch((error) => {
                 console.error(error)
-                if (!aborted) setErrorMessage('Die Dashboard-Daten konnten nicht geladen werden.')
+                if (!aborted) setHasError(true)
             })
         return () => {
             aborted = true
@@ -67,18 +65,16 @@ export function Home() {
     if (!username) {
         return (
             <div className="welcome">
-                <HudPanel title="Willkommen">
+                <HudPanel title={t('welcome.title')}>
                     <div className="welcome__content">
                         <OsdLogo />
                         <p>
-                            Support-Workflow und IPD-Dokumentgenerator für Wartungseinsätze:
-                            Tickets aus GLPI, Aufgabenplanung, Checklisten und fertige
-                            Dokumentation als PDF.
+                            {t('welcome.description')}
                         </p>
 
                         <a href={loginUrl} className="btn btn-primary btn-lg welcome__login">
                             <FaGithub className="me-2" />
-                            Mit GitHub anmelden
+                            {t('welcome.login')}
                         </a>
                     </div>
                 </HudPanel>
@@ -86,8 +82,8 @@ export function Home() {
         )
     }
 
-    if (errorMessage) {
-        return <Alert variant="danger">{errorMessage}</Alert>
+    if (hasError) {
+        return <Alert variant="danger">{t('error.loadFailed')}</Alert>
     }
 
     if (!data) {
@@ -119,25 +115,25 @@ export function Home() {
 
     return (
         <div className="dash">
-            <h1 className="dash__title">Dashboard</h1>
-            <p className="dash__subtitle">Willkommen zurück, {username}</p>
+            <h1 className="dash__title">{t('title')}</h1>
+            <p className="dash__subtitle">{t('subtitle', { name: username })}</p>
 
             <div className="dash__grid">
 
-                <HudPanel title="Offene Tickets" footerLink={{ to: '/tickets', label: 'Alle ansehen' }}>
+                <HudPanel title={t('tickets.title')} footerLink={{ to: '/tickets', label: t('tickets.viewAll') }}>
                     <div className="dash__ticketcount">
                         <div className="dash__bignumber">{openTickets.length}</div>
                         <ul className="dash__legend">
-                            <li><span className="dot dot--cyan" /> Neu <b>{countNew}</b></li>
-                            <li><span className="dot dot--gold" /> In Bearbeitung <b>{countInProgress}</b></li>
-                            <li><span className="dot dot--gray" /> Ausstehend <b>{countPending}</b></li>
+                            <li><span className="dot dot--cyan" /> {t('status.ticket.NEW', { ns: 'common' })} <b>{countNew}</b></li>
+                            <li><span className="dot dot--gold" /> {t('status.ticket.IN_PROGRESS', { ns: 'common' })} <b>{countInProgress}</b></li>
+                            <li><span className="dot dot--gray" /> {t('status.ticket.PENDING', { ns: 'common' })} <b>{countPending}</b></li>
                         </ul>
                     </div>
                 </HudPanel>
 
-                <HudPanel title="Checklisten-Fortschritt" footerLink={{ to: '/checklists', label: 'Details' }}>
+                <HudPanel title={t('checklists.title')} footerLink={{ to: '/checklists', label: t('checklists.details') }}>
                     {activeChecklists.length === 0 ? (
-                        <p className="dash__empty">Keine laufenden Checklisten.</p>
+                        <p className="dash__empty">{t('checklists.empty')}</p>
                     ) : (
                         <div className="dash__rings">
                             {activeChecklists.map((c) => (
@@ -148,15 +144,15 @@ export function Home() {
                 </HudPanel>
 
                 <HudPanel
-                    title="Fällige Tasks"
+                    title={t('tasks.title')}
                     tone={overdue.length > 0 ? 'danger' : 'default'}
-                    footerLink={{ to: '/tasks', label: 'Alle Tasks' }}
+                    footerLink={{ to: '/tasks', label: t('tasks.viewAll') }}
                 >
                     {overdue.length > 0 && (
-                        <p className="dash__warning">{overdue.length} überfällig</p>
+                        <p className="dash__warning">{t('tasks.overdue', { count: overdue.length })}</p>
                     )}
                     {openTasks.length === 0 ? (
-                        <p className="dash__empty">Keine offenen Tasks.</p>
+                        <p className="dash__empty">{t('tasks.empty')}</p>
                     ) : (
                         <ul className="dash__list">
                             {openTasks.slice(0, 4).map((task) => (
@@ -164,7 +160,7 @@ export function Home() {
                                     <div>
                                         <div className="dash__listtitle">{task.topic}</div>
                                         <Badge bg={taskStatusBadgeVariant(task.status)}>
-                                            {TASK_STATUS_LABELS[task.status]}
+                                            {t(`status.task.${task.status}`, { ns: 'common' })}
                                         </Badge>
                                     </div>
                                     <div className={task.dueDate !== null && task.dueDate < today ? 'dash__date dash__date--red' : 'dash__date'}>
@@ -176,9 +172,9 @@ export function Home() {
                     )}
                 </HudPanel>
 
-                <HudPanel title="Letzte IPD-Dokumente" className="dash__twocolumn" footerLink={{ to: '/ipd', label: 'Alle Dokumente' }}>
+                <HudPanel title={t('ipd.title')} className="dash__twocolumn" footerLink={{ to: '/ipd', label: t('ipd.viewAll') }}>
                     {latestDocuments.length === 0 ? (
-                        <p className="dash__empty">Noch keine Dokumente.</p>
+                        <p className="dash__empty">{t('ipd.empty')}</p>
                     ) : (
                         <ul className="dash__list">
                             {latestDocuments.map((doc) => (
@@ -186,7 +182,7 @@ export function Home() {
                                     <div>
                                         <Link to={`/ipd/${doc.id}`} className="dash__listtitle">{doc.title}</Link>
                                         <Badge bg={ipdStatusBadgeVariant(doc.status)}>
-                                            {IPD_DOCUMENT_STATUS_LABELS[doc.status]}
+                                            {t(`status.ipd.${doc.status}`, { ns: 'common' })}
                                         </Badge>
                                     </div>
                                     <div className="dash__date">{formatDate(doc.updatedAt)}</div>
@@ -196,24 +192,24 @@ export function Home() {
                     )}
                 </HudPanel>
 
-                <HudPanel title="Schnellaktionen" className="dash__wide">
+                <HudPanel title={t('actions.title')} className="dash__wide">
                     <div className="dash__actions">
                         <Link to="/tickets" className="dash__action">
-                            <FaSyncAlt /> Ticket-Sync
+                            <FaSyncAlt /> {t('actions.ticketSync')}
                         </Link>
                         <Link to="/tasks" className="dash__action">
-                            <FaTasks /> Task anlegen
+                            <FaTasks /> {t('actions.createTask')}
                         </Link>
                         <Link to="/checklists" className="dash__action">
-                            <FaClipboardCheck /> Checkliste aus Vorlage
+                            <FaClipboardCheck /> {t('actions.checklistFromTemplate')}
                         </Link>
                         <Link to="/ipd" className="dash__action">
-                            <FaFileAlt /> IPD erstellen
+                            <FaFileAlt /> {t('actions.createIpd')}
                         </Link>
 
                         {glpiUrl && (
                             <a className="dash__action" href={glpiUrl} target="_blank" rel="noopener noreferrer">
-                                <FaExternalLinkAlt /> GLPI öffnen
+                                <FaExternalLinkAlt /> {t('actions.openGlpi')}
                             </a>
                         )}
                     </div>

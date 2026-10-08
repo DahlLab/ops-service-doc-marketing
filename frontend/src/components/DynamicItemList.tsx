@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button, Form } from 'react-bootstrap';
 
 interface DynamicItemListProps {
@@ -14,8 +15,10 @@ export function DynamicItemList({
     onItemChange,
     onItemRemove,
     onItemAdd,
-    placeholderPrefix = 'Punkt',
+    placeholderPrefix,
 }: Readonly<DynamicItemListProps>) {
+    const { t } = useTranslation('checklists');
+    const prefix = placeholderPrefix ?? t('itemList.placeholderPrefix');
     return (
         <>
             {values.map((value, index) => (
@@ -26,7 +29,7 @@ export function DynamicItemList({
                 >
                     <Form.Control
                         type="text"
-                        placeholder={`${placeholderPrefix} ${index + 1}`}
+                        placeholder={`${prefix} ${index + 1}`}
                         value={value}
                         onChange={(e) => onItemChange(index, e.target.value)}
                     />
@@ -42,7 +45,7 @@ export function DynamicItemList({
                 </div>
             ))}
             <Button variant="outline-primary" size="sm" onClick={onItemAdd}>
-                + Punkt hinzufügen
+                {t('itemList.add')}
             </Button>
         </>
     );

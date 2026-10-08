@@ -1,0 +1,83 @@
+{
+  "title": "Checklists",
+  "tabs": {
+    "checklists": "Checklists",
+    "templates": "Templates"
+  },
+  "filter": {
+    "label": "Filter by ticket",
+    "all": "All tickets"
+  },
+  "list": {
+    "new": "New checklist",
+    "noTickets": "No tickets exist yet - create a ticket first before you can add checklists.",
+    "emptyForTicket": "No checklists have been added for \"{{ticket}}\" yet.",
+    "empty": "No checklists available.",
+    "unknownTicket": "(unknown ticket)",
+    "completedOn": "Completed on {{date}}",
+    "progress": "Progress {{title}}",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "templates": {
+    "new": "New template",
+    "empty": "No templates available yet.",
+    "builtIn": "Default",
+    "pointCount_one": "{{count}} item",
+    "pointCount_other": "{{count}} items",
+    "optional": "optional",
+    "otherPhase": "Other",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "checklistModal": {
+    "titleEdit": "Edit checklist",
+    "titleNew": "New checklist",
+    "ticket": "Ticket",
+    "createMode": "Create",
+    "modeManual": "Manual",
+    "modeTemplate": "From template",
+    "modeBuilder": "Builder",
+    "template": "Template",
+    "templateOption": "{{name}} ({{count}} items)",
+    "title": "Title",
+    "titlePlaceholder": "e.g. Maintenance of customer server XY",
+    "selectPoints": "Select items",
+    "selectedCount": "({{selected}} selected)",
+    "saveAsTemplate": "Save selection as custom template",
+    "templateSaved": "Template \"{{title}}\" has been saved.",
+    "items": "Items",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "templateModal": {
+    "titleEdit": "Edit template",
+    "titleNew": "New template",
+    "name": "Name",
+    "points": "Items",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "itemList": {
+    "placeholderPrefix": "Item",
+    "add": "+ Add item"
+  },
+  "confirm": {
+    "deleteChecklist": "Really delete checklist \"{{title}}\"?",
+    "deleteTemplate": "Really delete template \"{{name}}\"? Checklists that were already created will be kept."
+  },
+  "errors": {
+    "loadChecklists": "Checklists could not be loaded.",
+    "loadTemplates": "Checklist templates could not be loaded.",
+    "saveTemplateNeedsInput": "Please enter a title and at least one item before saving as a template.",
+    "saveTemplate": "Template could not be saved.",
+    "checklistInvalid": "Please specify a ticket, a title and at least one filled-in item.",
+    "saveChecklist": "Checklist could not be saved.",
+    "deleteChecklist": "Checklist could not be deleted.",
+    "updateItem": "Item could not be updated.",
+    "templateInvalid": "Please enter a name and at least one filled-in item.",
+    "deleteTemplate": "Template could not be deleted."
+  }
+}

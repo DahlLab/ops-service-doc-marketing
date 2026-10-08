@@ -1,0 +1,40 @@
+{
+  "title": "Tickets",
+  "panelTitle": "Ticket list",
+  "empty": "No tickets yet.",
+  "newTicket": "New ticket",
+  "editTicket": "Edit ticket",
+  "sync": {
+    "idle": "Sync from GLPI",
+    "running": "Syncing…"
+  },
+  "table": {
+    "title": "Title",
+    "technician": "Technician",
+    "scenario": "Scenario",
+    "status": "Status",
+    "createdAt": "Created on"
+  },
+  "scenario": {
+    "SERVER_MAINTENANCE": "Server maintenance"
+  },
+  "actions": {
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "form": {
+    "title": "Title",
+    "description": "Description",
+    "technician": "Technician",
+    "status": "Status",
+    "scenario": "Scenario"
+  },
+  "errors": {
+    "load": "Tickets could not be loaded.",
+    "sync": "GLPI synchronisation failed.",
+    "validation": "Please fill in all required fields (at least the title).",
+    "save": "Ticket could not be saved."
+  }
+}

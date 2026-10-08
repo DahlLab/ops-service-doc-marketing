@@ -1,0 +1,48 @@
+{
+  "title": "TaskPlanner",
+  "panelTitle": "Aufgaben",
+  "newTask": "Neuer Task",
+  "editTask": "Task bearbeiten",
+  "noTicketsHint": "Es existiert noch kein Ticket - lege zuerst ein Ticket an, bevor du Tasks erfassen kannst.",
+  "unknownTicket": "(unbekanntes Ticket)",
+  "filter": {
+    "label": "Nach Ticket filtern",
+    "all": "Alle Tickets"
+  },
+  "table": {
+    "topic": "Thema",
+    "ticket": "Ticket",
+    "nextSteps": "Nächste Schritte",
+    "dueDate": "Zieldatum",
+    "status": "Status",
+    "recordedAt": "Erfasst am",
+    "doneAt": "Erledigt am"
+  },
+  "empty": {
+    "forTicket": "Für \"{{ticket}}\" sind noch keine Tasks erfasst.",
+    "none": "Keine Tasks vorhanden.",
+    "create": "+ Task anlegen",
+    "createForTicket": "+ Task für dieses Ticket anlegen"
+  },
+  "actions": {
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Speichere…"
+  },
+  "form": {
+    "ticket": "Ticket",
+    "topic": "Thema",
+    "nextSteps": "Nächste Schritte",
+    "dueDate": "Zieldatum",
+    "status": "Status"
+  },
+  "confirmDelete": "Task \"{{topic}}\" wirklich löschen?",
+  "errors": {
+    "load": "Tasks konnten nicht geladen werden.",
+    "validation": "Bitte Ticket und Thema ausfüllen.",
+    "save": "Task konnte nicht gespeichert werden.",
+    "delete": "Task konnte nicht gelöscht werden."
+  }
+}

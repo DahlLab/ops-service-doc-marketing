@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Accordion, Alert, Badge, Button, Form, Modal, Spinner, Tab, Tabs, ProgressBar } from 'react-bootstrap';
 import HudPanel from '../components/HudPanel';
 import { api, ApiError } from '../api/api';
 import { formatDate } from '../utils/formatting';
 import { DynamicItemList } from '../components/DynamicItemList';
+import i18n from '../i18n';
 import type {
     ChecklistDto,
     ChecklistFormData,
@@ -36,7 +38,7 @@ function parseBlock(description: string): { phase: string; text: string; optiona
             return { phase: withoutOptional.slice(1, ende), text: withoutOptional.slice(ende + 1).trim(), optional };
         }
     }
-    return { phase: 'Sonstiges', text: withoutOptional, optional };
+    return { phase: i18n.t('checklists:templates.otherPhase'), text: withoutOptional, optional };
 }
 
 function groupByPhase(itemDescriptions: string[]): { phase: string; entries: { text: string; optional: boolean }[] }[] {
@@ -59,6 +61,7 @@ function progressPercent(items: { done: boolean }[]): number {
 }
 
 export function ChecklistsPage() {
+    const { t } = useTranslation('checklists');
     const [tickets, setTickets] = useState<TicketDto[]>([]);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -92,7 +95,7 @@ export function ChecklistsPage() {
             const loadedChecklists = await api.get<ChecklistDto[]>(path);
             setChecklists(loadedChecklists);
         } catch (error) {
-            setLoadError('Checklisten konnten nicht geladen werden.');
+            setLoadError(t('errors.loadChecklists'));
             console.error(error);
         } finally {
             setChecklistsLoading(false);
@@ -104,7 +107,7 @@ export function ChecklistsPage() {
             const loadedTemplates = await api.get<ChecklistTemplateDto[]>('/api/checklist-templates');
             setTemplates(loadedTemplates);
         } catch (error) {
-            setLoadError('Checklisten-Vorlagen konnten nicht geladen werden.');
+            setLoadError(t('errors.loadTemplates'));
             console.error(error);
         } finally {
             setTemplatesLoading(false);
@@ -120,7 +123,7 @@ export function ChecklistsPage() {
             })
             .catch((error) => {
                 if (aborted) return;
-                setLoadError('Checklisten konnten nicht geladen werden.');
+                setLoadError(i18n.t('checklists:errors.loadChecklists'));
                 console.error(error);
             })
             .finally(() => {
@@ -132,7 +135,7 @@ export function ChecklistsPage() {
             })
             .catch((error) => {
                 if (aborted) return;
-                setLoadError('Checklisten-Vorlagen konnten nicht geladen werden.');
+                setLoadError(i18n.t('checklists:errors.loadTemplates'));
                 console.error(error);
             })
             .finally(() => {
@@ -144,7 +147,7 @@ export function ChecklistsPage() {
     }, []);
 
     function ticketTitle(ticketId: string): string {
-        return tickets.find((t) => t.id === ticketId)?.title ?? '(unbekanntes Ticket)';
+        return tickets.find((ticket) => ticket.id === ticketId)?.title ?? t('list.unknownTicket');
     }
 
     function handleFilterChange(ticketId: string) {
@@ -223,7 +226,7 @@ export function ChecklistsPage() {
 
     async function handleSaveBuilderAsTemplate() {
         if (!checklistForm.title.trim() || builderSelectionCount === 0) {
-            setChecklistError('Bitte einen Titel und mindestens einen Punkt angeben, bevor du als Vorlage speicherst.');
+            setChecklistError(t('errors.saveTemplateNeedsInput'));
             return;
         }
         setSaving(true);
@@ -235,9 +238,9 @@ export function ChecklistsPage() {
                 itemDescriptions: builderItems().map((item) => item.description),
             });
             await loadTemplates();
-            setBuilderSaveHint(`Vorlage "${checklistForm.title}" wurde gespeichert.`);
+            setBuilderSaveHint(t('checklistModal.templateSaved', { title: checklistForm.title }));
         } catch (error) {
-            setChecklistError('Vorlage konnte nicht gespeichert werden.');
+            setChecklistError(t('errors.saveTemplate'));
             console.error(error);
         } finally {
             setSaving(false);
@@ -268,9 +271,9 @@ export function ChecklistsPage() {
             await loadChecklists(ticketFilter);
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setChecklistError('Bitte Ticket, Titel und mindestens ein ausgefülltes Item angeben.');
+                setChecklistError(t('errors.checklistInvalid'));
             } else {
-                setChecklistError('Checkliste konnte nicht gespeichert werden.');
+                setChecklistError(t('errors.saveChecklist'));
             }
             console.error(error);
         } finally {
@@ -279,14 +282,14 @@ export function ChecklistsPage() {
     }
 
     async function handleChecklistDelete(checklist: ChecklistDto) {
-        if (!window.confirm(`Checkliste "${checklist.title}" wirklich löschen?`)) {
+        if (!window.confirm(t('confirm.deleteChecklist', { title: checklist.title }))) {
             return;
         }
         try {
             await api.delete(`/api/checklists/${checklist.id}`);
             await loadChecklists(ticketFilter);
         } catch (error) {
-            setLoadError('Checkliste konnte nicht gelöscht werden.');
+            setLoadError(t('errors.deleteChecklist'));
             console.error(error);
         }
     }
@@ -303,7 +306,7 @@ export function ChecklistsPage() {
             });
             await loadChecklists(ticketFilter);
         } catch (error) {
-            setLoadError('Item konnte nicht aktualisiert werden.');
+            setLoadError(t('errors.updateItem'));
             console.error(error);
         }
     }
@@ -355,9 +358,9 @@ export function ChecklistsPage() {
             await loadTemplates();
         } catch (error) {
             if (error instanceof ApiError && error.status === 400) {
-                setTemplateError('Bitte Namen und mindestens einen ausgefüllten Punkt angeben.');
+                setTemplateError(t('errors.templateInvalid'));
             } else {
-                setTemplateError('Vorlage konnte nicht gespeichert werden.');
+                setTemplateError(t('errors.saveTemplate'));
             }
             console.error(error);
         } finally {
@@ -366,14 +369,14 @@ export function ChecklistsPage() {
     }
 
     async function handleTemplateDelete(template: ChecklistTemplateDto) {
-        if (!window.confirm(`Vorlage "${template.name}" wirklich löschen? Bereits erzeugte Checklisten bleiben erhalten.`)) {
+        if (!window.confirm(t('confirm.deleteTemplate', { name: template.name }))) {
             return;
         }
         try {
             await api.delete(`/api/checklist-templates/${template.id}`);
             await loadTemplates();
         } catch (error) {
-            setLoadError('Vorlage konnte nicht gelöscht werden.');
+            setLoadError(t('errors.deleteTemplate'));
             console.error(error);
         }
     }
@@ -391,17 +394,17 @@ export function ChecklistsPage() {
 
     return (
         <div className="py-4">
-            <h1 className="mb-4">Checklisten</h1>
+            <h1 className="mb-4">{t('title')}</h1>
 
             {loadError && <Alert variant="danger">{loadError}</Alert>}
 
             <Tabs defaultActiveKey="checklisten" className="mb-3">
-                <Tab eventKey="checklisten" title="Checklisten">
+                <Tab eventKey="checklisten" title={t('tabs.checklists')}>
                     <div className="d-flex justify-content-between align-items-center my-3">
                         <Form.Group style={{ maxWidth: 320 }}>
-                            <Form.Label>Nach Ticket filtern</Form.Label>
+                            <Form.Label>{t('filter.label')}</Form.Label>
                             <Form.Select value={ticketFilter} onChange={(e) => handleFilterChange(e.target.value)}>
-                                <option value="">Alle Tickets</option>
+                                <option value="">{t('filter.all')}</option>
                                 {tickets.map((ticket) => (
                                     <option key={ticket.id} value={ticket.id}>
                                         {ticket.title}
@@ -410,21 +413,21 @@ export function ChecklistsPage() {
                             </Form.Select>
                         </Form.Group>
                         <Button variant="primary" onClick={handleNewChecklist} disabled={tickets.length === 0}>
-                            Neue Checkliste
+                            {t('list.new')}
                         </Button>
                     </div>
 
                     {tickets.length === 0 && (
                         <Alert variant="info">
-                            Es existiert noch kein Ticket - lege zuerst ein Ticket an, bevor du Checklisten erfassen kannst.
+                            {t('list.noTickets')}
                         </Alert>
                     )}
 
                     {checklists.length === 0 ? (
                         <Alert variant="dark" className="text-center">
                             {ticketFilter
-                                ? `Für "${ticketTitle(ticketFilter)}" sind noch keine Checklisten erfasst.`
-                                : 'Keine Checklisten vorhanden.'}
+                                ? t('list.emptyForTicket', { ticket: ticketTitle(ticketFilter) })
+                                : t('list.empty')}
                         </Alert>
                     ) : (
                         checklists.map((checklist) => (
@@ -434,17 +437,17 @@ export function ChecklistsPage() {
                                     <span className="text-muted">{ticketTitle(checklist.ticketId)}</span>
                                     {checklist.completedAt ? (
                                         <Badge bg="success">
-                                            Abgeschlossen am {formatDate(checklist.completedAt)}
+                                            {t('list.completedOn', { date: formatDate(checklist.completedAt) })}
                                         </Badge>
                                     ) : (
-                                        <Badge bg="secondary">Offen</Badge>
+                                        <Badge bg="secondary">{t('status.task.OPEN', { ns: 'common' })}</Badge>
                                     )}
                                 </div>
 
                                 <ProgressBar
                                     className="hud-progress mb-3"
                                     now={progressPercent(checklist.items)}
-                                    aria-label={`Fortschritt ${checklist.title}`}
+                                    aria-label={t('list.progress', { title: checklist.title })}
                                 />
                                 <Form>
                                     {checklist.items.map((item) => (
@@ -466,14 +469,14 @@ export function ChecklistsPage() {
                                         size="sm"
                                         onClick={() => handleChecklistEdit(checklist)}
                                     >
-                                        Bearbeiten
+                                        {t('list.edit')}
                                     </Button>
                                     <Button
                                         variant="outline-danger"
                                         size="sm"
                                         onClick={() => handleChecklistDelete(checklist)}
                                     >
-                                        Löschen
+                                        {t('list.delete')}
                                     </Button>
                                 </div>
                             </HudPanel>
@@ -481,16 +484,16 @@ export function ChecklistsPage() {
                     )}
                 </Tab>
 
-                <Tab eventKey="vorlagen" title="Vorlagen">
+                <Tab eventKey="vorlagen" title={t('tabs.templates')}>
                     <div className="d-flex justify-content-end my-3">
                         <Button variant="primary" onClick={handleNewTemplate}>
-                            Neue Vorlage
+                            {t('templates.new')}
                         </Button>
                     </div>
 
                     {templates.length === 0 ? (
                         <Alert variant="dark" className="text-center">
-                            Noch keine Vorlagen vorhanden.
+                            {t('templates.empty')}
                         </Alert>
                     ) : (
                         <Accordion alwaysOpen>
@@ -500,11 +503,11 @@ export function ChecklistsPage() {
                                         <span className="flex-grow-1">{template.name}</span>
                                         {template.builtIn && (
                                             <Badge bg="info" className="me-2">
-                                                Standard
+                                                {t('templates.builtIn')}
                                             </Badge>
                                         )}
                                         <Badge bg="secondary" className="me-3">
-                                            {template.itemDescriptions.length} Punkte
+                                            {t('templates.pointCount', { count: template.itemDescriptions.length })}
                                         </Badge>
                                     </Accordion.Header>
                                     <Accordion.Body>
@@ -517,7 +520,7 @@ export function ChecklistsPage() {
                                                             {entry.text}
                                                             {entry.optional && (
                                                                 <Badge bg="secondary" className="ms-2">
-                                                                    optional
+                                                                    {t('templates.optional')}
                                                                 </Badge>
                                                             )}
                                                         </li>
@@ -531,7 +534,7 @@ export function ChecklistsPage() {
                                                 size="sm"
                                                 onClick={() => handleTemplateEdit(template)}
                                             >
-                                                Bearbeiten
+                                                {t('templates.edit')}
                                             </Button>
 
                                             {!template.builtIn && (
@@ -540,7 +543,7 @@ export function ChecklistsPage() {
                                                     size="sm"
                                                     onClick={() => handleTemplateDelete(template)}
                                                 >
-                                                    Löschen
+                                                    {t('templates.delete')}
                                                 </Button>
                                             )}
                                         </div>
@@ -554,13 +557,13 @@ export function ChecklistsPage() {
 
             <Modal show={checklistModalOpen} onHide={() => setChecklistModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editedChecklist ? 'Checkliste bearbeiten' : 'Neue Checkliste'}</Modal.Title>
+                    <Modal.Title>{editedChecklist ? t('checklistModal.titleEdit') : t('checklistModal.titleNew')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {checklistError && <Alert variant="danger">{checklistError}</Alert>}
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Ticket</Form.Label>
+                            <Form.Label>{t('checklistModal.ticket')}</Form.Label>
                             <Form.Select
                                 value={checklistForm.ticketId}
                                 onChange={(e) =>
@@ -577,14 +580,14 @@ export function ChecklistsPage() {
 
                         {!editedChecklist && (
                             <Form.Group className="mb-3">
-                                <Form.Label>Erstellen</Form.Label>
+                                <Form.Label>{t('checklistModal.createMode')}</Form.Label>
                                 <div>
                                     <Form.Check
                                         inline
                                         type="radio"
                                         name="erstellModus"
                                         id="modus-manuell"
-                                        label="Manuell"
+                                        label={t('checklistModal.modeManual')}
                                         checked={createMode === 'manuell'}
                                         onChange={() => setCreateMode('manuell')}
                                     />
@@ -593,7 +596,7 @@ export function ChecklistsPage() {
                                         type="radio"
                                         name="erstellModus"
                                         id="modus-vorlage"
-                                        label="Aus Vorlage"
+                                        label={t('checklistModal.modeTemplate')}
                                         checked={createMode === 'vorlage'}
                                         onChange={() => setCreateMode('vorlage')}
                                         disabled={templates.length === 0}
@@ -603,7 +606,7 @@ export function ChecklistsPage() {
                                         type="radio"
                                         name="erstellModus"
                                         id="modus-baukasten"
-                                        label="Baukasten"
+                                        label={t('checklistModal.modeBuilder')}
                                         checked={createMode === 'baukasten'}
                                         onChange={() => setCreateMode('baukasten')}
                                         disabled={templates.length === 0}
@@ -614,14 +617,14 @@ export function ChecklistsPage() {
 
                         {showTemplateMode && (
                             <Form.Group className="mb-3">
-                                <Form.Label>Vorlage</Form.Label>
+                                <Form.Label>{t('checklistModal.template')}</Form.Label>
                                 <Form.Select
                                     value={selectedTemplateId}
                                     onChange={(e) => setSelectedTemplateId(e.target.value)}
                                 >
                                     {templates.map((template) => (
                                         <option key={template.id} value={template.id}>
-                                            {template.name} ({template.itemDescriptions.length} Punkte)
+                                            {t('checklistModal.templateOption', { name: template.name, count: template.itemDescriptions.length })}
                                         </option>
                                     ))}
                                 </Form.Select>
@@ -631,22 +634,24 @@ export function ChecklistsPage() {
                         {showBuilderMode && (
                             <>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Titel</Form.Label>
+                                    <Form.Label>{t('checklistModal.title')}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={checklistForm.title}
                                         onChange={(e) =>
                                             setChecklistForm({ ...checklistForm, title: e.target.value })
                                         }
-                                        placeholder="z.B. Wartung Kundenserver XY"
+                                        placeholder={t('checklistModal.titlePlaceholder')}
                                         required
                                     />
                                 </Form.Group>
 
                                 <Form.Group className="mb-3">
                                     <Form.Label>
-                                        Punkte auswählen{' '}
-                                        <span className="text-muted">({builderSelectionCount} ausgewählt)</span>
+                                        {t('checklistModal.selectPoints')}{' '}
+                                        <span className="text-muted">
+                                            {t('checklistModal.selectedCount', { selected: builderSelectionCount })}
+                                        </span>
                                     </Form.Label>
 
                                     <div style={{ maxHeight: '45vh', overflowY: 'auto' }} className="border rounded p-2">
@@ -667,7 +672,7 @@ export function ChecklistsPage() {
                                                                     <span className="text-muted">[{phase}]</span> {text}
                                                                     {optional && (
                                                                         <Badge bg="secondary" className="ms-2">
-                                                                            optional
+                                                                            {t('templates.optional')}
                                                                         </Badge>
                                                                     )}
                                                                 </>
@@ -694,7 +699,7 @@ export function ChecklistsPage() {
                                     onClick={handleSaveBuilderAsTemplate}
                                     disabled={saving || builderSelectionCount === 0}
                                 >
-                                    Auswahl als eigene Vorlage speichern
+                                    {t('checklistModal.saveAsTemplate')}
                                 </Button>
                             </>
                         )}
@@ -702,7 +707,7 @@ export function ChecklistsPage() {
                         {!showTemplateMode && !showBuilderMode && (
                             <>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Titel</Form.Label>
+                                    <Form.Label>{t('checklistModal.title')}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={checklistForm.title}
@@ -714,7 +719,7 @@ export function ChecklistsPage() {
                                 </Form.Group>
 
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Items</Form.Label>
+                                    <Form.Label>{t('checklistModal.items')}</Form.Label>
 
                                     <DynamicItemList
                                         values={checklistForm.items.map((item) => item.description)}
@@ -729,7 +734,7 @@ export function ChecklistsPage() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setChecklistModalOpen(false)}>
-                        Abbrechen
+                        {t('checklistModal.cancel')}
                     </Button>
                     <Button
                         variant="primary"
@@ -739,20 +744,20 @@ export function ChecklistsPage() {
                             (!editedChecklist && createMode === 'baukasten' && builderSelectionCount === 0)
                         }
                     >
-                        {saving ? 'Speichere…' : 'Speichern'}
+                        {saving ? t('checklistModal.saving') : t('checklistModal.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>
 
             <Modal show={templateModalOpen} onHide={() => setTemplateModalOpen(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editedTemplate ? 'Vorlage bearbeiten' : 'Neue Vorlage'}</Modal.Title>
+                    <Modal.Title>{editedTemplate ? t('templateModal.titleEdit') : t('templateModal.titleNew')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {templateError && <Alert variant="danger">{templateError}</Alert>}
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Name</Form.Label>
+                            <Form.Label>{t('templateModal.name')}</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={templateForm.name}
@@ -762,7 +767,7 @@ export function ChecklistsPage() {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Punkte</Form.Label>
+                            <Form.Label>{t('templateModal.points')}</Form.Label>
 
                             <DynamicItemList
                                 values={templateForm.itemDescriptions}
@@ -775,10 +780,10 @@ export function ChecklistsPage() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setTemplateModalOpen(false)}>
-                        Abbrechen
+                        {t('templateModal.cancel')}
                     </Button>
                     <Button variant="primary" onClick={handleTemplateSave} disabled={saving}>
-                        {saving ? 'Speichere…' : 'Speichern'}
+                        {saving ? t('templateModal.saving') : t('templateModal.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>

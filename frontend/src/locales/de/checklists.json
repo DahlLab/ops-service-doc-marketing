@@ -1,0 +1,83 @@
+{
+  "title": "Checklisten",
+  "tabs": {
+    "checklists": "Checklisten",
+    "templates": "Vorlagen"
+  },
+  "filter": {
+    "label": "Nach Ticket filtern",
+    "all": "Alle Tickets"
+  },
+  "list": {
+    "new": "Neue Checkliste",
+    "noTickets": "Es existiert noch kein Ticket - lege zuerst ein Ticket an, bevor du Checklisten erfassen kannst.",
+    "emptyForTicket": "Für \"{{ticket}}\" sind noch keine Checklisten erfasst.",
+    "empty": "Keine Checklisten vorhanden.",
+    "unknownTicket": "(unbekanntes Ticket)",
+    "completedOn": "Abgeschlossen am {{date}}",
+    "progress": "Fortschritt {{title}}",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "templates": {
+    "new": "Neue Vorlage",
+    "empty": "Noch keine Vorlagen vorhanden.",
+    "builtIn": "Standard",
+    "pointCount_one": "{{count}} Punkt",
+    "pointCount_other": "{{count}} Punkte",
+    "optional": "optional",
+    "otherPhase": "Sonstiges",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "checklistModal": {
+    "titleEdit": "Checkliste bearbeiten",
+    "titleNew": "Neue Checkliste",
+    "ticket": "Ticket",
+    "createMode": "Erstellen",
+    "modeManual": "Manuell",
+    "modeTemplate": "Aus Vorlage",
+    "modeBuilder": "Baukasten",
+    "template": "Vorlage",
+    "templateOption": "{{name}} ({{count}} Punkte)",
+    "title": "Titel",
+    "titlePlaceholder": "z.B. Wartung Kundenserver XY",
+    "selectPoints": "Punkte auswählen",
+    "selectedCount": "({{selected}} ausgewählt)",
+    "saveAsTemplate": "Auswahl als eigene Vorlage speichern",
+    "templateSaved": "Vorlage \"{{title}}\" wurde gespeichert.",
+    "items": "Items",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Speichere…"
+  },
+  "templateModal": {
+    "titleEdit": "Vorlage bearbeiten",
+    "titleNew": "Neue Vorlage",
+    "name": "Name",
+    "points": "Punkte",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Speichere…"
+  },
+  "itemList": {
+    "placeholderPrefix": "Punkt",
+    "add": "+ Punkt hinzufügen"
+  },
+  "confirm": {
+    "deleteChecklist": "Checkliste \"{{title}}\" wirklich löschen?",
+    "deleteTemplate": "Vorlage \"{{name}}\" wirklich löschen? Bereits erzeugte Checklisten bleiben erhalten."
+  },
+  "errors": {
+    "loadChecklists": "Checklisten konnten nicht geladen werden.",
+    "loadTemplates": "Checklisten-Vorlagen konnten nicht geladen werden.",
+    "saveTemplateNeedsInput": "Bitte einen Titel und mindestens einen Punkt angeben, bevor du als Vorlage speicherst.",
+    "saveTemplate": "Vorlage konnte nicht gespeichert werden.",
+    "checklistInvalid": "Bitte Ticket, Titel und mindestens ein ausgefülltes Item angeben.",
+    "saveChecklist": "Checkliste konnte nicht gespeichert werden.",
+    "deleteChecklist": "Checkliste konnte nicht gelöscht werden.",
+    "updateItem": "Item konnte nicht aktualisiert werden.",
+    "templateInvalid": "Bitte Namen und mindestens einen ausgefüllten Punkt angeben.",
+    "deleteTemplate": "Vorlage konnte nicht gelöscht werden."
+  }
+}
