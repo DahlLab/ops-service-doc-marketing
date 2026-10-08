@@ -1,0 +1,20 @@
+package org.dahllab.opsservicedoc.util;
+
+import org.dahllab.opsservicedoc.dto.ChecklistTemplateDto;
+import org.dahllab.opsservicedoc.model.ChecklistTemplate;
+
+public class ChecklistTemplateMapper {
+
+    private ChecklistTemplateMapper() {
+        // Utility-Klasse, keine Instanzen nötig.
+    }
+
+    public static ChecklistTemplateDto toDto(ChecklistTemplate template) {
+        return new ChecklistTemplateDto(
+                template.getId(),
+                template.getName(),
+                template.getItemBeschreibungen(),
+                template.isStandard()
+        );
+    }
+}

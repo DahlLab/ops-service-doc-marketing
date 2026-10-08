@@ -1,0 +1,168 @@
+/* ==========================================================================
+   hud-components.css - HUD-Optik für Bootstrap-Bausteine, die in den Seiten
+   verwendet werden (Tabellen, Modals, Tabs, Akkordeon, Badges, Alerts, ...).
+   Ich überschreibe hier gezielt Bootstrap, damit nicht jede Seite einzeln
+   umgebaut werden muss. Farben kommen aus theme.css.
+   ========================================================================== */
+
+/* ---------- Seitenüberschrift ---------- */
+h1 { font-size: 1.3rem; }
+
+/* ---------- Tabellen ---------- */
+.hud-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--hud-text);
+  --bs-table-border-color: rgba(70, 104, 138, 0.3);
+  --bs-table-hover-bg: var(--hud-cyan-dim);
+  --bs-table-hover-color: var(--hud-text-strong);
+  margin-bottom: 0;
+}
+.hud-table thead th {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--hud-text-muted);
+  border-bottom: 1px solid var(--hud-line-strong);
+  white-space: nowrap;
+}
+.hud-table td { vertical-align: middle; font-size: 0.88rem; }
+
+/* ---------- Badges: eckig, durchsichtig, farbiger Rand ---------- */
+.badge {
+  border-radius: 0;
+  font-weight: 500;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+.badge.bg-primary   { background: var(--hud-cyan-dim) !important; color: var(--hud-cyan); }
+.badge.bg-info      { background: var(--hud-cyan-dim) !important; color: var(--hud-cyan); }
+.badge.bg-warning   { background: var(--hud-gold-dim) !important; color: var(--hud-gold); }
+.badge.bg-danger    { background: var(--hud-red-dim) !important; color: var(--hud-red); }
+.badge.bg-success   { background: rgba(79, 209, 139, 0.15) !important; color: var(--hud-green); }
+.badge.bg-secondary { background: rgba(127, 149, 171, 0.15) !important; color: var(--hud-text-muted); }
+.badge.bg-dark      { background: rgba(255, 255, 255, 0.06) !important; color: var(--hud-text); }
+
+/* ---------- Buttons: eckig, Großbuchstaben ---------- */
+.btn {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.78rem;
+}
+.btn-sm { font-size: 0.7rem; }
+.btn-link { text-transform: none; letter-spacing: 0.04em; font-size: 0.85rem; }
+
+/* ---------- Eingabefelder eckig ---------- */
+.form-control, .form-select, .form-check-input { border-radius: 0; }
+.form-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--hud-text-muted);
+}
+
+/* ---------- Alerts ---------- */
+.alert { border-radius: 0; border-left-width: 3px; }
+
+/* ---------- Tabs ---------- */
+.nav-tabs { border-bottom: 1px solid var(--hud-line); }
+.nav-tabs .nav-link {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--hud-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.78rem;
+}
+.nav-tabs .nav-link:hover { color: var(--hud-text-strong); }
+.nav-tabs .nav-link.active {
+  background: transparent;
+  color: var(--hud-gold);
+  border-bottom-color: var(--hud-gold);
+}
+
+/* ---------- Akkordeon (Vorlagen) ---------- */
+.accordion {
+  --bs-accordion-bg: var(--hud-panel-bg);
+  --bs-accordion-border-color: var(--hud-line);
+  --bs-accordion-border-radius: 0;
+  --bs-accordion-inner-border-radius: 0;
+  --bs-accordion-btn-bg: var(--hud-panel-bg);
+  --bs-accordion-active-bg: var(--hud-cyan-dim);
+  --bs-accordion-active-color: var(--hud-text-strong);
+  --bs-accordion-btn-color: var(--hud-text);
+  --bs-accordion-color: var(--hud-text);
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 0.15rem var(--hud-cyan-dim);
+}
+
+/* ---------- Modals ---------- */
+.modal-content {
+  background: var(--hud-bg-raised);
+  border: 1px solid var(--hud-line-strong);
+  border-radius: 0;
+}
+.modal-header, .modal-footer { border-color: var(--hud-line); }
+.modal-title {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* ---------- Fortschrittsbalken (Checklisten) ---------- */
+.hud-progress {
+  --bs-progress-bg: rgba(70, 104, 138, 0.3);
+  --bs-progress-bar-bg: var(--hud-cyan);
+  --bs-progress-border-radius: 0;
+  height: 6px;
+}
+
+/* ---------- Checkboxen: Text neben dem Kästchen ---------- */
+.form-check-label { font-size: 0.9rem; }
+
+/* ---- Ausgefuellte Buttons ----
+   Ich nutze weiterhin die Bootstrap-Varianten "outline-*" im Code, fuelle sie
+   hier aber per CSS-Variablen aus. So muss ich keine einzige Seite aendern. */
+.btn-outline-primary {
+  --bs-btn-bg: var(--hud-cyan);
+  --bs-btn-color: #04121a;
+  --bs-btn-hover-bg: #6fe3f5;
+  --bs-btn-hover-border-color: #6fe3f5;
+  --bs-btn-hover-color: #04121a;
+}
+.btn-outline-secondary {
+  --bs-btn-bg: #1a2c42;                    /* dunkles Stahlblau */
+  --bs-btn-color: var(--hud-text);
+  --bs-btn-border-color: var(--hud-line-strong);
+  --bs-btn-hover-bg: #29445f;
+  --bs-btn-hover-border-color: var(--hud-cyan);
+  --bs-btn-hover-color: #ffffff;
+}
+.btn-outline-danger {
+  --bs-btn-bg: var(--hud-red);
+  --bs-btn-color: #1a0505;
+  --bs-btn-border-color: var(--hud-red);
+  --bs-btn-hover-bg: #f58a8a;
+  --bs-btn-hover-border-color: #f58a8a;
+  --bs-btn-hover-color: #1a0505;
+}
+
+/* ---- Klick-Puls um Buttons ----
+   Beim Klick setzt ein kleines Skript (main.tsx) kurz die Klasse "hud-puls".
+   Der Ring waechst per box-shadow nach aussen und blendet dabei aus.
+   Der Ring ist bei allen Buttons Gold, passend zur Akzentfarbe fuer Aktives. */
+@keyframes hud-puls {
+  0%   { box-shadow: 0 0 0 0 var(--hud-gold); opacity: 1; }
+  70%  { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 12px transparent; }
+}
+.btn.hud-puls {
+  animation: hud-puls 0.55s ease-out;
+}
+/* Wer Bewegung reduziert haben will (Systemeinstellung), bekommt keinen Puls */
+@media (prefers-reduced-motion: reduce) {
+  .btn.hud-puls { animation: none; }
+}

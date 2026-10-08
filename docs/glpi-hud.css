@@ -1,0 +1,191 @@
+/* ==========================================================================
+   glpi-hud.css - GLPI im HUD-Design von OpsServiceDoc
+   --------------------------------------------------------------------------
+   Einbau in GLPI (Version 11):
+   Einstellungen > Entitaeten > Stammentitaet > Reiter "Anpassung"
+   (englisch: Setup > Entities > Root entity > Customization)
+   -> Feld "CSS-Code" bzw. "Custom CSS code": diesen kompletten Inhalt einfuegen,
+   speichern, Seite neu laden (Strg+F5).
+   GLPI steuert seine Farben ueber CSS-Variablen (Tabler/--tblr-* und --glpi-*).
+   Ich ueberschreibe sie hier mit denselben Farben wie in meinem Frontend
+   (frontend/src/theme.css). Dadurch passt alles zusammen, ohne GLPI selbst
+   zu veraendern - das Original bleibt beim Update unangetastet.
+   ========================================================================== */
+
+/* Das Attribut data-glpi-theme setzt GLPI je nach gewaehlter Palette. Mit
+   :root[data-glpi-theme] hat meine Regel hoeheren Vorrang als jede Palette. */
+:root,
+:root[data-glpi-theme] {
+  color-scheme: dark;                          /* dunkle Formularfelder/Scrollbars */
+
+  /* ---- Flaechen ---- */
+  --tblr-body-bg: #050a14;
+  --tblr-body-color: #d6e2ef;
+  --tblr-bg-surface: #0b1626;
+  --tblr-bg-surface-secondary: #0a1424;
+  --tblr-bg-surface-tertiary: #0a1424;
+  --tblr-border-color: #2a4058;
+  --tblr-border-color-translucent: rgba(70, 104, 138, 0.35);
+
+  /* ---- Akzente: Cyan als Hauptfarbe, Gold fuer Aktives/Warnung ---- */
+  --tblr-primary: #29d3ee;
+  --tblr-primary-rgb: 41, 211, 238;
+  --tblr-primary-fg: #04121a;
+  --tblr-link-color-rgb: 41, 211, 238;
+  --tblr-link-hover-color-rgb: 127, 230, 247;
+  --tblr-warning: #e3b657;
+  --tblr-warning-rgb: 227, 182, 87;
+  --tblr-danger: #ef5b5b;
+  --tblr-danger-rgb: 239, 91, 91;
+  --tblr-success: #4fd18b;
+  --tblr-success-rgb: 79, 209, 139;
+
+  /* ---- Text ---- */
+  --tblr-muted: #7f95ab;
+  --tblr-secondary: #7f95ab;
+  --tblr-light: #d6e2ef;
+  --tblr-dark: #050a14;
+  --tblr-code-color: #7fe6f7;
+  --tblr-badge-bg: #1a2c42;
+  --tblr-badge-color: #d6e2ef;
+
+  /* ---- GLPI-spezifisch: Menue, Reiter, Formularkoepfe ---- */
+  --glpi-mainmenu-bg: #0a1424;
+  --glpi-mainmenu-fg: #d6e2ef;
+  --glpi-helpdesk-header: #0a1424;
+  --glpi-helpdesk-tiles-section-bg: #0b1626;
+  --glpi-helpdesk-tabs-section-bg: #050a14;
+  --glpi-form-header-border-color: #2a4058;
+  --glpi-form-header-fg: #d6e2ef;
+  --glpi-tabs-bg: #0a1424;
+  --glpi-tabs-fg: #7f95ab;
+  --glpi-tabs-border-color: transparent;
+  --glpi-tabs-active-bg: #0b1626;
+  --glpi-tabs-active-fg: #e3b657;              /* aktiver Reiter in Gold wie im Frontend */
+  --glpi-tabs-active-border-color: #e3b657;
+  --glpi-itil-secondary-bg: #0a1424;
+}
+
+/* ---- Hintergrund: feiner Farbverlauf wie im Frontend ---- */
+body {
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(41, 211, 238, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 100%, rgba(227, 182, 87, 0.05), transparent 60%),
+    #050a14 !important;
+  background-attachment: fixed !important;
+}
+
+/* ---- Eckige Formen statt runder Ecken ---- */
+.card, .modal-content, .dropdown-menu, .btn, .form-control, .form-select,
+.badge, .alert, .nav-tabs .nav-link, .page-anonymous .card {
+  border-radius: 0 !important;
+}
+
+/* ---- Ueberschriften und Beschriftungen im HUD-Stil ---- */
+h1, h2, h3, .card-title, .page-title, .modal-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+.form-label, label.col-form-label, table thead th {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: #7f95ab;
+}
+
+/* ---- Karten und Tabellen ---- */
+.card {
+  background: #0b1626;
+  border: 1px solid #2a4058;
+}
+.table {
+  --tblr-table-bg: transparent;
+  --tblr-table-hover-bg: rgba(41, 211, 238, 0.12);
+  --tblr-table-border-color: rgba(70, 104, 138, 0.3);
+  --tblr-table-color: #d6e2ef;
+}
+
+/* ---- Buttons: Primaer Cyan mit dunkler Schrift, eckig, Grossbuchstaben ---- */
+.btn {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.78rem;
+}
+.btn-primary {
+  background-color: #29d3ee;
+  border-color: #29d3ee;
+  color: #04121a;
+}
+.btn-primary:hover {
+  background-color: #6fe3f5;
+  border-color: #6fe3f5;
+  color: #04121a;
+}
+
+/* ---- Eingabefelder: dunkel, Cyan-Rahmen beim Fokus ---- */
+.form-control, .form-select {
+  background-color: rgba(5, 10, 20, 0.7);
+  border-color: #2a4058;
+  color: #d6e2ef;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #29d3ee;
+  box-shadow: 0 0 0 0.15rem rgba(41, 211, 238, 0.16);
+  background-color: rgba(5, 10, 20, 0.9);
+}
+
+/* ---- Hauptmenue: aktiver Punkt in Gold ---- */
+.navbar .nav-link.active,
+.navbar .nav-item.active > .nav-link,
+.navbar .dropdown-item.active {
+  color: #e3b657 !important;
+}
+.navbar { border-bottom: 1px solid #2a4058; }
+
+/* ---- Login-Seite ---- */
+.page-anonymous .card, .welcome-anonymous .card {
+  border: 1px solid #2a4058;
+  box-shadow: 0 0 40px rgba(41, 211, 238, 0.06);
+}
+
+/* ---- Login-Seite: Logo hell (das Original ist dunkel und auf Navy kaum sichtbar) ---- */
+.glpi-logo {
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(150deg) brightness(1.1);
+}
+.page-anonymous .card {
+  background: #0b1626 !important;
+  color: #d6e2ef;
+}
+.page-anonymous .text-secondary,
+.page-anonymous .text-muted { color: #7f95ab !important; }
+.page-anonymous a { color: #29d3ee; }
+.btn-primary {
+  background-color: #29d3ee !important;
+  border-color: #29d3ee !important;
+  color: #04121a !important;
+}
+
+/* ---- Seitenmenue (GLPI 11: senkrechte Tabler-Navbar) ---- */
+aside.navbar,
+.navbar-vertical {
+  background-color: #0a1424 !important;      /* wie --hud-bg-raised im Frontend */
+  border-right: 1px solid #2a4058 !important;
+  color: #d6e2ef;
+}
+.navbar-vertical .nav-link,
+.navbar-vertical .dropdown-item { color: #d6e2ef; }
+.navbar-vertical .nav-link:hover,
+.navbar-vertical .dropdown-item:hover {
+  background: rgba(41, 211, 238, 0.1) !important;
+  color: #29d3ee !important;
+}
+/* aktiver Hauptpunkt (z.B. Helpdesk): Gold + Cyan-Balken links */
+.navbar-vertical .nav-item.active > .nav-link,
+.navbar-vertical .nav-link.active,
+.navbar-vertical .nav-item.show > .nav-link {
+  background: rgba(227, 182, 87, 0.08) !important;
+  color: #e3b657 !important;
+  box-shadow: inset 3px 0 0 #e3b657;
+}
+.navbar-vertical .dropdown-menu { background: #0b1626 !important; border: 1px solid #2a4058; }

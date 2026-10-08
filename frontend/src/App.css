@@ -1,0 +1,100 @@
+:root {
+  --dahllab-navy: #0a1931;
+  --dahllab-cyan: #00bcd4;
+  --dahllab-cyan-dark: #0097a7;
+}
+
+/* Primärfarbe (Buttons) auf die DahlLab-Cyan-Farbe umstellen statt
+   Bootstraps Standardblau - so passt das Frontend optisch zum
+   PDF-Export (gleiche Designsprache: Navy/Cyan). */
+.btn-primary {
+  background-color: var(--dahllab-cyan);
+  border-color: var(--dahllab-cyan);
+}
+
+.btn-primary:hover {
+  background-color: var(--dahllab-cyan-dark);
+  border-color: var(--dahllab-cyan-dark);
+}
+
+.btn-outline-primary {
+  color: var(--dahllab-cyan-dark);
+  border-color: var(--dahllab-cyan);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--dahllab-cyan);
+  border-color: var(--dahllab-cyan);
+}
+
+/* ==========================================================================
+   HudPanel (Komponente: components/HudPanel.tsx)
+   ========================================================================== */
+
+/* Äußeres Element: liefert die dünne Linie.
+   clip-path schneidet oben links und unten rechts je eine Ecke ab (Größe = --hud-cut).
+   Die Punkte des Polygons laufen im Uhrzeigersinn um die Form herum. */
+.hud-panel {
+  --panel-line: var(--hud-line);
+  position: relative;
+  padding: 1px;                       /* 1 px sichtbarer Rand zwischen außen und innen */
+  background: var(--panel-line);      /* Hintergrund = Linienfarbe */
+  clip-path: polygon(
+    var(--hud-cut) 0,                 /* oben: nach der abgeschnittenen Ecke links */
+    100% 0,                           /* oben rechts */
+    100% calc(100% - var(--hud-cut)), /* rechts: bis vor die abgeschnittene Ecke unten */
+    calc(100% - var(--hud-cut)) 100%, /* unten: von der abgeschnittenen Ecke */
+    0 100%,                           /* unten links */
+    0 var(--hud-cut)                  /* links: bis zur abgeschnittenen Ecke oben */
+  );
+}
+
+/* Farbtöne: nur die Linienfarbe wechselt */
+.hud-panel[data-tone='warning'] { --panel-line: var(--hud-gold); }
+.hud-panel[data-tone='danger']  { --panel-line: var(--hud-red); }
+
+/* Inneres Element: die dunkle Füllung. Gleiche Form wie außen, nur minimal kleiner
+   geschnitten, damit die Linie auch an den schrägen Kanten gleich dick bleibt. */
+.hud-panel__inner {
+  background: var(--hud-panel-bg);
+  height: 100%;
+  padding: 16px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  clip-path: polygon(
+    calc(var(--hud-cut) - 0.5px) 0,
+    100% 0,
+    100% calc(100% - var(--hud-cut) + 0.5px),
+    calc(100% - var(--hud-cut) + 0.5px) 100%,
+    0 100%,
+    0 calc(var(--hud-cut) - 0.5px)
+  );
+}
+
+/* Titel: klein, Großbuchstaben, weiter Abstand - das typische HUD-Merkmal */
+.hud-panel__title {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--hud-text);
+}
+
+/* Der Inhalt nimmt den restlichen Platz ein, damit der Footer unten bleibt */
+.hud-panel__body {
+  flex: 1;
+}
+
+/* Footer: kleiner Link rechts unten */
+.hud-panel__footer {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.hud-panel__footer a {
+  color: var(--hud-text-muted);
+}
+.hud-panel__footer a:hover {
+  color: var(--hud-cyan);
+}

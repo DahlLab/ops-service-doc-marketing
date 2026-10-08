@@ -1,0 +1,42 @@
+services:
+  mongodb:
+    image: mongo:7                    # offizielles MongoDB-Image, Version 7
+    container_name: ops-service-doc-mongo
+    restart: unless-stopped           # startet automatisch neu, außer du stoppst ihn bewusst
+    ports:
+      - "27017:27017"                 # Standard-MongoDB-Port, lokal erreichbar
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin   # NUR für lokale Entwicklung! Niemals echte Passwörter hier
+      MONGO_INITDB_DATABASE: ops_service_doc
+    volumes:
+      - mongo_data:/data/db           # Daten bleiben erhalten, auch wenn der Container neu gestartet wird
+
+  glpi:
+    image: "glpi/glpi:latest"
+    container_name: ops-service-doc-glpi
+    restart: "unless-stopped"
+    volumes:
+      - glpi_data:/var/glpi
+    env_file: .env
+    depends_on:
+      - glpi-db
+    ports:
+      - "80:80"
+
+  glpi-db:
+    image: "mysql"
+    container_name: ops-service-doc-glpi-db
+    restart: "unless-stopped"
+    volumes:
+      - glpi_db_data:/var/lib/mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: ${GLPI_DB_NAME}
+      MYSQL_USER: ${GLPI_DB_USER}
+      MYSQL_PASSWORD: ${GLPI_DB_PASSWORD}
+
+volumes:
+  mongo_data:
+  glpi_data:
+  glpi_db_data:

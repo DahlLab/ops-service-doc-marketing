@@ -1,0 +1,141 @@
+/* ==========================================================================
+   theme.css - zentrales HUD-Theme für OpsServiceDoc
+   --------------------------------------------------------------------------
+   Hier definiere ich ALLE Farben, Schriften und Abstände einmal als
+   CSS-Variablen. Alle anderen Stile (HudPanel, Layout, Seiten) greifen nur
+   auf diese Variablen zu. Will ich das Design später ändern, muss ich nur
+   diese Datei anfassen.
+   ========================================================================== */
+
+:root {
+  /* ---------- Hintergründe (dunkles Navy, fast Schwarz) ---------- */
+  --hud-bg: #050a14;                    /* Seitenhintergrund */
+  --hud-bg-raised: #0a1424;             /* leicht angehobene Flächen, z. B. Sidebar */
+  --hud-panel-bg: #0b1626;              /* Füllung der HudPanels - bewusst deckend, damit die Linienfarbe (Gold/Rot) nicht durchscheint */
+
+  /* ---------- Linien (dünne stahlblaue Rahmen) ---------- */
+  --hud-line: #2a4058;                  /* Standard-Rahmenlinie */
+  --hud-line-strong: #46688a;           /* hervorgehobene Linie, z. B. bei Hover */
+
+  /* ---------- Akzentfarben ---------- */
+  --hud-cyan: #29d3ee;                  /* Hauptakzent: Links, Buttons, Fokus */
+  --hud-cyan-dim: rgba(41, 211, 238, 0.16); /* abgedunkelte Variante für Hintergründe */
+  --hud-gold: #e3b657;                  /* aktiver Menüpunkt, Warnungen */
+  --hud-gold-dim: rgba(227, 182, 87, 0.16);
+  --hud-red: #ef5b5b;                   /* nur für Kritisches/Fehler */
+  --hud-red-dim: rgba(239, 91, 91, 0.16);
+  --hud-green: #4fd18b;                 /* Erfolg / erledigt */
+
+  /* ---------- Text ---------- */
+  --hud-text: #d6e2ef;                  /* normaler Text */
+  --hud-text-muted: #7f95ab;            /* Nebentext, Beschriftungen */
+  --hud-text-strong: #ffffff;           /* Überschriften, große Zahlen */
+
+  /* ---------- Schriften ---------- */
+  --hud-font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --hud-font-mono: Consolas, "Cascadia Mono", ui-monospace, monospace;
+  --hud-title-spacing: 0.2em;           /* weiter Buchstabenabstand für Titel */
+
+  /* ---------- Form: Größe der abgeschrägten Ecken ---------- */
+  --hud-cut: 14px;                      /* so viele px werden an den Ecken abgeschnitten */
+  --hud-gap: 16px;                      /* Standardabstand zwischen Panels */
+
+  /* ==========================================================================
+     Bootstrap-Variablen überschreiben
+     --------------------------------------------------------------------------
+     Bootstrap 5.3 steuert seine Farben über --bs-* Variablen. Ich setze sie auf
+     meine HUD-Werte, damit Formulare, Tabellen, Buttons und Modals automatisch
+     zum Theme passen, ohne dass ich jede Bootstrap-Klasse einzeln umstylen muss.
+     ========================================================================== */
+  --bs-body-bg: var(--hud-bg);
+  --bs-body-color: var(--hud-text);
+  --bs-body-font-family: var(--hud-font);
+  --bs-border-color: var(--hud-line);
+  --bs-secondary-color: var(--hud-text-muted);
+  --bs-link-color: var(--hud-cyan);
+  --bs-link-hover-color: #7fe6f7;
+  --bs-primary: var(--hud-cyan);
+  --bs-primary-rgb: 41, 211, 238;
+  --bs-warning: var(--hud-gold);
+  --bs-warning-rgb: 227, 182, 87;
+  --bs-danger: var(--hud-red);
+  --bs-danger-rgb: 239, 91, 91;
+  --bs-success: var(--hud-green);
+  --bs-success-rgb: 79, 209, 139;
+}
+
+/* ---------- Grundlayout ---------- */
+html,
+body {
+  background: var(--hud-bg);
+  color: var(--hud-text);
+  font-family: var(--hud-font);
+  min-height: 100%;
+}
+
+/* Ganz feiner Verlauf im Hintergrund, damit es nicht komplett flach wirkt */
+body {
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(41, 211, 238, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 100%, rgba(227, 182, 87, 0.05), transparent 60%),
+    var(--hud-bg);
+  background-attachment: fixed;
+}
+
+/* Überschriften im HUD-Stil: Großbuchstaben mit weitem Abstand */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--hud-text-strong);
+  text-transform: uppercase;
+  letter-spacing: var(--hud-title-spacing);
+  font-weight: 500;
+}
+
+a { text-decoration: none; }
+
+/* Dünne, dunkle Scrollbar passend zum Theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hud-line-strong) transparent;
+}
+
+/* Eingabefelder: dunkel, mit Cyan-Rahmen beim Fokus */
+.form-control,
+.form-select {
+  background-color: rgba(5, 10, 20, 0.7);
+  border-color: var(--hud-line);
+  color: var(--hud-text);
+}
+.form-control:focus,
+.form-select:focus {
+  background-color: rgba(5, 10, 20, 0.9);
+  border-color: var(--hud-cyan);
+  box-shadow: 0 0 0 0.15rem var(--hud-cyan-dim);
+  color: var(--hud-text-strong);
+}
+.form-control::placeholder { color: var(--hud-text-muted); }
+
+/* Checkboxen in Cyan */
+.form-check-input:checked {
+  background-color: var(--hud-cyan);
+  border-color: var(--hud-cyan);
+}
+
+/* Buttons: Primärbutton Cyan mit dunkler Schrift (guter Kontrast) */
+.btn-primary {
+  --bs-btn-bg: var(--hud-cyan);
+  --bs-btn-border-color: var(--hud-cyan);
+  --bs-btn-color: #04121a;
+  --bs-btn-hover-bg: #6fe3f5;
+  --bs-btn-hover-border-color: #6fe3f5;
+  --bs-btn-hover-color: #04121a;
+  --bs-btn-active-bg: #6fe3f5;
+  --bs-btn-active-border-color: #6fe3f5;
+  --bs-btn-active-color: #04121a;
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--hud-cyan);
+  --bs-btn-border-color: var(--hud-cyan);
+  --bs-btn-hover-bg: var(--hud-cyan);
+  --bs-btn-hover-border-color: var(--hud-cyan);
+  --bs-btn-hover-color: #04121a;
+}

@@ -1,0 +1,68 @@
+/* hud-home.css - Stile für die Startseite (Willkommen + Dashboard) und ProgressRing */
+
+/* ---------- Willkommen (nicht eingeloggt) ---------- */
+.willkommen { max-width: 560px; margin: 6vh auto 0; }
+.willkommen__inhalt { display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; padding: 10px 0 18px; }
+.willkommen__inhalt p { color: var(--hud-text-muted); max-width: 42ch; }
+.willkommen__login { display: inline-flex; align-items: center; border-radius: 0; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.85rem; }
+
+/* ---------- Dashboard ---------- */
+.dash__titel { font-size: 1.3rem; margin: 0; }
+.dash__untertitel { color: var(--hud-text-muted); margin: 4px 0 20px; font-size: 0.85rem; letter-spacing: 0.08em; }
+.dash__grid { display: grid; gap: var(--hud-gap); grid-template-columns: 1fr; }
+@media (min-width: 768px) { .dash__grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1200px) { .dash__grid { grid-template-columns: repeat(3, 1fr); } }
+/* Das breite Panel (Schnellaktionen) zieht sich über alle Spalten */
+.dash__breit { grid-column: 1 / -1; }
+
+.dash__ticketzahl { display: flex; align-items: center; gap: 22px; }
+.dash__grossezahl { font-size: 3.4rem; font-weight: 300; color: var(--hud-text-strong); line-height: 1; min-width: 1.6ch; text-align: center; }
+.dash__legende { list-style: none; margin: 0; padding: 0; flex: 1; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.dash__legende li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(70,104,138,0.25); }
+.dash__legende b { margin-left: auto; font-weight: 500; color: var(--hud-text-strong); }
+.punkt { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.punkt--cyan { background: var(--hud-cyan); }
+.punkt--gold { background: var(--hud-gold); }
+.punkt--grau { background: var(--hud-text-muted); }
+
+.dash__leer { color: var(--hud-text-muted); font-size: 0.85rem; margin: 0; }
+.dash__warnung { color: var(--hud-red); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.72rem; margin: 0 0 6px; }
+.dash__liste { list-style: none; margin: 0; padding: 0; }
+.dash__liste li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(70,104,138,0.25); }
+.dash__listentitel { display: block; color: var(--hud-text-strong); font-size: 0.88rem; margin-bottom: 4px; }
+.dash__datum { color: var(--hud-text-muted); font-family: var(--hud-font-mono); font-size: 0.75rem; white-space: nowrap; }
+.dash__datum--rot { color: var(--hud-red); }
+
+.dash__ringe { display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap; }
+.dash__aktionen { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.dash__aktion {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  border: 1px solid var(--hud-line); background: rgba(5,10,20,0.5);
+  color: var(--hud-text); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78rem;
+}
+.dash__aktion svg { color: var(--hud-cyan); }
+.dash__aktion:hover { border-color: var(--hud-cyan); background: var(--hud-cyan-dim); color: var(--hud-text-strong); }
+
+/* ---------- ProgressRing ---------- */
+.progress-ring { --ring-farbe: var(--hud-cyan); position: relative; width: 110px; text-align: center; }
+.progress-ring[data-ton='gold'] { --ring-farbe: var(--hud-gold); }
+.progress-ring[data-ton='rot'] { --ring-farbe: var(--hud-red); }
+.progress-ring svg { width: 92px; height: 92px; display: block; margin: 0 auto; }
+.progress-ring__bg { fill: none; stroke: rgba(70,104,138,0.35); stroke-width: 5; }
+.progress-ring__fg { fill: none; stroke: var(--ring-farbe); stroke-width: 5; stroke-linecap: butt; }
+.progress-ring__mitte { position: absolute; inset: 0 0 auto 0; height: 92px; display: grid; place-items: center; }
+.progress-ring__wert { font-size: 1.05rem; color: var(--hud-text-strong); }
+/* Die Beschriftung darf umbrechen statt mit "..." abgeschnitten zu werden */
+.progress-ring__label { display: block; margin-top: 6px; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hud-text-muted); white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+
+/* Das IPD-Panel nimmt auf großen Bildschirmen zwei Spalten ein, damit keine Lücke bleibt */
+@media (min-width: 1200px) { .dash__zweispaltig { grid-column: span 2; } }
+
+/* ---- Alles ohne Scrollen sichtbar (grosse Bildschirme) ----
+   Ab 1200px steht Schnellaktionen in der dritten Spalte neben dem IPD-Panel,
+   die Aktionen werden dort untereinander gestapelt. So passt alles auf einen Blick. */
+@media (min-width: 1200px) {
+  .dash__breit { grid-column: auto; }
+  .dash__breit .dash__aktionen { grid-template-columns: 1fr; gap: 8px; }
+  .dash__breit .dash__aktion { padding: 10px 14px; }
+}
