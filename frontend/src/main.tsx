@@ -18,19 +18,19 @@ import { AuthProvider } from './auth/AuthContext'
 import App from './App.tsx'
 
 // Klick-Puls: Ich höre einmal global auf Klicks (Event-Delegation) und setze bei
-// einem Button kurz die Klasse "hud-puls". Das CSS dazu steht in hud-components.css.
+// einem Button kurz die Klasse "hud-pulse". Das CSS dazu steht in hud-components.css.
 // So muss ich keinen einzelnen Button anfassen.
 document.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLElement>('.btn')
     if (!button) return
     // Klasse erst entfernen und neu setzen, damit auch schnelles Doppelklicken neu pulst
-    button.classList.remove('hud-puls')
+    button.classList.remove('hud-pulse')
     // Das Auslesen der Größe erzwingt ein Neuberechnen des Layouts (Reflow), sonst startet die
     // Animation nicht neu. Ich nutze getBoundingClientRect() statt "void offsetWidth",
     // weil SonarCloud den void-Operator als verwirrend markiert.
     button.getBoundingClientRect()
-    button.classList.add('hud-puls')
-    button.addEventListener('animationend', () => button.classList.remove('hud-puls'), { once: true })
+    button.classList.add('hud-pulse')
+    button.addEventListener('animationend', () => button.classList.remove('hud-pulse'), { once: true })
 })
 
 createRoot(document.getElementById('root')!).render(

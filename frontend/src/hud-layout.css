@@ -69,7 +69,7 @@
 .hud-topbar__logo .osd-logo__name { font-size: 0.8rem; }
 
 /* ---------- Uhr ---------- */
-.hud-uhr {
+.hud-clock {
   display: none;                              /* mobil zu eng, erst ab Tablet */
   gap: 18px;
   font-family: var(--hud-font-mono);
@@ -77,7 +77,7 @@
   letter-spacing: 0.12em;
   color: var(--hud-text);
 }
-.hud-uhr__datum { color: var(--hud-text-muted); }
+.hud-clock__date { color: var(--hud-text-muted); }
 
 /* ---------- Benutzermenü ---------- */
 .user-menu__toggle {
@@ -112,7 +112,7 @@
   font-size: 0.8rem;
   color: var(--hud-text-strong);
 }
-.user-menu__rolle {
+.user-menu__role {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.6rem;
@@ -132,7 +132,7 @@
   text-transform: uppercase;
   color: var(--hud-text-muted);
 }
-.hud-statusbar__mitte { display: none; }
+.hud-statusbar__center { display: none; }
 
 /* ---------- Mobiles Vollbild-Menü ---------- */
 .hud-overlay {
@@ -154,18 +154,18 @@
   max-height: none;
   color: inherit;
 }
-.hud-overlay__kopf {
+.hud-overlay__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
-.hud-overlay__kacheln {
+.hud-overlay__tiles {
   display: grid;
   grid-template-columns: 1fr 1fr;             /* zwei Spalten wie bei Konsolen-Menüs */
   gap: 14px;
 }
-.hud-kachel {
+.hud-tile {
   aspect-ratio: 1 / 0.85;
   display: flex;
   flex-direction: column;
@@ -180,16 +180,16 @@
   font-size: 0.8rem;
   clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
 }
-.hud-kachel svg { font-size: 1.8rem; color: var(--hud-cyan); }
-.hud-kachel.is-active { border-color: var(--hud-gold); color: var(--hud-gold); background: var(--hud-gold-dim); }
-.hud-kachel.is-active svg { color: var(--hud-gold); }
+.hud-tile svg { font-size: 1.8rem; color: var(--hud-cyan); }
+.hud-tile.is-active { border-color: var(--hud-gold); color: var(--hud-gold); background: var(--hud-gold-dim); }
+.hud-tile.is-active svg { color: var(--hud-gold); }
 
 /* ==========================================================================
    Ab Desktop-Breite (Bootstrap "lg" = 992 px): Sidebar sichtbar,
    Hamburger weg, Uhr und Statusmitte an.
    ========================================================================== */
 @media (min-width: 992px) {
-  .hud-shell--mit-sidebar .hud-sidebar {
+  .hud-shell--with-sidebar .hud-sidebar {
     display: flex;
     flex-direction: column;
     width: 260px;
@@ -201,13 +201,13 @@
     border-right: 1px solid var(--hud-line);
     padding: 18px 14px;
   }
-  .hud-shell--mit-sidebar .hud-topbar__burger,
-  .hud-shell--mit-sidebar .hud-topbar__logo { display: none; }
+  .hud-shell--with-sidebar .hud-topbar__burger,
+  .hud-shell--with-sidebar .hud-topbar__logo { display: none; }
   /* Das Benutzermenue sitzt auch am Desktop oben rechts neben der Uhr (nicht mehr in der Sidebar) */
   .hud-topbar__user { display: block; margin-left: 6px; padding-left: 16px; border-left: 1px solid var(--hud-line); }
-  .hud-uhr { display: flex; }
+  .hud-clock { display: flex; }
   .user-menu__text { display: flex; }
-  .hud-statusbar__mitte { display: inline; }
+  .hud-statusbar__center { display: inline; }
   .hud-content { padding: 24px; }
 
   .hud-sidebar__logo { margin: 4px 6px 22px; display: block; }

@@ -41,8 +41,8 @@ export function ProgressRing({ percent, label, tone = 'cyan' }: Readonly<Progres
                     transform="rotate(-90 50 50)"
                 />
             </svg>
-            <div className="progress-ring__mitte">
-                <span className="progress-ring__wert">{value}%</span>
+            <div className="progress-ring__center">
+                <span className="progress-ring__value">{value}%</span>
             </div>
             <span className="progress-ring__label" title={label}>{label}</span>
         </div>

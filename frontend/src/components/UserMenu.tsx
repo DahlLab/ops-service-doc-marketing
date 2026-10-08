@@ -39,7 +39,7 @@ export function UserMenu({ username, onLogout, drop = 'down' }: Readonly<UserMen
                 )}
                 <span className="user-menu__text">
                     <span className="user-menu__name">{username}</span>
-                    <span className="user-menu__rolle">Angemeldet</span>
+                    <span className="user-menu__role">Angemeldet</span>
                 </span>
             </Dropdown.Toggle>
 

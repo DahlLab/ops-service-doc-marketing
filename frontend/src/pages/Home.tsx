@@ -77,9 +77,9 @@ export function Home() {
     // ---------- Nicht eingeloggt: Willkommens-Panel ----------
     if (!username) {
         return (
-            <div className="willkommen">
+            <div className="welcome">
                 <HudPanel title="Willkommen">
-                    <div className="willkommen__inhalt">
+                    <div className="welcome__content">
                         <OsdLogo />
                         <p>
                             Support-Workflow und IPD-Dokumentgenerator für Wartungseinsätze:
@@ -88,7 +88,7 @@ export function Home() {
                         </p>
                         {/* Der einzige Login-Button der App. Er ist ein normaler Link,
                             weil GitHub den Nutzer per Browser-Weiterleitung anmeldet. */}
-                        <a href={loginUrl} className="btn btn-primary btn-lg willkommen__login">
+                        <a href={loginUrl} className="btn btn-primary btn-lg welcome__login">
                             <FaGithub className="me-2" />
                             Mit GitHub anmelden
                         </a>
@@ -138,18 +138,18 @@ export function Home() {
 
     return (
         <div className="dash">
-            <h1 className="dash__titel">Dashboard</h1>
-            <p className="dash__untertitel">Willkommen zurück, {username}</p>
+            <h1 className="dash__title">Dashboard</h1>
+            <p className="dash__subtitle">Willkommen zurück, {username}</p>
 
             <div className="dash__grid">
                 {/* ---------- Offene Tickets ---------- */}
                 <HudPanel title="Offene Tickets" footerLink={{ to: '/tickets', label: 'Alle ansehen' }}>
-                    <div className="dash__ticketzahl">
-                        <div className="dash__grossezahl">{openTickets.length}</div>
-                        <ul className="dash__legende">
-                            <li><span className="punkt punkt--cyan" /> Neu <b>{countNew}</b></li>
-                            <li><span className="punkt punkt--gold" /> In Bearbeitung <b>{countInProgress}</b></li>
-                            <li><span className="punkt punkt--grau" /> Ausstehend <b>{countPending}</b></li>
+                    <div className="dash__ticketcount">
+                        <div className="dash__bignumber">{openTickets.length}</div>
+                        <ul className="dash__legend">
+                            <li><span className="dot dot--cyan" /> Neu <b>{countNew}</b></li>
+                            <li><span className="dot dot--gold" /> In Bearbeitung <b>{countInProgress}</b></li>
+                            <li><span className="dot dot--gray" /> Ausstehend <b>{countPending}</b></li>
                         </ul>
                     </div>
                 </HudPanel>
@@ -157,9 +157,9 @@ export function Home() {
                 {/* ---------- Checklisten-Fortschritt ---------- */}
                 <HudPanel title="Checklisten-Fortschritt" footerLink={{ to: '/checklists', label: 'Details' }}>
                     {activeChecklists.length === 0 ? (
-                        <p className="dash__leer">Keine laufenden Checklisten.</p>
+                        <p className="dash__empty">Keine laufenden Checklisten.</p>
                     ) : (
-                        <div className="dash__ringe">
+                        <div className="dash__rings">
                             {activeChecklists.map((c) => (
                                 <ProgressRing key={c.id} label={c.title} percent={checklistProgress(c)} />
                             ))}
@@ -175,21 +175,21 @@ export function Home() {
                     footerLink={{ to: '/tasks', label: 'Alle Tasks' }}
                 >
                     {overdue.length > 0 && (
-                        <p className="dash__warnung">{overdue.length} überfällig</p>
+                        <p className="dash__warning">{overdue.length} überfällig</p>
                     )}
                     {openTasks.length === 0 ? (
-                        <p className="dash__leer">Keine offenen Tasks.</p>
+                        <p className="dash__empty">Keine offenen Tasks.</p>
                     ) : (
-                        <ul className="dash__liste">
+                        <ul className="dash__list">
                             {openTasks.slice(0, 4).map((task) => (
                                 <li key={task.id}>
                                     <div>
-                                        <div className="dash__listentitel">{task.topic}</div>
+                                        <div className="dash__listtitle">{task.topic}</div>
                                         <Badge bg={taskStatusBadgeVariante(task.status)}>
                                             {TASK_STATUS_LABELS[task.status]}
                                         </Badge>
                                     </div>
-                                    <div className={task.dueDate !== null && task.dueDate < today ? 'dash__datum dash__datum--rot' : 'dash__datum'}>
+                                    <div className={task.dueDate !== null && task.dueDate < today ? 'dash__date dash__date--red' : 'dash__date'}>
                                         {formatDueDate(task.dueDate)}
                                     </div>
                                 </li>
@@ -199,20 +199,20 @@ export function Home() {
                 </HudPanel>
 
                 {/* ---------- Letzte IPD-Dokumente ---------- */}
-                <HudPanel title="Letzte IPD-Dokumente" className="dash__zweispaltig" footerLink={{ to: '/ipd', label: 'Alle Dokumente' }}>
+                <HudPanel title="Letzte IPD-Dokumente" className="dash__twocolumn" footerLink={{ to: '/ipd', label: 'Alle Dokumente' }}>
                     {latestDocuments.length === 0 ? (
-                        <p className="dash__leer">Noch keine Dokumente.</p>
+                        <p className="dash__empty">Noch keine Dokumente.</p>
                     ) : (
-                        <ul className="dash__liste">
+                        <ul className="dash__list">
                             {latestDocuments.map((doc) => (
                                 <li key={doc.id}>
                                     <div>
-                                        <Link to={`/ipd/${doc.id}`} className="dash__listentitel">{doc.title}</Link>
+                                        <Link to={`/ipd/${doc.id}`} className="dash__listtitle">{doc.title}</Link>
                                         <Badge bg={ipdStatusBadgeVariante(doc.status)}>
                                             {IPD_DOCUMENT_STATUS_LABELS[doc.status]}
                                         </Badge>
                                     </div>
-                                    <div className="dash__datum">{formatDate(doc.updatedAt)}</div>
+                                    <div className="dash__date">{formatDate(doc.updatedAt)}</div>
                                 </li>
                             ))}
                         </ul>
@@ -220,23 +220,23 @@ export function Home() {
                 </HudPanel>
 
                 {/* ---------- Schnellaktionen ---------- */}
-                <HudPanel title="Schnellaktionen" className="dash__breit">
-                    <div className="dash__aktionen">
-                        <Link to="/tickets" className="dash__aktion">
+                <HudPanel title="Schnellaktionen" className="dash__wide">
+                    <div className="dash__actions">
+                        <Link to="/tickets" className="dash__action">
                             <FaSyncAlt /> Ticket-Sync
                         </Link>
-                        <Link to="/tasks" className="dash__aktion">
+                        <Link to="/tasks" className="dash__action">
                             <FaTasks /> Task anlegen
                         </Link>
-                        <Link to="/checklists" className="dash__aktion">
+                        <Link to="/checklists" className="dash__action">
                             <FaClipboardCheck /> Checkliste aus Vorlage
                         </Link>
-                        <Link to="/ipd" className="dash__aktion">
+                        <Link to="/ipd" className="dash__action">
                             <FaFileAlt /> IPD erstellen
                         </Link>
                         {/* Externes GLPI: öffnet im neuen Tab */}
                         {glpiUrl && (
-                            <a className="dash__aktion" href={glpiUrl} target="_blank" rel="noopener noreferrer">
+                            <a className="dash__action" href={glpiUrl} target="_blank" rel="noopener noreferrer">
                                 <FaExternalLinkAlt /> GLPI öffnen
                             </a>
                         )}

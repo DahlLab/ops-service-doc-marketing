@@ -58,7 +58,7 @@ export function Layout() {
     const loggedIn = !loading && Boolean(username)
 
     return (
-        <div className={`hud-shell ${loggedIn ? 'hud-shell--mit-sidebar' : ''}`}>
+        <div className={`hud-shell ${loggedIn ? 'hud-shell--with-sidebar' : ''}`}>
             {/* ---------- Sidebar (nur Desktop, nur eingeloggt) ---------- */}
             {loggedIn && (
                 <aside className="hud-sidebar">
@@ -132,7 +132,7 @@ export function Layout() {
                 {/* ---------- Statusleiste ---------- */}
                 <footer className="hud-statusbar">
                     <span>OpsServiceDoc v1.0</span>
-                    <span className="hud-statusbar__mitte">
+                    <span className="hud-statusbar__center">
                         {loggedIn ? 'Gesicherte Verbindung · Session aktiv' : 'Nicht angemeldet'}
                     </span>
                     <span>{loggedIn ? username : ''}</span>
@@ -149,7 +149,7 @@ export function Layout() {
                     // State nachziehen, sonst wäre menueOffen weiterhin true.
                     onClose={() => setMenuOpen(false)}
                 >
-                    <div className="hud-overlay__kopf">
+                    <div className="hud-overlay__header">
                         <OsdLogo />
                         <button
                             type="button"
@@ -160,13 +160,13 @@ export function Layout() {
                             <FaTimes />
                         </button>
                     </div>
-                    <div className="hud-overlay__kacheln">
+                    <div className="hud-overlay__tiles">
                         {MENU.map((entry) => (
                             <NavLink
                                 key={entry.to}
                                 to={entry.to}
                                 end={entry.end}
-                                className={({ isActive }) => `hud-kachel ${isActive ? 'is-active' : ''}`}
+                                className={({ isActive }) => `hud-tile ${isActive ? 'is-active' : ''}`}
                                 // Nach dem Klick Menü schließen, sonst läge es über der neuen Seite
                                 onClick={() => setMenuOpen(false)}
                             >
@@ -176,7 +176,7 @@ export function Layout() {
                         ))}
                         {glpiUrl && (
                             <a
-                                className="hud-kachel"
+                                className="hud-tile"
                                 href={glpiUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"

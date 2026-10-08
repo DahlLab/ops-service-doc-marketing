@@ -151,18 +151,18 @@ h1 { font-size: 1.3rem; }
 }
 
 /* ---- Klick-Puls um Buttons ----
-   Beim Klick setzt ein kleines Skript (main.tsx) kurz die Klasse "hud-puls".
+   Beim Klick setzt ein kleines Skript (main.tsx) kurz die Klasse "hud-pulse".
    Der Ring waechst per box-shadow nach aussen und blendet dabei aus.
    Der Ring ist bei allen Buttons Gold, passend zur Akzentfarbe fuer Aktives. */
-@keyframes hud-puls {
+@keyframes hud-pulse {
   0%   { box-shadow: 0 0 0 0 var(--hud-gold); opacity: 1; }
   70%  { box-shadow: 0 0 0 12px transparent; }
   100% { box-shadow: 0 0 0 12px transparent; }
 }
-.btn.hud-puls {
-  animation: hud-puls 0.55s ease-out;
+.btn.hud-pulse {
+  animation: hud-pulse 0.55s ease-out;
 }
 /* Wer Bewegung reduziert haben will (Systemeinstellung), bekommt keinen Puls */
 @media (prefers-reduced-motion: reduce) {
-  .btn.hud-puls { animation: none; }
+  .btn.hud-pulse { animation: none; }
 }

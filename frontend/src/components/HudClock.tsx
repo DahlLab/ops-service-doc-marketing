@@ -17,11 +17,11 @@ export function HudClock() {
     }, [])
 
     return (
-        <div className="hud-uhr" aria-label="Aktuelle Uhrzeit und Datum">
-            <span className="hud-uhr__zeit">
+        <div className="hud-clock" aria-label="Aktuelle Uhrzeit und Datum">
+            <span className="hud-clock__time">
                 {now.toLocaleTimeString('de-DE')}
             </span>
-            <span className="hud-uhr__datum">
+            <span className="hud-clock__date">
                 {now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </span>
         </div>
